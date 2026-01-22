@@ -83,7 +83,18 @@ body {
 .sidebar-logo {
     height: 32px;
     width: auto;
-    margin-right: 16px;
+    margin-right: 12px;
+}
+
+/* Ensure brand text is on single line with logo */
+.sidebar-brand-text {
+    white-space: nowrap;
+    line-height: 32px;
+}
+
+/* Hide "documentation" suffix if present */
+.sidebar-brand-text::after {
+    content: none !important;
 }
 
 /* Terminal-style code blocks with enhanced styling */
@@ -99,6 +110,7 @@ body {
 [data-theme="dark"] .highlight {
     border-color: var(--color-border-tech);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    background-color: var(--color-bg-code);
 }
 
 /* Terminal header bar - dynamic based on language */
@@ -435,4 +447,21 @@ a.reference.external::after {
     .hero-video {
         border-radius: 6px;
     }
+}
+
+/* ============================================
+   UI Cleanup - Hide edit/view source buttons
+   ============================================ */
+
+/* Hide "Edit this page" and "View page source" buttons */
+.article-header-buttons .muted-link[href*="edit"],
+.article-header-buttons .muted-link[href*="_sources"],
+.article-header-buttons a[title*="Edit"],
+.article-header-buttons a[title*="View"] {
+    display: none !important;
+}
+
+/* Alternative: hide entire edit button group if it only contains these buttons */
+.page-edit-links {
+    display: none !important;
 }

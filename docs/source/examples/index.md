@@ -86,7 +86,7 @@ Recommended order for new users:
 After working through the examples:
 
 - {doc}`../api/index` - Explore the full API reference
-- {doc}`../getting-started/quickstart` - Quick reference for creating diagrams
+- {doc}`../quickstart` - Quick reference for creating diagrams
 - Try modifying the examples to solve your own control problems!
 
 ## Example Code Structure

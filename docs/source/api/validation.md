@@ -197,4 +197,4 @@ except SignalNotFoundError as e:
 
 - {doc}`export` - Signal reference patterns and subsystem extraction
 - {doc}`diagram` - Building valid diagrams
-- {doc}`../getting-started/quickstart` - Quick examples
+- {doc}`../quickstart` - Quick examples

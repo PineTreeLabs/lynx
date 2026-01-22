@@ -114,7 +114,7 @@ html_theme_options = {
     ],
 }
 
-html_favicon = "_static/favicon.svg"
+html_favicon = "_static/favicon.ico"
 
 # -- Extension configuration -------------------------------------------------
 
