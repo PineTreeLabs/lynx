@@ -5,7 +5,7 @@ SPDX-PackageDownloadLocation = "https://github.com/jcallaham/lynx"
 
 # Project configuration files
 [[annotations]]
-path = [".python-version", "uv.lock", "**/*.toml", "**/*.json"]
+path = [".python-version", ".gitattributes", "uv.lock", "**/*.toml", "**/*.json"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
 SPDX-License-Identifier = "GPL-3.0-or-later"
@@ -33,7 +33,7 @@ SPDX-License-Identifier = "GPL-3.0-or-later"
 
 # GitHub workflows
 [[annotations]]
-path = ".github/workflows/*.yml"
+path = ".github/**"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
 SPDX-License-Identifier = "GPL-3.0-or-later"

@@ -56,7 +56,7 @@ This document provides a manual testing procedure to validate the quickstart gui
 
 - Tester reads installation instructions
 - Tester copies installation command
-- Tester runs: `pip install lynx` (or appropriate command from docs)
+- Tester runs: `pip install lynx-nb` (or appropriate command from docs)
 - Tester verifies installation: `python -c "import lynx; print(lynx.__version__)"`
 
 **Expected Result**:

@@ -18,6 +18,9 @@ cd lynx
 
 # Create virtual environment and install dependencies
 uv sync --all-extras --dev
+
+# Install a Jupyter kernel for the project
+uv run ipython kernel install --user --env VIRTUAL_ENV $(pwd)/.venv --name=lynx
 ```
 
 The project uses a UV virtual environment stored in `.venv/`. Activate it with:
