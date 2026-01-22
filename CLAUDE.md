@@ -18,6 +18,21 @@ The project uses a UV virtual environment for Python, so activate this using the
 
 For frontend testing, use `npm test -- --run` in the `js/` directory.
 
+### Project Status
+
+**Test Suite**:
+- Python: 407 tests
+- Frontend: 310 tests (180 test() + 130 it())
+- Total: 717 tests
+
+**Test Coverage**:
+- Python: 22% overall (key modules: diagram.py 93%, conversion 72-95%, blocks 80-100%)
+- Frontend: Comprehensive coverage across all block types and components
+
+**Features Implemented**:
+- 15 features fully implemented (001-015)
+- 1 feature partially implemented (016 - documentation infrastructure complete, testing/deployment pending)
+
 ## SpecKit Workflow
 
 SpecKit provides a structured approach to feature development through a series of commands that guide you from initial concept to implementation:
@@ -262,7 +277,7 @@ When tests are included, they follow the same user story organization.
 - Vitest 2.1.9 configured with jsdom environment for React component testing
 - React Testing Library 16.1.0 for component testing utilities
 - @testing-library/user-event for realistic user interaction testing
-- 274+ tests covering all block types and parameter editors
+- 310+ frontend tests covering all block types and parameter editors
 - Test setup handles React 19 compatibility with Testing Library
 - Configuration in `js/vite.config.ts` (test section) and `js/src/test/setup.ts`
 
@@ -462,8 +477,8 @@ print(f"DC gain: {y_out[-1]:.3f}")
 ```
 
 **Testing**:
-- 24 tests passing (17 unit + 7 integration)
-- Test coverage: 41% overall, 46% for diagram.py
+- 24 conversion-specific tests (17 unit + 7 integration)
+- Test coverage: 22% overall (key modules: diagram.py 93%, conversion 72-95%)
 - TDD approach (RED-GREEN-REFACTOR) used throughout
 - Integration tests verify end-to-end workflows from quickstart.md scenarios
 
@@ -513,7 +528,7 @@ export const PARAMETER_EDITORS = {
   - Consistent Enter key handling (non-Shift Enter applies and blurs)
 
 **Testing**:
-- 274+ total tests, all passing
+- 717 total tests (407 Python + 310 frontend), all passing
 - Each parameter editor has comprehensive unit tests
 - GainParameterEditor uses `@testing-library/user-event` for realistic interaction testing
 - Tests verify controlled input behavior with `useRef` + `useLayoutEffect` pattern for state capture
@@ -599,7 +614,7 @@ blocks/
   - `dragStartPos` ref tracks initial positions for distance calculation
   - All 5 block types (Gain, Sum, TransferFunction, StateSpace, IOMarker) consistent behavior
   - Performance: < 5ms overhead per drag operation, maintains 60 FPS
-  - 309 tests passing (9 new tests for drag detection, all existing tests preserved)
+  - 717 total tests passing (407 Python + 310 frontend)
   - Frontend-only feature (no Python backend changes required)
 - **014-iomarker-latex-rendering**: Complete IOMarker LaTeX rendering with automatic indexing and Simulink-style renumbering
   - Automatic index display (0, 1, 2...) via LaTeX for InputMarker and OutputMarker blocks
@@ -623,7 +638,7 @@ blocks/
   - Exception hierarchy: DiagramExportError → ValidationError, SignalNotFoundError
   - Future-proofed block converters query actual port IDs (prepares for MIMO/multi-output blocks)
   - Modular conversion package structure (block_converters, interconnect, signal_extraction)
-  - 24 tests passing (17 unit + 7 integration) with 41% overall coverage
+  - 24 conversion tests (17 unit + 7 integration), part of 407 total Python tests
   - Performance: <100ms for 50-block diagrams, <20ms break-and-inject overhead
   - TDD approach (RED-GREEN-REFACTOR) throughout implementation
   - All three user stories complete: US1 (Basic Export), US2 (Sign Handling), US3 (Validation)
@@ -632,7 +647,7 @@ blocks/
   - Created dedicated parameter editors for each block type
   - Extracted `useCustomLatex` hook for shared LaTeX state management
   - Added `@testing-library/user-event` for realistic interaction testing
-  - 274+ tests passing, all parameter editors fully tested
+  - All parameter editors fully tested (part of 310+ frontend tests)
   - Fixed TransferFunction scalar rendering bug (scalars now normalize to arrays)
 
   - Click quadrants (top, left, bottom) to cycle port signs: "+" → "-" → "|" → "+"
@@ -647,10 +662,10 @@ blocks/
   - Dimensions persist to Python and JSON diagram files
   - SVG shapes scale proportionally (Gain triangle, Sum circle/ellipse)
   - Connection waypoints auto-cleared when blocks are resized
-  - 162 frontend tests passing (9 new resize geometry tests)
+  - Comprehensive test coverage across all block types and resizing behavior
   - Added Simulink-style triangular port markers (two-line arrowheads) to all blocks
   - Implemented connection-aware visibility (hide when connected, show when unconnected)
   - Added horizontal flip support with proper port position swapping
-  - Configured Vitest 2.1.8 testing infrastructure with 70 passing tests
+  - Configured Vitest 2.1.9 testing infrastructure with 310+ frontend tests
   - Added backend port regeneration for Sum blocks with connection cleanup
   - Drag-and-drop hover behavior intentionally skipped (complexity not justified)
