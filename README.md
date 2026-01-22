@@ -28,7 +28,7 @@ For more details, see the [documentation site](https://pinetreelabs.github.io/ly
 The easiest way to install from pip:
 
 ```bash
-pip instlal lynx-nb
+pip install lynx-nb
 ```
 
 ### Source build

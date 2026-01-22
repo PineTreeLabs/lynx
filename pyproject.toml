@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 [project]
-name = "lynx"
+name = "lynx-nb"
 version = "0.1.0"
-description = "Add your description here"
+description = "Block diagram editor for control systems"
 readme = "README.md"
 authors = [
     { name = "Jared Callaham", email = "jared.callaham@gmail.com" }
