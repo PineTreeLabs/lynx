@@ -1654,11 +1654,6 @@ feedforward_ss_template = """
       ],
       "ports": [
         {
-          "id": "out",
-          "type": "output",
-          "label": null
-        },
-        {
           "id": "in1",
           "type": "input",
           "label": null
@@ -1666,6 +1661,11 @@ feedforward_ss_template = """
         {
           "id": "in2",
           "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
           "label": null
         }
       ]
@@ -1732,13 +1732,13 @@ feedforward_ss_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 2,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 2,
+          "name": "label",
+          "value": "u",
           "expression": null
         }
       ],
@@ -1770,13 +1770,13 @@ feedforward_ss_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 1,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 1,
+          "name": "label",
+          "value": "u",
           "expression": null
         }
       ],
@@ -1941,7 +1941,7 @@ feedforward_ss_template = """
           "y": 181.99940169064823
         }
       ],
-      "label": "u_ff",
+      "label": "u_fb",
       "label_visible": true
     },
     {
@@ -2213,11 +2213,6 @@ feedforward_tf_template = """
       ],
       "ports": [
         {
-          "id": "out",
-          "type": "output",
-          "label": null
-        },
-        {
           "id": "in1",
           "type": "input",
           "label": null
@@ -2225,6 +2220,11 @@ feedforward_tf_template = """
         {
           "id": "in2",
           "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
           "label": null
         }
       ]
@@ -2291,13 +2291,13 @@ feedforward_tf_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 2,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 2,
+          "name": "label",
+          "value": "u",
           "expression": null
         }
       ],
@@ -2329,13 +2329,13 @@ feedforward_tf_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 1,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 1,
+          "name": "label",
+          "value": "u",
           "expression": null
         }
       ],
@@ -2533,7 +2533,7 @@ feedforward_tf_template = """
           "y": 181.99940169064823
         }
       ],
-      "label": "u_ff",
+      "label": "u_fb",
       "label_visible": true
     },
     {
@@ -3281,8 +3281,7 @@ filtered_tf_template = """
 }
 """
 
-cascaded_tf_template = """
-{
+cascaded_tf_template = """{
   "version": "1.0.0",
   "blocks": [
     {
@@ -3374,7 +3373,7 @@ cascaded_tf_template = """
       },
       "label": "transfer_function_1769104391099",
       "flipped": false,
-      "custom_latex": "C_\\mathrm{outer}",
+      "custom_latex": "C_\\\\mathrm{outer}",
       "label_visible": false,
       "width": null,
       "height": null,
@@ -3459,7 +3458,7 @@ cascaded_tf_template = """
       },
       "label": "transfer_function_1769104432548",
       "flipped": false,
-      "custom_latex": "C_\\mathrm{inner}",
+      "custom_latex": "C_\\\\mathrm{inner}",
       "label_visible": false,
       "width": null,
       "height": null,
@@ -3502,7 +3501,7 @@ cascaded_tf_template = """
       },
       "label": "transfer_function_1769104459099",
       "flipped": false,
-      "custom_latex": "G_\\mathrm{inner}",
+      "custom_latex": "G_\\\\mathrm{inner}",
       "label_visible": false,
       "width": null,
       "height": null,
@@ -3625,7 +3624,7 @@ cascaded_tf_template = """
       },
       "label": "transfer_function_1769104565181",
       "flipped": false,
-      "custom_latex": "G_\\mathrm{outer}",
+      "custom_latex": "G_\\\\mathrm{outer}",
       "label_visible": false,
       "width": null,
       "height": null,

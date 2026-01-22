@@ -124,10 +124,11 @@ class TestInputMarker:
         assert len(input_ports) == 0
 
     def test_input_marker_has_label_parameter(self) -> None:
-        """Input marker can have optional label"""
+        """Input marker can have optional label (stored as block.label)"""
         block = InputMarker(id="input1", label="u")
 
-        assert block.get_parameter("label") == "u"
+        # Label is stored as block.label, not as a parameter
+        assert block.label == "u"
 
     def test_input_marker_serializes_to_dict(self) -> None:
         """Input marker can serialize to dictionary"""

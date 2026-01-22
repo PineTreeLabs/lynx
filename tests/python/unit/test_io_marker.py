@@ -169,26 +169,25 @@ class TestBlockLabelPersistence:
         """T014: IOMarker block labels persist correctly through save/load cycle.
 
         Regression test for bug where IOMarker block labels reverted to block ID
-        after deserialization. Block label (displayed below block) and signal label
-        (parameter) must both persist independently.
+        after deserialization. Block label must persist correctly.
         """
-        # Create diagram with IOMarker that has both block label and signal label
+        # Create diagram with IOMarker that has a block label
         diagram = Diagram()
         diagram.add_block("io_marker", "io_marker_123", marker_type="input", label="r")
 
-        # Set block label (different from signal label)
-        diagram.update_block_label("io_marker_123", "ref")
-
         # Verify initial state
         block = diagram.get_block("io_marker_123")
-        assert block.label == "ref"  # Block label
-        assert block.get_parameter("label") == "r"  # Signal label
+        assert block.label == "r"  # Block label (also used as signal name)
+
+        # Update block label
+        diagram.update_block_label("io_marker_123", "ref")
+        block = diagram.get_block("io_marker_123")
+        assert block.label == "ref"
 
         # Save and load
         saved_dict = diagram.to_dict()
         loaded_diagram = Diagram.from_dict(saved_dict)
 
-        # Verify both labels persist correctly after deserialization
+        # Verify label persists correctly after deserialization
         loaded_block = loaded_diagram.get_block("io_marker_123")
         assert loaded_block.label == "ref"  # Block label should persist
-        assert loaded_block.get_parameter("label") == "r"  # Signal label should persist

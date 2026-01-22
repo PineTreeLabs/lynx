@@ -365,14 +365,8 @@ class Diagram:
         # Prepare factory kwargs
         factory_kwargs = {"position": position}
 
-        # For IOMarker, 'label' in kwargs is the signal label (inside block)
-        # For other blocks, 'label' is the block label (below block)
+        # For IOMarker and other blocks, 'label' is the block label
         if block_type == "io_marker":
-            # For IOMarkers, don't pop 'label' - it's the signal label
-            # block_label would be passed separately if provided
-            # IOMarkers typically don't have block labels
-            factory_kwargs["block_label"] = None
-
             # Auto-assign index if not provided (new blocks only)
             # During deserialization, _ensure_index handles missing indices
             if "index" not in kwargs and not hasattr(self, "_deserializing"):
@@ -380,7 +374,7 @@ class Diagram:
                 marker_type = kwargs.get("marker_type", "input")
                 kwargs["index"] = self._auto_assign_index(marker_type)
 
-            # Pass all kwargs (label for signal name + auto index)
+            # Pass all kwargs (label, marker_type, index)
             factory_kwargs.update(kwargs)
         else:
             # For other blocks, pop 'label' as the block label
@@ -875,14 +869,17 @@ class Diagram:
         # Prepare factory kwargs
         factory_kwargs = {"position": position}
 
-        # For IOMarker, handle special label semantics
+        # For IOMarker and other blocks, label is just block label
         if block_type == "io_marker":
-            factory_kwargs["block_label"] = label
-            # Signal label comes from parameters
-            if "label" in param_kwargs:
-                factory_kwargs["label"] = param_kwargs["label"]
+            # IOMarker label is the block label (used for signal reference)
+            if label is not None:
+                factory_kwargs["label"] = label
+            # Add IOMarker-specific parameters (marker_type, index)
             if "marker_type" in param_kwargs:
                 factory_kwargs["marker_type"] = param_kwargs["marker_type"]
+            if "index" in param_kwargs:
+                factory_kwargs["index"] = param_kwargs["index"]
+            # Note: Old "label" parameter is ignored if present (backwards compatibility)
         else:
             # For other blocks, block label is just 'label'
             if label is not None:

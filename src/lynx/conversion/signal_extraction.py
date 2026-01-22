@@ -9,6 +9,7 @@ signal-to-signal transfer functions from diagrams.
 """
 
 from typing import TYPE_CHECKING, List, Tuple, cast
+from collections import Counter
 
 import control as ct
 
@@ -21,6 +22,46 @@ if TYPE_CHECKING:
 
 # Import exceptions from diagram module
 from lynx.diagram import DiagramExportError, SignalNotFoundError, ValidationError
+
+
+def _make_labels_unique(labels: List[str]) -> List[str]:
+    """Make a list of labels unique by appending indices to duplicates.
+
+    When multiple items have the same label, they will be renamed to
+    label[0], label[1], etc. matching python-control's convention.
+
+    Args:
+        labels: List of potentially non-unique labels
+
+    Returns:
+        List of unique labels with same length as input
+
+    Examples:
+        >>> _make_labels_unique(['u', 'u', 'u'])
+        ['u[0]', 'u[1]', 'u[2]']
+        >>> _make_labels_unique(['u', 'v', 'w'])
+        ['u', 'v', 'w']
+        >>> _make_labels_unique(['u', 'v', 'u'])
+        ['u[0]', 'v', 'u[1]']
+    """
+    # Count occurrences of each label
+    label_counts = Counter(labels)
+
+    # Track indices for duplicate labels
+    label_indices = {label: 0 for label in label_counts if label_counts[label] > 1}
+
+    # Build unique names
+    unique_labels = []
+    for label in labels:
+        if label in label_indices:
+            # This label has duplicates, append index
+            unique_labels.append(f"{label}[{label_indices[label]}]")
+            label_indices[label] += 1
+        else:
+            # This label is unique, use as-is
+            unique_labels.append(label)
+
+    return unique_labels
 
 
 def _find_signal_source(diagram: "Diagram", signal_name: str) -> Tuple["Block", str]:
@@ -45,31 +86,27 @@ def _find_signal_source(diagram: "Diagram", signal_name: str) -> Tuple["Block", 
     """
     searched_locations = []
 
-    # Priority 1: IOMarker labels
+    # Priority 1: IOMarker labels (using block.label attribute)
     searched_locations.append("IOMarkers")
     for block in diagram.blocks:
         if block.type == "io_marker":
-            try:
-                marker_label = block.get_parameter("label")
-                if marker_label == signal_name:
-                    # Check marker type
-                    marker_type = block.get_parameter("marker_type")
-                    if marker_type == "input":
-                        # InputMarkers output from 'out' port
-                        return (block, "out")
-                    elif marker_type == "output":
-                        # OutputMarkers consume signals via 'in' port
-                        # Find the connection that feeds this marker
-                        incoming = _find_incoming_connections(diagram, block.id, "in")
-                        if incoming:
-                            # Return the source of the first incoming connection
-                            conn = incoming[0]
-                            source_block = diagram.get_block(conn.source_block_id)
-                            if source_block:
-                                return (source_block, conn.source_port_id)
-            except KeyError:
-                # No label parameter, skip this marker
-                pass
+            # Use block label as signal name
+            if block.label == signal_name:
+                # Check marker type
+                marker_type = block.get_parameter("marker_type")
+                if marker_type == "input":
+                    # InputMarkers output from 'out' port
+                    return (block, "out")
+                elif marker_type == "output":
+                    # OutputMarkers consume signals via 'in' port
+                    # Find the connection that feeds this marker
+                    incoming = _find_incoming_connections(diagram, block.id, "in")
+                    if incoming:
+                        # Return the source of the first incoming connection
+                        conn = incoming[0]
+                        source_block = diagram.get_block(conn.source_block_id)
+                        if source_block:
+                            return (source_block, conn.source_port_id)
 
     # Priority 2: Connection labels
     searched_locations.append("connection labels")
@@ -132,17 +169,10 @@ def _get_block_output_name(block: "Block") -> str:
         block: Block to get output name for
 
     Returns:
-        Output name (IOMarker label, block label, or block ID)
+        Output name (block label or block ID)
     """
-    if block.type == "io_marker":
-        try:
-            signal_label = block.get_parameter("label")
-            return signal_label if signal_label else block.id
-        except KeyError:
-            # No label parameter, use block ID
-            return block.id
-    else:
-        return block.label if block.label else block.id
+    # Use block label for all block types (consistent behavior)
+    return block.label if block.label else block.id
 
 
 def _prepare_for_extraction(
@@ -301,17 +331,11 @@ def _prepare_for_extraction(
         # Track external inputs
         if block.is_input_marker():
             inplist.append(f"{block.id}.in")
-            # Use signal label as input name (sanitize dots)
-            try:
-                signal_label = block.get_parameter("label")
-                # Sanitize label (replace dots with underscores)
-                safe_label = (
-                    signal_label.replace(".", "_") if signal_label else block.id
-                )
-                input_names.append(safe_label)
-            except KeyError:
-                # No label parameter, use block ID
-                input_names.append(block.id)
+            # Use block label as input name (sanitize dots)
+            signal_label = block.label
+            # Sanitize label (replace dots with underscores)
+            safe_label = signal_label.replace(".", "_") if signal_label else block.id
+            input_names.append(safe_label)
 
         # Export ALL output ports for each block (supports multi-output blocks)
         output_port_ids = [p.id for p in block._ports if p.type == "output"]
@@ -343,7 +367,14 @@ def _prepare_for_extraction(
 
         connections.append([target_signal, source_signal])
 
-    # Step 5: Build and return system
+    # Step 5: Make input/output names unique if there are duplicates
+    # Python-control requires unique signal names, so append indices like "u[0]", "u[1]"
+    if input_names:
+        input_names = _make_labels_unique(input_names)
+    if output_names:
+        output_names = _make_labels_unique(output_names)
+
+    # Step 6: Build and return system
     try:
         sys = ct.interconnect(
             systems,
