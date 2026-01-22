@@ -1409,8 +1409,8 @@ wheels = [
 ]
 
 [[package]]
-name = "lynx"
-version = "0.1.0"
+name = "lynx-nb"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "anywidget" },
