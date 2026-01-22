@@ -7,7 +7,7 @@ Learn Lynx through executable Jupyter notebook examples. Each example demonstrat
 To run these examples, you'll need:
 
 ```bash
-pip install lynx numpy scipy matplotlib python-control jupyter
+pip install lynx-nb numpy scipy matplotlib python-control jupyter
 ```
 
 Basic understanding of:

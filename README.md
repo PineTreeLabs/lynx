@@ -25,7 +25,15 @@ For more details, see the [documentation site](https://pinetreelabs.github.io/ly
 
 ## Quick Start
 
-### Installation
+The easiest way to install from pip:
+
+```bash
+pip instlal lynx-nb
+```
+
+### Source build
+
+#### Backend installation
 
 ```bash
 # Using UV (recommended)
@@ -35,7 +43,7 @@ uv pip install -e ".[dev]"
 pip install -e ".[dev]"
 ```
 
-### Frontend Setup
+#### Frontend Setup
 
 ```bash
 cd js
