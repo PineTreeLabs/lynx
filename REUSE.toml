@@ -33,7 +33,7 @@ SPDX-License-Identifier = "GPL-3.0-or-later"
 
 # GitHub workflows
 [[annotations]]
-path = ".github/workflows/*.yml"
+path = ".github/**"
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
 SPDX-License-Identifier = "GPL-3.0-or-later"
