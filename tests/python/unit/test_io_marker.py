@@ -160,3 +160,35 @@ class TestIndexClamping:
 
         # Assert index was clamped to 0 (max valid index for 1 marker is 0)
         assert diagram.get_block("input1").get_parameter("index") == 0
+
+
+class TestBlockLabelPersistence:
+    """Test block label persistence for IOMarker blocks"""
+
+    def test_iomarker_block_label_persists_after_save_load(self) -> None:
+        """T014: IOMarker block labels persist correctly through save/load cycle.
+
+        Regression test for bug where IOMarker block labels reverted to block ID
+        after deserialization. Block label (displayed below block) and signal label
+        (parameter) must both persist independently.
+        """
+        # Create diagram with IOMarker that has both block label and signal label
+        diagram = Diagram()
+        diagram.add_block("io_marker", "io_marker_123", marker_type="input", label="r")
+
+        # Set block label (different from signal label)
+        diagram.update_block_label("io_marker_123", "ref")
+
+        # Verify initial state
+        block = diagram.get_block("io_marker_123")
+        assert block.label == "ref"  # Block label
+        assert block.get_parameter("label") == "r"  # Signal label
+
+        # Save and load
+        saved_dict = diagram.to_dict()
+        loaded_diagram = Diagram.from_dict(saved_dict)
+
+        # Verify both labels persist correctly after deserialization
+        loaded_block = loaded_diagram.get_block("io_marker_123")
+        assert loaded_block.label == "ref"  # Block label should persist
+        assert loaded_block.get_parameter("label") == "r"  # Signal label should persist

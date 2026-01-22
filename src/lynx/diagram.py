@@ -673,6 +673,9 @@ class Diagram:
             # Restore additional attributes after creation
             if block:
                 block.flipped = block_flipped
+                # Restore block label for IOMarkers (was excluded from add_block params)
+                if block_type == "io_marker" and block_label is not None:
+                    block.label = block_label
                 # Restore optional attributes from block_dict
                 if block_dict.get("custom_latex") is not None:
                     block.custom_latex = block_dict["custom_latex"]
