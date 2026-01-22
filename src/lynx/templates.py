@@ -1,3 +1,353 @@
+__all__ = ["DIAGRAM_TEMPLATES"]
+
+open_loop_tf_template = """
+{
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "id": "io_marker_1769112157639",
+      "type": "io_marker",
+      "position": {
+        "x": 34.0,
+        "y": 185.0
+      },
+      "label": "input",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 0,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "transfer_function_1769112159991",
+      "type": "transfer_function",
+      "position": {
+        "x": 222.0,
+        "y": 176.0
+      },
+      "label": "plant",
+      "flipped": false,
+      "custom_latex": "G(s)",
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "numerator",
+          "value": [
+            1
+          ],
+          "expression": null
+        },
+        {
+          "name": "denominator",
+          "value": [
+            1,
+            1
+          ],
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769112179924",
+      "type": "io_marker",
+      "position": {
+        "x": 460.37048685107857,
+        "y": 185.0
+      },
+      "label": "output",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "output",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "y",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 0,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in",
+          "type": "input",
+          "label": "y"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1769112168974",
+      "source_block_id": "io_marker_1769112157639",
+      "source_port_id": "out",
+      "target_block_id": "transfer_function_1769112159991",
+      "target_port_id": "in",
+      "waypoints": [],
+      "label": "u",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112182774",
+      "source_block_id": "transfer_function_1769112159991",
+      "source_port_id": "out",
+      "target_block_id": "io_marker_1769112179924",
+      "target_port_id": "in",
+      "waypoints": [
+        {
+          "x": 391.18519237747466,
+          "y": 201.00023464133773
+        },
+        {
+          "x": 391.18519237747466,
+          "y": 201.00023464133773
+        }
+      ],
+      "label": "y",
+      "label_visible": true
+    }
+  ],
+  "theme": null
+}
+"""
+
+open_loop_ss_template = """
+{
+  "version": "1.0.0",
+  "blocks": [
+    {
+      "id": "io_marker_1769112157639",
+      "type": "io_marker",
+      "position": {
+        "x": 34.0,
+        "y": 185.0
+      },
+      "label": "input",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 0,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769112179924",
+      "type": "io_marker",
+      "position": {
+        "x": 460.37048685107857,
+        "y": 185.0
+      },
+      "label": "output",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "output",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "y",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 0,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in",
+          "type": "input",
+          "label": "y"
+        }
+      ]
+    },
+    {
+      "id": "state_space_1769112354776",
+      "type": "state_space",
+      "position": {
+        "x": 212.43384163373594,
+        "y": 171.0
+      },
+      "label": "plant",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "A",
+          "value": [
+            [
+              0,
+              1
+            ],
+            [
+              -1,
+              -1
+            ]
+          ],
+          "expression": null
+        },
+        {
+          "name": "B",
+          "value": [
+            [
+              0
+            ],
+            [
+              1
+            ]
+          ],
+          "expression": null
+        },
+        {
+          "name": "C",
+          "value": [
+            [
+              1,
+              0
+            ]
+          ],
+          "expression": null
+        },
+        {
+          "name": "D",
+          "value": [
+            [
+              0
+            ]
+          ],
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_1769112360643",
+      "source_block_id": "io_marker_1769112157639",
+      "source_port_id": "out",
+      "target_block_id": "state_space_1769112354776",
+      "target_port_id": "in",
+      "waypoints": [],
+      "label": "u",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112363143",
+      "source_block_id": "state_space_1769112354776",
+      "source_port_id": "out",
+      "target_block_id": "io_marker_1769112179924",
+      "target_port_id": "in",
+      "waypoints": [
+        {
+          "x": 396.40210209693726,
+          "y": 201.00002846805472
+        },
+        {
+          "x": 396.40210209693726,
+          "y": 201.00002846805472
+        }
+      ],
+      "label": "y",
+      "label_visible": true
+    }
+  ],
+  "theme": null
+}
+"""
+
 feedback_tf_template = """
 {
   "version": "1.0.0",
@@ -6,7 +356,7 @@ feedback_tf_template = """
       "id": "io_marker_1769102540105",
       "type": "io_marker",
       "position": {
-        "x": 184.71724307551472,
+        "x": -9.445531640680983,
         "y": 166.0
       },
       "label": "ref",
@@ -57,7 +407,7 @@ feedback_tf_template = """
         {
           "name": "signs",
           "value": [
-            "|",
+            "+",
             "+",
             "-"
           ],
@@ -65,6 +415,11 @@ feedback_tf_template = """
         }
       ],
       "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        },
         {
           "id": "in1",
           "type": "input",
@@ -76,8 +431,8 @@ feedback_tf_template = """
           "label": null
         },
         {
-          "id": "out",
-          "type": "output",
+          "id": "in3",
+          "type": "input",
           "label": null
         }
       ]
@@ -255,6 +610,44 @@ feedback_tf_template = """
         "x": 640.938954071276,
         "y": 53.653742324102495
       },
+      "label": "noise",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 2,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769112438327",
+      "type": "io_marker",
+      "position": {
+        "x": 182.62098901703015,
+        "y": 50.50281938153603
+      },
       "label": "disturbance",
       "flipped": false,
       "custom_latex": null,
@@ -268,13 +661,13 @@ feedback_tf_template = """
           "expression": null
         },
         {
-          "name": "index",
-          "value": 1,
+          "name": "label",
+          "value": "u",
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 1,
           "expression": null
         }
       ],
@@ -285,28 +678,49 @@ feedback_tf_template = """
           "label": "u"
         }
       ]
+    },
+    {
+      "id": "transfer_function_1769112492212",
+      "type": "transfer_function",
+      "position": {
+        "x": 147.98514262269015,
+        "y": 157.0
+      },
+      "label": "reference_shaping",
+      "flipped": false,
+      "custom_latex": "F(s)",
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "numerator",
+          "value": [
+            1
+          ],
+          "expression": null
+        },
+        {
+          "name": "denominator",
+          "value": 1,
+          "expression": "1"
+        }
+      ],
+      "ports": [
+        {
+          "id": "in",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        }
+      ]
     }
   ],
   "connections": [
-    {
-      "id": "conn_1769102595204",
-      "source_block_id": "io_marker_1769102540105",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102547306",
-      "target_port_id": "in1",
-      "waypoints": [
-        {
-          "x": 277.8586489058141,
-          "y": 182.0007595761906
-        },
-        {
-          "x": 277.8586489058141,
-          "y": 182.0007595761906
-        }
-      ],
-      "label": "r",
-      "label_visible": true
-    },
     {
       "id": "conn_1769102596971",
       "source_block_id": "sum_1769102547306",
@@ -359,31 +773,61 @@ feedback_tf_template = """
           "y": 69.6542071715903
         }
       ],
-      "label": "d",
+      "label": "n",
       "label_visible": true
     },
     {
-      "id": "conn_1769105111328",
+      "id": "conn_1769112467161",
       "source_block_id": "sum_1769105068595",
       "source_port_id": "out",
       "target_block_id": "sum_1769102547306",
-      "target_port_id": "in2",
+      "target_port_id": "in3",
       "waypoints": [
         {
-          "x": 863.9531372296697,
-          "y": 182.2599835427484
+          "x": 863.9532031002068,
+          "y": 182.26052807318874
         },
         {
-          "x": 863.9531372296697,
-          "y": 272.93570431591763
+          "x": 863.9532031002068,
+          "y": 282.5349047202021
         },
         {
-          "x": 338.99999274425363,
-          "y": 272.93570431591763
+          "x": 338.99999287922856,
+          "y": 282.5349047202021
         }
       ],
       "label": null,
       "label_visible": false
+    },
+    {
+      "id": "conn_1769112479077",
+      "source_block_id": "io_marker_1769112438327",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102547306",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "d",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112495012",
+      "source_block_id": "transfer_function_1769112492212",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102547306",
+      "target_port_id": "in2",
+      "waypoints": [],
+      "label": null,
+      "label_visible": false
+    },
+    {
+      "id": "conn_1769112499045",
+      "source_block_id": "io_marker_1769102540105",
+      "source_port_id": "out",
+      "target_block_id": "transfer_function_1769112492212",
+      "target_port_id": "in",
+      "waypoints": [],
+      "label": "r",
+      "label_visible": true
     }
   ],
   "theme": null
@@ -398,7 +842,7 @@ feedback_ss_template = """
       "id": "io_marker_1769102540105",
       "type": "io_marker",
       "position": {
-        "x": 184.71724307551472,
+        "x": -20.718489400001502,
         "y": 166.0
       },
       "label": "ref",
@@ -414,13 +858,13 @@ feedback_ss_template = """
           "expression": null
         },
         {
-          "name": "index",
-          "value": 0,
+          "name": "label",
+          "value": "u",
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 0,
           "expression": null
         }
       ],
@@ -449,7 +893,7 @@ feedback_ss_template = """
         {
           "name": "signs",
           "value": [
-            "|",
+            "+",
             "+",
             "-"
           ],
@@ -457,6 +901,11 @@ feedback_ss_template = """
         }
       ],
       "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        },
         {
           "id": "in1",
           "type": "input",
@@ -468,8 +917,8 @@ feedback_ss_template = """
           "label": null
         },
         {
-          "id": "out",
-          "type": "output",
+          "id": "in3",
+          "type": "input",
           "label": null
         }
       ]
@@ -534,11 +983,6 @@ feedback_ss_template = """
         {
           "name": "marker_type",
           "value": "output",
-          "expression": null
-        },
-        {
-          "name": "index",
-          "value": 0,
           "expression": null
         },
         {
@@ -677,6 +1121,82 @@ feedback_ss_template = """
         "x": 645.0,
         "y": 42.0
       },
+      "label": "noise",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 2,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "transfer_function_1769112585529",
+      "type": "transfer_function",
+      "position": {
+        "x": 129.66275576166487,
+        "y": 157.0
+      },
+      "label": "reference_shaping",
+      "flipped": false,
+      "custom_latex": "F(s)",
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "numerator",
+          "value": 1,
+          "expression": null
+        },
+        {
+          "name": "denominator",
+          "value": 1,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769112712948",
+      "type": "io_marker",
+      "position": {
+        "x": 154.41137037928974,
+        "y": 38.48817753742151
+      },
       "label": "disturbance",
       "flipped": false,
       "custom_latex": null,
@@ -690,13 +1210,13 @@ feedback_ss_template = """
           "expression": null
         },
         {
-          "name": "index",
-          "value": 1,
+          "name": "label",
+          "value": "u",
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 1,
           "expression": null
         }
       ],
@@ -710,25 +1230,6 @@ feedback_ss_template = """
     }
   ],
   "connections": [
-    {
-      "id": "conn_1769102595204",
-      "source_block_id": "io_marker_1769102540105",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102547306",
-      "target_port_id": "in1",
-      "waypoints": [
-        {
-          "x": 277.8586489058141,
-          "y": 182.0007595761906
-        },
-        {
-          "x": 277.8586489058141,
-          "y": 182.0007595761906
-        }
-      ],
-      "label": "r",
-      "label_visible": true
-    },
     {
       "id": "conn_1769102596971",
       "source_block_id": "sum_1769102547306",
@@ -785,31 +1286,61 @@ feedback_ss_template = """
       "target_block_id": "sum_1769105176411",
       "target_port_id": "in1",
       "waypoints": [],
-      "label": "d",
+      "label": "n",
       "label_visible": true
     },
     {
-      "id": "conn_1769105206929",
-      "source_block_id": "sum_1769105176411",
+      "id": "conn_1769112597997",
+      "source_block_id": "io_marker_1769102540105",
+      "source_port_id": "out",
+      "target_block_id": "transfer_function_1769112585529",
+      "target_port_id": "in",
+      "waypoints": [],
+      "label": "r",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112704664",
+      "source_block_id": "transfer_function_1769112585529",
       "source_port_id": "out",
       "target_block_id": "sum_1769102547306",
       "target_port_id": "in2",
+      "waypoints": [],
+      "label": null,
+      "label_visible": false
+    },
+    {
+      "id": "conn_1769112709248",
+      "source_block_id": "sum_1769105176411",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102547306",
+      "target_port_id": "in3",
       "waypoints": [
         {
-          "x": 887.0,
-          "y": 182.0
+          "x": 886.9999470490217,
+          "y": 182.00015162327549
         },
         {
-          "x": 887.0,
-          "y": 275.0
+          "x": 886.9999470490217,
+          "y": 274.8493182608869
         },
         {
-          "x": 339.0,
-          "y": 275.0
+          "x": 339.00000073712914,
+          "y": 274.8493182608869
         }
       ],
       "label": null,
       "label_visible": false
+    },
+    {
+      "id": "conn_1769112720747",
+      "source_block_id": "io_marker_1769112712948",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102547306",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "d",
+      "label_visible": true
     }
   ],
   "theme": null
@@ -824,8 +1355,8 @@ feedforward_ss_template = """
       "id": "io_marker_1769102540105",
       "type": "io_marker",
       "position": {
-        "x": 49.451299563914574,
-        "y": 50.60783804836137
+        "x": -131.63271358428148,
+        "y": 58.42401563813837
       },
       "label": "ref",
       "flipped": false,
@@ -862,7 +1393,7 @@ feedforward_ss_template = """
       "id": "sum_1769102547306",
       "type": "sum",
       "position": {
-        "x": 220.0715978892689,
+        "x": -10.46979370385418,
         "y": 154.0
       },
       "label": "sum_1769102547306",
@@ -904,7 +1435,7 @@ feedforward_ss_template = """
       "id": "transfer_function_1769102555888",
       "type": "transfer_function",
       "position": {
-        "x": 331.9539545719116,
+        "x": 109.34708434553534,
         "y": 157.0
       },
       "label": "feedback",
@@ -947,7 +1478,7 @@ feedforward_ss_template = """
       "id": "io_marker_1769102614871",
       "type": "io_marker",
       "position": {
-        "x": 957.4541110881123,
+        "x": 916.4374082642759,
         "y": 166.0
       },
       "label": "output",
@@ -963,13 +1494,13 @@ feedforward_ss_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "y",
+          "name": "index",
+          "value": 0,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 0,
+          "name": "label",
+          "value": "y",
           "expression": null
         }
       ],
@@ -985,7 +1516,7 @@ feedforward_ss_template = """
       "id": "state_space_1769102736336",
       "type": "state_space",
       "position": {
-        "x": 627.2234383321918,
+        "x": 569.8000543788206,
         "y": 152.0
       },
       "label": "plant",
@@ -1058,8 +1589,8 @@ feedforward_ss_template = """
       "id": "transfer_function_1769102803187",
       "type": "transfer_function",
       "position": {
-        "x": 331.2642757748997,
-        "y": 41.60783804836137
+        "x": 106.00835790115087,
+        "y": 49.42401563813837
       },
       "label": "feedforward",
       "flipped": false,
@@ -1101,7 +1632,7 @@ feedforward_ss_template = """
       "id": "sum_1769102922603",
       "type": "sum",
       "position": {
-        "x": 501.5685791730227,
+        "x": 440.20578052341557,
         "y": 154.0
       },
       "label": "sum_1769102922603",
@@ -1123,6 +1654,11 @@ feedforward_ss_template = """
       ],
       "ports": [
         {
+          "id": "out",
+          "type": "output",
+          "label": null
+        },
+        {
           "id": "in1",
           "type": "input",
           "label": null
@@ -1131,11 +1667,6 @@ feedforward_ss_template = """
           "id": "in2",
           "type": "input",
           "label": null
-        },
-        {
-          "id": "out",
-          "type": "output",
-          "label": null
         }
       ]
     },
@@ -1143,7 +1674,7 @@ feedforward_ss_template = """
       "id": "sum_1769105252127",
       "type": "sum",
       "position": {
-        "x": 820.6389171034264,
+        "x": 761.848309722594,
         "y": 154.0
       },
       "label": "sum_1769105252127",
@@ -1185,8 +1716,46 @@ feedforward_ss_template = """
       "id": "io_marker_1769105261377",
       "type": "io_marker",
       "position": {
-        "x": 657.7853448707134,
-        "y": 49.65358211475905
+        "x": 672.1293363206678,
+        "y": 59.05818256954808
+      },
+      "label": "noise",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 2,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769112847751",
+      "type": "io_marker",
+      "position": {
+        "x": 355.2796378054232,
+        "y": 60.339578438708486
       },
       "label": "disturbance",
       "flipped": false,
@@ -1201,13 +1770,13 @@ feedforward_ss_template = """
           "expression": null
         },
         {
-          "name": "index",
-          "value": 1,
+          "name": "label",
+          "value": "u",
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 1,
           "expression": null
         }
       ],
@@ -1216,6 +1785,48 @@ feedforward_ss_template = """
           "id": "out",
           "type": "output",
           "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "sum_1769112947819",
+      "type": "sum",
+      "position": {
+        "x": 280.173751711254,
+        "y": 154.0
+      },
+      "label": "sum_1769112947819",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": false,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "signs",
+          "value": [
+            "+",
+            "+",
+            "|"
+          ],
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in1",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "in2",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
         }
       ]
     }
@@ -1229,54 +1840,6 @@ feedforward_ss_template = """
       "target_port_id": "in",
       "waypoints": [],
       "label": "e",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769102926686",
-      "source_block_id": "transfer_function_1769102555888",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102922603",
-      "target_port_id": "in2",
-      "waypoints": [
-        {
-          "x": 466.76125743406,
-          "y": 182.0005484117843
-        },
-        {
-          "x": 466.76125743406,
-          "y": 182.0005484117843
-        }
-      ],
-      "label": "u_fb",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769102929737",
-      "source_block_id": "sum_1769102922603",
-      "source_port_id": "out",
-      "target_block_id": "state_space_1769102736336",
-      "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 592.3960078498353,
-          "y": 182.00041533431335
-        },
-        {
-          "x": 592.3960078498353,
-          "y": 182.00041533431335
-        }
-      ],
-      "label": "u",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769102942836",
-      "source_block_id": "transfer_function_1769102803187",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102922603",
-      "target_port_id": "in1",
-      "waypoints": [],
-      "label": "u_ff",
       "label_visible": true
     },
     {
@@ -1315,16 +1878,7 @@ feedforward_ss_template = """
       "source_port_id": "out",
       "target_block_id": "io_marker_1769102614871",
       "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 917.0464929299028,
-          "y": 181.99989931581985
-        },
-        {
-          "x": 917.0464929299028,
-          "y": 181.99989931581985
-        }
-      ],
+      "waypoints": [],
       "label": "y",
       "label_visible": true
     },
@@ -1334,13 +1888,8 @@ feedforward_ss_template = """
       "source_port_id": "out",
       "target_block_id": "sum_1769105252127",
       "target_port_id": "in1",
-      "waypoints": [
-        {
-          "x": 848.6388959375597,
-          "y": 65.65321369941486
-        }
-      ],
-      "label": "d",
+      "waypoints": [],
+      "label": "n",
       "label_visible": true
     },
     {
@@ -1351,18 +1900,77 @@ feedforward_ss_template = """
       "target_port_id": "in2",
       "waypoints": [
         {
-          "x": 898.6389193935538,
-          "y": 182.00053546232806
+          "x": 839.8483226622534,
+          "y": 181.99986528405304
         },
         {
-          "x": 898.6389193935538,
-          "y": 265.8740224244129
+          "x": 839.8483226622534,
+          "y": 262.17464544456
         },
         {
-          "x": 248.07157672340227,
-          "y": 265.8740224244129
+          "x": 17.53021170646083,
+          "y": 262.17464544456
         }
       ],
+      "label": null,
+      "label_visible": false
+    },
+    {
+      "id": "conn_1769112852867",
+      "source_block_id": "io_marker_1769112847751",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102922603",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "d",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112953201",
+      "source_block_id": "transfer_function_1769102555888",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769112947819",
+      "target_port_id": "in2",
+      "waypoints": [
+        {
+          "x": 244.7604067119579,
+          "y": 181.99940169064823
+        },
+        {
+          "x": 244.7604067119579,
+          "y": 181.99940169064823
+        }
+      ],
+      "label": "u_ff",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112968418",
+      "source_block_id": "transfer_function_1769102803187",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769112947819",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "u_ff",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112975389",
+      "source_block_id": "sum_1769112947819",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102922603",
+      "target_port_id": "in2",
+      "waypoints": [],
+      "label": "u",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769113019019",
+      "source_block_id": "sum_1769102922603",
+      "source_port_id": "out",
+      "target_block_id": "state_space_1769102736336",
+      "target_port_id": "in",
+      "waypoints": [],
       "label": null,
       "label_visible": false
     }
@@ -1379,8 +1987,8 @@ feedforward_tf_template = """
       "id": "io_marker_1769102540105",
       "type": "io_marker",
       "position": {
-        "x": 49.451299563914574,
-        "y": 50.60783804836137
+        "x": -131.63271358428148,
+        "y": 58.42401563813837
       },
       "label": "ref",
       "flipped": false,
@@ -1417,7 +2025,7 @@ feedforward_tf_template = """
       "id": "sum_1769102547306",
       "type": "sum",
       "position": {
-        "x": 220.0715978892689,
+        "x": -10.46979370385418,
         "y": 154.0
       },
       "label": "sum_1769102547306",
@@ -1459,7 +2067,7 @@ feedforward_tf_template = """
       "id": "transfer_function_1769102555888",
       "type": "transfer_function",
       "position": {
-        "x": 324.09307076279043,
+        "x": 109.34708434553534,
         "y": 157.0
       },
       "label": "feedback",
@@ -1502,7 +2110,7 @@ feedforward_tf_template = """
       "id": "io_marker_1769102614871",
       "type": "io_marker",
       "position": {
-        "x": 923.2951376397539,
+        "x": 916.4374082642759,
         "y": 166.0
       },
       "label": "output",
@@ -1540,8 +2148,8 @@ feedforward_tf_template = """
       "id": "transfer_function_1769102803187",
       "type": "transfer_function",
       "position": {
-        "x": 331.2642757748997,
-        "y": 41.60783804836137
+        "x": 106.00835790115087,
+        "y": 49.42401563813837
       },
       "label": "feedforward",
       "flipped": false,
@@ -1583,10 +2191,52 @@ feedforward_tf_template = """
       "id": "sum_1769102922603",
       "type": "sum",
       "position": {
-        "x": 501.5685791730227,
+        "x": 440.20578052341557,
         "y": 154.0
       },
       "label": "sum_1769102922603",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": false,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "signs",
+          "value": [
+            "+",
+            "+",
+            "|"
+          ],
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        },
+        {
+          "id": "in1",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "in2",
+          "type": "input",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "sum_1769105252127",
+      "type": "sum",
+      "position": {
+        "x": 761.848309722594,
+        "y": 154.0
+      },
+      "label": "sum_1769105252127",
       "flipped": false,
       "custom_latex": null,
       "label_visible": false,
@@ -1622,10 +2272,128 @@ feedforward_tf_template = """
       ]
     },
     {
-      "id": "transfer_function_1769103013153",
+      "id": "io_marker_1769105261377",
+      "type": "io_marker",
+      "position": {
+        "x": 672.1293363206678,
+        "y": 59.05818256954808
+      },
+      "label": "noise",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 2,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769112847751",
+      "type": "io_marker",
+      "position": {
+        "x": 355.2796378054232,
+        "y": 60.339578438708486
+      },
+      "label": "disturbance",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 1,
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "sum_1769112947819",
+      "type": "sum",
+      "position": {
+        "x": 280.173751711254,
+        "y": 154.0
+      },
+      "label": "sum_1769112947819",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": false,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "signs",
+          "value": [
+            "+",
+            "+",
+            "|"
+          ],
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in1",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "in2",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "transfer_function_1769113049220",
       "type": "transfer_function",
       "position": {
-        "x": 643.9450914168157,
+        "x": 583.2750405020421,
         "y": 157.0
       },
       "label": "plant",
@@ -1663,86 +2431,6 @@ feedforward_tf_template = """
           "label": null
         }
       ]
-    },
-    {
-      "id": "sum_1769105312492",
-      "type": "sum",
-      "position": {
-        "x": 806.8261394737924,
-        "y": 154.0
-      },
-      "label": "sum_1769105312492",
-      "flipped": false,
-      "custom_latex": null,
-      "label_visible": false,
-      "width": null,
-      "height": null,
-      "parameters": [
-        {
-          "name": "signs",
-          "value": [
-            "+",
-            "+",
-            "|"
-          ],
-          "expression": null
-        }
-      ],
-      "ports": [
-        {
-          "id": "in1",
-          "type": "input",
-          "label": null
-        },
-        {
-          "id": "in2",
-          "type": "input",
-          "label": null
-        },
-        {
-          "id": "out",
-          "type": "output",
-          "label": null
-        }
-      ]
-    },
-    {
-      "id": "io_marker_1769105320258",
-      "type": "io_marker",
-      "position": {
-        "x": 664.1394412336331,
-        "y": 56.15324730260363
-      },
-      "label": "disturbance",
-      "flipped": false,
-      "custom_latex": null,
-      "label_visible": true,
-      "width": null,
-      "height": null,
-      "parameters": [
-        {
-          "name": "marker_type",
-          "value": "input",
-          "expression": null
-        },
-        {
-          "name": "index",
-          "value": 1,
-          "expression": null
-        },
-        {
-          "name": "label",
-          "value": "u",
-          "expression": null
-        }
-      ],
-      "ports": [
-        {
-          "id": "out",
-          "type": "output",
-          "label": "u"
-        }
-      ]
     }
   ],
   "connections": [
@@ -1754,26 +2442,6 @@ feedforward_tf_template = """
       "target_port_id": "in",
       "waypoints": [],
       "label": "e",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769102926686",
-      "source_block_id": "transfer_function_1769102555888",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102922603",
-      "target_port_id": "in2",
-      "waypoints": [],
-      "label": "u_fb",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769102942836",
-      "source_block_id": "transfer_function_1769102803187",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102922603",
-      "target_port_id": "in1",
-      "waypoints": [],
-      "label": "u_ff",
       "label_visible": true
     },
     {
@@ -1797,83 +2465,114 @@ feedforward_tf_template = """
       "label_visible": false
     },
     {
-      "id": "conn_1769103016552",
-      "source_block_id": "sum_1769102922603",
+      "id": "conn_1769105258994",
+      "source_block_id": "sum_1769105252127",
       "source_port_id": "out",
-      "target_block_id": "transfer_function_1769103013153",
+      "target_block_id": "io_marker_1769102614871",
       "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 600.7568270924306,
-          "y": 182.00005177125237
-        },
-        {
-          "x": 600.7568270924306,
-          "y": 182.00005177125237
-        }
-      ],
-      "label": "u",
+      "waypoints": [],
+      "label": "y",
       "label_visible": true
     },
     {
-      "id": "conn_1769105323293",
-      "source_block_id": "io_marker_1769105320258",
+      "id": "conn_1769105264427",
+      "source_block_id": "io_marker_1769105261377",
       "source_port_id": "out",
-      "target_block_id": "sum_1769105312492",
+      "target_block_id": "sum_1769105252127",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "n",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769105280735",
+      "source_block_id": "sum_1769105252127",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102547306",
+      "target_port_id": "in2",
+      "waypoints": [
+        {
+          "x": 839.8483226622534,
+          "y": 181.99986528405304
+        },
+        {
+          "x": 839.8483226622534,
+          "y": 262.17464544456
+        },
+        {
+          "x": 17.53021170646083,
+          "y": 262.17464544456
+        }
+      ],
+      "label": null,
+      "label_visible": false
+    },
+    {
+      "id": "conn_1769112852867",
+      "source_block_id": "io_marker_1769112847751",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102922603",
       "target_port_id": "in1",
       "waypoints": [],
       "label": "d",
       "label_visible": true
     },
     {
-      "id": "conn_1769105335309",
-      "source_block_id": "transfer_function_1769103013153",
+      "id": "conn_1769112953201",
+      "source_block_id": "transfer_function_1769102555888",
       "source_port_id": "out",
-      "target_block_id": "sum_1769105312492",
+      "target_block_id": "sum_1769112947819",
       "target_port_id": "in2",
+      "waypoints": [
+        {
+          "x": 244.7604067119579,
+          "y": 181.99940169064823
+        },
+        {
+          "x": 244.7604067119579,
+          "y": 181.99940169064823
+        }
+      ],
+      "label": "u_ff",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112968418",
+      "source_block_id": "transfer_function_1769102803187",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769112947819",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "u_ff",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769112975389",
+      "source_block_id": "sum_1769112947819",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102922603",
+      "target_port_id": "in2",
+      "waypoints": [],
+      "label": "u",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769113052836",
+      "source_block_id": "sum_1769102922603",
+      "source_port_id": "out",
+      "target_block_id": "transfer_function_1769113049220",
+      "target_port_id": "in",
       "waypoints": [],
       "label": null,
       "label_visible": false
     },
     {
-      "id": "conn_1769105338560",
-      "source_block_id": "sum_1769105312492",
+      "id": "conn_1769113054420",
+      "source_block_id": "transfer_function_1769113049220",
       "source_port_id": "out",
-      "target_block_id": "io_marker_1769102614871",
-      "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 893.06065965301,
-          "y": 181.99977328172633
-        },
-        {
-          "x": 893.06065965301,
-          "y": 181.99977328172633
-        }
-      ],
-      "label": "y",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769105342780",
-      "source_block_id": "sum_1769105312492",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102547306",
+      "target_block_id": "sum_1769105252127",
       "target_port_id": "in2",
-      "waypoints": [
-        {
-          "x": 884.8261863744586,
-          "y": 181.99977328172633
-        },
-        {
-          "x": 882.8261394737924,
-          "y": 265.641201335666
-        },
-        {
-          "x": 248.0716543875787,
-          "y": 265.641201335666
-        }
-      ],
+      "waypoints": [],
       "label": null,
       "label_visible": false
     }
@@ -1970,7 +2669,7 @@ filtered_tf_template = """
       "id": "transfer_function_1769102555888",
       "type": "transfer_function",
       "position": {
-        "x": 324.09307076279043,
+        "x": 340.0004316263033,
         "y": 157.0
       },
       "label": "feedback",
@@ -2013,7 +2712,7 @@ filtered_tf_template = """
       "id": "io_marker_1769102614871",
       "type": "io_marker",
       "position": {
-        "x": 948.1079174770715,
+        "x": 1105.590790025849,
         "y": 166.0
       },
       "label": "output",
@@ -2136,7 +2835,7 @@ filtered_tf_template = """
       "id": "transfer_function_1769103013153",
       "type": "transfer_function",
       "position": {
-        "x": 643.9450914168157,
+        "x": 790.2928113611342,
         "y": 157.0
       },
       "label": "plant",
@@ -2265,10 +2964,10 @@ filtered_tf_template = """
       "id": "io_marker_1769105385044",
       "type": "io_marker",
       "position": {
-        "x": 647.7283395007272,
-        "y": 51.38264894100939
+        "x": 840.207405949233,
+        "y": 45.01970459560471
       },
-      "label": "disturbance",
+      "label": "noise",
       "flipped": false,
       "custom_latex": null,
       "label_visible": true,
@@ -2303,10 +3002,90 @@ filtered_tf_template = """
       "id": "sum_1769105399078",
       "type": "sum",
       "position": {
-        "x": 809.0843206504884,
+        "x": 945.8876240766991,
         "y": 154.0
       },
       "label": "sum_1769105399078",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": false,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "signs",
+          "value": [
+            "+",
+            "+",
+            "|"
+          ],
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in1",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "in2",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769113120287",
+      "type": "io_marker",
+      "position": {
+        "x": 563.3750090112035,
+        "y": 50.47080788297899
+      },
+      "label": "disturbance",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 2,
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
+        }
+      ]
+    },
+    {
+      "id": "sum_1769113134271",
+      "type": "sum",
+      "position": {
+        "x": 641.3210772424165,
+        "y": 153.8686534958124
+      },
+      "label": "sum_1769113134271",
       "flipped": false,
       "custom_latex": null,
       "label_visible": false,
@@ -2354,16 +3133,6 @@ filtered_tf_template = """
       "label_visible": true
     },
     {
-      "id": "conn_1769102926686",
-      "source_block_id": "transfer_function_1769102555888",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102922603",
-      "target_port_id": "in2",
-      "waypoints": [],
-      "label": "u_fb",
-      "label_visible": true
-    },
-    {
       "id": "conn_1769102942836",
       "source_block_id": "transfer_function_1769102803187",
       "source_port_id": "out",
@@ -2371,25 +3140,6 @@ filtered_tf_template = """
       "target_port_id": "in1",
       "waypoints": [],
       "label": "u_ff",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769103016552",
-      "source_block_id": "sum_1769102922603",
-      "source_port_id": "out",
-      "target_block_id": "transfer_function_1769103013153",
-      "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 600.7568270924306,
-          "y": 182.00005177125237
-        },
-        {
-          "x": 600.7568270924306,
-          "y": 182.00005177125237
-        }
-      ],
-      "label": "u",
       "label_visible": true
     },
     {
@@ -2453,16 +3203,7 @@ filtered_tf_template = """
       "source_port_id": "out",
       "target_block_id": "io_marker_1769102614871",
       "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 906.5961343899528,
-          "y": 181.9996697685248
-        },
-        {
-          "x": 906.5961343899528,
-          "y": 181.9996697685248
-        }
-      ],
+      "waypoints": [],
       "label": "y",
       "label_visible": true
     },
@@ -2472,13 +3213,8 @@ filtered_tf_template = """
       "source_port_id": "out",
       "target_block_id": "sum_1769105399078",
       "target_port_id": "in1",
-      "waypoints": [
-        {
-          "x": 837.0843359766612,
-          "y": 67.3824838252718
-        }
-      ],
-      "label": "d",
+      "waypoints": [],
+      "label": "n",
       "label_visible": true
     },
     {
@@ -2490,6 +3226,55 @@ filtered_tf_template = """
       "waypoints": [],
       "label": null,
       "label_visible": false
+    },
+    {
+      "id": "conn_1769113138371",
+      "source_block_id": "sum_1769102922603",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769113134271",
+      "target_port_id": "in2",
+      "waypoints": [
+        {
+          "x": 599.4448470200318,
+          "y": 182.00084408405448
+        },
+        {
+          "x": 599.4448470200318,
+          "y": 182.00084408405448
+        }
+      ],
+      "label": "u",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769113140119",
+      "source_block_id": "sum_1769113134271",
+      "source_port_id": "out",
+      "target_block_id": "transfer_function_1769103013153",
+      "target_port_id": "in",
+      "waypoints": [],
+      "label": null,
+      "label_visible": false
+    },
+    {
+      "id": "conn_1769113143938",
+      "source_block_id": "io_marker_1769113120287",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769113134271",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "d",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769113156872",
+      "source_block_id": "transfer_function_1769102555888",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102922603",
+      "target_port_id": "in2",
+      "waypoints": [],
+      "label": "u_fb",
+      "label_visible": true
     }
   ],
   "theme": null
@@ -2504,7 +3289,7 @@ cascaded_tf_template = """
       "id": "io_marker_1769104376714",
       "type": "io_marker",
       "position": {
-        "x": -97.95164940271401,
+        "x": -240.5905970616593,
         "y": 152.0
       },
       "label": "ref",
@@ -2520,13 +3305,13 @@ cascaded_tf_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 0,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 0,
+          "name": "label",
+          "value": "u",
           "expression": null
         }
       ],
@@ -2542,7 +3327,7 @@ cascaded_tf_template = """
       "id": "sum_1769104378916",
       "type": "sum",
       "position": {
-        "x": 96.0,
+        "x": -104.06501749566351,
         "y": 140.0
       },
       "label": "sum_1769104378916",
@@ -2584,7 +3369,7 @@ cascaded_tf_template = """
       "id": "transfer_function_1769104391099",
       "type": "transfer_function",
       "position": {
-        "x": 212.0,
+        "x": 34.16442889274356,
         "y": 143.0
       },
       "label": "transfer_function_1769104391099",
@@ -2627,7 +3412,7 @@ cascaded_tf_template = """
       "id": "sum_1769104411915",
       "type": "sum",
       "position": {
-        "x": 375.6373705203551,
+        "x": 292.27694656382863,
         "y": 140.0
       },
       "label": "sum_1769104411915",
@@ -2669,7 +3454,7 @@ cascaded_tf_template = """
       "id": "transfer_function_1769104432548",
       "type": "transfer_function",
       "position": {
-        "x": 506.26814342985404,
+        "x": 409.02688281546693,
         "y": 143.0
       },
       "label": "transfer_function_1769104432548",
@@ -2800,7 +3585,7 @@ cascaded_tf_template = """
         "x": 709.6746453937349,
         "y": 38.20662152260047
       },
-      "label": "disturbance_inner",
+      "label": "noise_inner",
       "flipped": false,
       "custom_latex": null,
       "label_visible": true,
@@ -2813,13 +3598,13 @@ cascaded_tf_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 2,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 2,
+          "name": "label",
+          "value": "u",
           "expression": null
         }
       ],
@@ -2835,7 +3620,7 @@ cascaded_tf_template = """
       "id": "transfer_function_1769104565181",
       "type": "transfer_function",
       "position": {
-        "x": 993.947123466176,
+        "x": 990.9726020194248,
         "y": 143.0
       },
       "label": "transfer_function_1769104565181",
@@ -2923,7 +3708,7 @@ cascaded_tf_template = """
         "x": 1012.0921752580343,
         "y": 41.23079682124262
       },
-      "label": "disturbance_outer",
+      "label": "noise_outer",
       "flipped": false,
       "custom_latex": null,
       "label_visible": true,
@@ -2936,13 +3721,13 @@ cascaded_tf_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "u",
+          "name": "index",
+          "value": 1,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 1,
+          "name": "label",
+          "value": "u",
           "expression": null
         }
       ],
@@ -2974,13 +3759,13 @@ cascaded_tf_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "y",
+          "name": "index",
+          "value": 0,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 0,
+          "name": "label",
+          "value": "y",
           "expression": null
         }
       ],
@@ -3012,13 +3797,13 @@ cascaded_tf_template = """
           "expression": null
         },
         {
-          "name": "label",
-          "value": "y",
+          "name": "index",
+          "value": 1,
           "expression": null
         },
         {
-          "name": "index",
-          "value": 1,
+          "name": "label",
+          "value": "y",
           "expression": null
         }
       ],
@@ -3027,6 +3812,86 @@ cascaded_tf_template = """
           "id": "in",
           "type": "input",
           "label": "y"
+        }
+      ]
+    },
+    {
+      "id": "sum_1769113250055",
+      "type": "sum",
+      "position": {
+        "x": 574.1794264976029,
+        "y": 140.0
+      },
+      "label": "sum_1769113250055",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": false,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "signs",
+          "value": [
+            "+",
+            "+",
+            "|"
+          ],
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "in1",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "in2",
+          "type": "input",
+          "label": null
+        },
+        {
+          "id": "out",
+          "type": "output",
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "io_marker_1769113271705",
+      "type": "io_marker",
+      "position": {
+        "x": 430.81897954233045,
+        "y": 32.86969681390201
+      },
+      "label": "disturbance_inner",
+      "flipped": false,
+      "custom_latex": null,
+      "label_visible": true,
+      "width": null,
+      "height": null,
+      "parameters": [
+        {
+          "name": "marker_type",
+          "value": "input",
+          "expression": null
+        },
+        {
+          "name": "index",
+          "value": 3,
+          "expression": null
+        },
+        {
+          "name": "label",
+          "value": "u",
+          "expression": null
+        }
+      ],
+      "ports": [
+        {
+          "id": "out",
+          "type": "output",
+          "label": "u"
         }
       ]
     }
@@ -3038,16 +3903,7 @@ cascaded_tf_template = """
       "source_port_id": "out",
       "target_block_id": "sum_1769104378916",
       "target_port_id": "in1",
-      "waypoints": [
-        {
-          "x": 29.024188624660265,
-          "y": 168.0007249518778
-        },
-        {
-          "x": 29.024188624660265,
-          "y": 168.0007249518778
-        }
-      ],
+      "waypoints": [],
       "label": "r1",
       "label_visible": true
     },
@@ -3057,16 +3913,7 @@ cascaded_tf_template = """
       "source_port_id": "out",
       "target_block_id": "transfer_function_1769104391099",
       "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 181.999976332301,
-          "y": 167.9987036540806
-        },
-        {
-          "x": 181.999976332301,
-          "y": 167.9987036540806
-        }
-      ],
+      "waypoints": [],
       "label": "e1",
       "label_visible": true
     },
@@ -3076,16 +3923,7 @@ cascaded_tf_template = """
       "source_port_id": "out",
       "target_block_id": "sum_1769104411915",
       "target_port_id": "in1",
-      "waypoints": [
-        {
-          "x": 343.81866471882614,
-          "y": 167.99886569732053
-        },
-        {
-          "x": 343.81866471882614,
-          "y": 167.99886569732053
-        }
-      ],
+      "waypoints": [],
       "label": "r2",
       "label_visible": true
     },
@@ -3095,27 +3933,8 @@ cascaded_tf_template = """
       "source_port_id": "out",
       "target_block_id": "transfer_function_1769104432548",
       "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 468.95277438623134,
-          "y": 168.0002314542869
-        },
-        {
-          "x": 468.95277438623134,
-          "y": 168.0002314542869
-        }
-      ],
-      "label": "e2",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769104526148",
-      "source_block_id": "transfer_function_1769104432548",
-      "source_port_id": "out",
-      "target_block_id": "transfer_function_1769104459099",
-      "target_port_id": "in",
       "waypoints": [],
-      "label": "u2",
+      "label": "e2",
       "label_visible": true
     },
     {
@@ -3145,16 +3964,16 @@ cascaded_tf_template = """
       "target_port_id": "in2",
       "waypoints": [
         {
-          "x": 929.8727322265489,
-          "y": 167.99984589069058
+          "x": 929.872804556414,
+          "y": 168.00051625622424
         },
         {
-          "x": 929.8727322265489,
-          "y": 253.18716750434473
+          "x": 929.872804556414,
+          "y": 253.19664370954445
         },
         {
-          "x": 403.6373659117468,
-          "y": 253.18716750434473
+          "x": 320.2769540279223,
+          "y": 253.19664370954445
         }
       ],
       "label": null,
@@ -3172,7 +3991,7 @@ cascaded_tf_template = """
           "y": 54.20691635014241
         }
       ],
-      "label": "d2",
+      "label": "n2",
       "label_visible": true
     },
     {
@@ -3181,16 +4000,7 @@ cascaded_tf_template = """
       "source_port_id": "out",
       "target_block_id": "transfer_function_1769104565181",
       "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 950.9098526593604,
-          "y": 167.99939559589706
-        },
-        {
-          "x": 950.9098526593604,
-          "y": 167.99939559589706
-        }
-      ],
+      "waypoints": [],
       "label": "y2",
       "label_visible": true
     },
@@ -3200,16 +4010,7 @@ cascaded_tf_template = """
       "source_port_id": "out",
       "target_block_id": "sum_1769104582747",
       "target_port_id": "in2",
-      "waypoints": [
-        {
-          "x": 1127.8679642844204,
-          "y": 167.9999806640506
-        },
-        {
-          "x": 1127.8679642844204,
-          "y": 167.9999806640506
-        }
-      ],
+      "waypoints": [],
       "label": null,
       "label_visible": false
     },
@@ -3220,7 +4021,7 @@ cascaded_tf_template = """
       "target_block_id": "sum_1769104582747",
       "target_port_id": "in1",
       "waypoints": [],
-      "label": "d1",
+      "label": "n1",
       "label_visible": true
     },
     {
@@ -3231,16 +4032,20 @@ cascaded_tf_template = """
       "target_port_id": "in2",
       "waypoints": [
         {
-          "x": 1239.7889198760483,
-          "y": 167.9999732549366
+          "x": 1239.7888728020953,
+          "y": 168.00051625622424
         },
         {
-          "x": 1237.788852540862,
-          "y": 310.23667561938794
+          "x": 1239.7888728020953,
+          "y": 341.0815860618435
         },
         {
-          "x": 124.00001940021218,
-          "y": 310.23667561938794
+          "x": -76.0649817653404,
+          "y": 341.0815860618435
+        },
+        {
+          "x": -76.0649817653404,
+          "y": 218.0000202612333
         }
       ],
       "label": null,
@@ -3274,8 +4079,49 @@ cascaded_tf_template = """
       ],
       "label": null,
       "label_visible": false
+    },
+    {
+      "id": "conn_1769113259257",
+      "source_block_id": "transfer_function_1769104432548",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769113250055",
+      "target_port_id": "in2",
+      "waypoints": [],
+      "label": "u2",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769113263656",
+      "source_block_id": "sum_1769113250055",
+      "source_port_id": "out",
+      "target_block_id": "transfer_function_1769104459099",
+      "target_port_id": "in",
+      "waypoints": [],
+      "label": null,
+      "label_visible": false
+    },
+    {
+      "id": "conn_1769113281839",
+      "source_block_id": "io_marker_1769113271705",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769113250055",
+      "target_port_id": "in1",
+      "waypoints": [],
+      "label": "d2",
+      "label_visible": true
     }
   ],
   "theme": null
 }
 """
+
+DIAGRAM_TEMPLATES = {
+    "open_loop_tf": open_loop_tf_template,
+    "open_loop_ss": open_loop_ss_template,
+    "feedback_tf": feedback_tf_template,
+    "feedback_ss": feedback_ss_template,
+    "feedforward_tf": feedforward_tf_template,
+    "feedforward_ss": feedforward_ss_template,
+    "filtered": filtered_tf_template,
+    "cascaded": cascaded_tf_template,
+}

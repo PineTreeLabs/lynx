@@ -47,6 +47,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from lynx.blocks.base import Block
 from lynx.schema import DiagramModel
+from lynx.templates import DIAGRAM_TEMPLATES
 
 
 # Export-related exceptions
@@ -748,6 +749,32 @@ class Diagram:
         data = self.to_dict()
         with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
+
+    @classmethod
+    def from_template(cls, template_name: str) -> "Diagram":
+        """Create diagram from a named template.
+
+        Args:
+            template_name: One of 'feedback_tf', 'feedback_ss', 'feedforward_tf',
+                            'feedforward_ss', 'filtered_tf'
+
+        Returns:
+            New Diagram instance from template
+
+        Raises:
+            ValueError: If template_name not found
+        """
+
+        if template_name not in DIAGRAM_TEMPLATES:
+            valid = ", ".join(DIAGRAM_TEMPLATES.keys())
+            raise ValueError(
+                f"Unknown template '{template_name}'. Valid options: {valid}"
+            )
+
+        import json
+
+        data = json.loads(DIAGRAM_TEMPLATES[template_name])
+        return cls.from_dict(data)
 
     @classmethod
     def load(cls, filename: Union[str, Path]) -> "Diagram":
