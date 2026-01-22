@@ -132,28 +132,22 @@ export function calculateConnectionLabelPosition(
     return { x: 0, y: 0 };
   }
 
-  // Filter out routing artifacts and PORT_OFFSET extensions:
-  // 1. Remove near-zero segments (< 1px) - these are floating-point rounding errors from routing
-  // 2. Remove PORT_OFFSET extensions (first and last segments if < 25px)
+  // Exclude PORT_OFFSET extension segments (first and last) from bounding box calculation.
+  // These are the 20px perpendicular extensions from port positions.
+  // We want the label centered on the visual connection path, not including port stubs.
+  // Note: Sub-pixel segments are already filtered by the routing algorithm.
 
   const PORT_OFFSET_THRESHOLD = 25; // Slightly larger than PORT_OFFSET (20px)
-  const MIN_SEGMENT_LENGTH = 1; // Filter out sub-pixel segments
 
-  // Step 1: Remove near-zero segments (routing artifacts from waypoint dragging)
-  const nonZeroSegments = segments.filter((seg) => {
-    const length = Math.abs(seg.to.x - seg.from.x) + Math.abs(seg.to.y - seg.from.y);
-    return length >= MIN_SEGMENT_LENGTH;
-  });
+  let segmentsForBounds = segments;
 
-  let segmentsForBounds = nonZeroSegments;
-
-  // Step 2: Remove PORT_OFFSET extensions from first and last positions
-  if (nonZeroSegments.length > 1) {
-    const visibleSegments = [...nonZeroSegments];
+  // If we have multiple segments, check if first/last are short PORT_OFFSET extensions
+  if (segments.length > 1) {
+    const visibleSegments = [...segments];
 
     // Remove first segment if it's a PORT_OFFSET extension (< 25px)
-    const firstLength = Math.abs(nonZeroSegments[0].to.x - nonZeroSegments[0].from.x) +
-                       Math.abs(nonZeroSegments[0].to.y - nonZeroSegments[0].from.y);
+    const firstLength = Math.abs(segments[0].to.x - segments[0].from.x) +
+                       Math.abs(segments[0].to.y - segments[0].from.y);
     if (firstLength < PORT_OFFSET_THRESHOLD) {
       visibleSegments.shift();
     }
