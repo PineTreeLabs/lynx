@@ -1,0 +1,22 @@
+# Sphinx Documentation Dependencies
+# Pin specific versions for reproducible builds
+
+# Core Sphinx
+sphinx>=7.0,<8.0
+furo>=2024.0,<2025.0
+
+# MyST Markdown support
+myst-parser>=3.0,<4.0
+myst-nb>=1.0,<2.0
+
+# Extensions
+sphinx-design>=0.5,<1.0
+sphinx-copybutton>=0.5,<1.0
+
+# Jupyter execution dependencies
+ipykernel>=6.0
+jupyter>=1.0
+
+# Scientific computing (for examples)
+scipy>=1.10
+matplotlib>=3.7

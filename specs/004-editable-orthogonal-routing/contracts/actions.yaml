@@ -1,0 +1,131 @@
+# SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Action Contracts: Editable Orthogonal Routing
+#
+# These actions are sent from the React frontend to the Python backend
+# via the anywidget traitlet system (model.send() / _handle_action()).
+#
+# Feature: 004-editable-orthogonal-routing
+# Date: 2026-01-06
+
+actions:
+  # ===========================================================================
+  # NEW ACTION: Update Connection Routing
+  # ===========================================================================
+  updateConnectionRouting:
+    description: |
+      Update the waypoints for a connection's custom routing.
+      Called when the user finishes dragging a segment to a new position.
+
+    payload:
+      connectionId:
+        type: string
+        required: true
+        description: Unique identifier of the connection to update
+        example: "conn_1234567890"
+
+      waypoints:
+        type: array
+        required: true
+        description: |
+          Ordered list of waypoint coordinates. Empty array means reset to auto-routing.
+          Coordinates should be grid-snapped (multiples of 20px).
+        items:
+          type: object
+          properties:
+            x:
+              type: number
+              description: Absolute canvas X coordinate
+            y:
+              type: number
+              description: Absolute canvas Y coordinate
+        example:
+          - { x: 300, y: 200 }
+          - { x: 300, y: 150 }
+          - { x: 400, y: 150 }
+
+    response:
+      description: |
+        No direct response. Backend updates diagram state and syncs via traitlet.
+        The updated connection (with new waypoints) will appear in diagram_state.
+
+    side_effects:
+      - Saves current state to undo history
+      - Updates connection waypoints in diagram
+      - Syncs updated diagram_state to frontend
+
+    errors:
+      - condition: Connection ID not found
+        behavior: Log warning, no state change
+      - condition: Invalid waypoint format
+        behavior: Pydantic validation error, no state change
+
+    example_call: |
+      sendAction(model, 'updateConnectionRouting', {
+        connectionId: 'conn_1234567890',
+        waypoints: [
+          { x: 300, y: 200 },
+          { x: 300, y: 150 }
+        ]
+      });
+
+  # ===========================================================================
+  # NEW ACTION: Reset Connection Routing
+  # ===========================================================================
+  resetConnectionRouting:
+    description: |
+      Reset a connection to automatic routing by clearing all waypoints.
+      Convenience action equivalent to updateConnectionRouting with empty waypoints.
+
+    payload:
+      connectionId:
+        type: string
+        required: true
+        description: Unique identifier of the connection to reset
+        example: "conn_1234567890"
+
+    response:
+      description: |
+        No direct response. Backend updates diagram state and syncs via traitlet.
+
+    side_effects:
+      - Saves current state to undo history
+      - Clears waypoints array for connection
+      - Syncs updated diagram_state to frontend
+
+    example_call: |
+      sendAction(model, 'resetConnectionRouting', {
+        connectionId: 'conn_1234567890'
+      });
+
+# ===========================================================================
+# EXISTING ACTIONS (unchanged, for reference)
+# ===========================================================================
+# These actions already exist in Lynx and are unaffected by this feature:
+#
+# - addConnection: Creates a new connection (waypoints default to [])
+# - deleteConnection: Removes a connection (waypoints deleted with it)
+# - undo: Restores previous state (including waypoint changes)
+# - redo: Restores next state (including waypoint changes)
+
+# ===========================================================================
+# TRAITLET STATE CHANGES
+# ===========================================================================
+# The following traitlet properties are affected:
+#
+# diagram_state.connections[]:
+#   - Each connection now includes optional `waypoints` array
+#   - Sent on any routing change
+#   - Used by frontend to render custom paths
+#
+# Example diagram_state.connections entry:
+# {
+#   "id": "conn_1",
+#   "source_block_id": "gain_1",
+#   "source_port_id": "out",
+#   "target_block_id": "sum_1",
+#   "target_port_id": "in1",
+#   "waypoints": [{"x": 300, "y": 150}]
+# }

@@ -1,0 +1,142 @@
+<!--
+SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+# Implementation Plan: LaTeX Block Rendering
+
+**Branch**: `002-latex-block-rendering` | **Date**: 2026-01-04 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/002-latex-block-rendering/spec.md`
+
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
+
+## Summary
+
+Add LaTeX rendering to control system blocks (StateSpace, TransferFunction, Gain) with default mathematical notation and optional custom LaTeX overrides. StateSpace blocks display symbolic equations (ẋ = Ax + Bu, y = Cx + Du), TransferFunction blocks show polynomial fractions with formatted coefficients, and Gain blocks render numerical values. Users can override defaults via a "Render custom block contents" checkbox in the parameter panel or programmatically via a Python `custom_latex` property. LaTeX content auto-scales to fit block boundaries and is persisted in the Python Diagram object as the source of truth.
+
+**Technical Approach**: Use KaTeX (lightweight, fast JavaScript LaTeX renderer) integrated into React block components. Add `custom_latex` property to Python Block base class with automatic UI synchronization via traitlets. Implement numerical formatting utilities in both Python and TypeScript for consistent 3-significant-figure display with exponential notation thresholds. Auto-scaling achieved via CSS transforms with dynamic measurement of rendered content.
+
+## Technical Context
+
+**Language/Version**: Python 3.11+ (backend), TypeScript 5.x (frontend)
+**Primary Dependencies**:
+- Python: anywidget 0.9.21+, traitlets 5.14.3+, numpy 2.4.0+
+- JavaScript: React 18+, KaTeX 0.16+, ReactFlow (existing)
+**Storage**: JSON diagram files (existing persistence layer)
+**Testing**: pytest (Python), vitest (TypeScript/React)
+**Target Platform**: Jupyter notebook/JupyterLab (web-based widget)
+**Project Type**: Jupyter widget (Python backend + React frontend)
+**Performance Goals**:
+- LaTeX rendering: <50ms per block on initial load
+- Auto-scaling calculation: <16ms (60fps) on resize
+- No perceptible lag when toggling custom LaTeX on/off
+**Constraints**:
+- Bundle size impact: <150KB added (KaTeX + utilities)
+- Backward compatibility: Existing diagrams without LaTeX must load unchanged
+- Browser support: Modern browsers (Chrome 90+, Firefox 88+, Safari 14+)
+**Scale/Scope**:
+- 3 block types modified (StateSpace, TransferFunction, Gain)
+- 1 new base class property (`custom_latex`)
+- ~10 new test cases (5 Python unit, 5 TypeScript unit)
+
+## Constitution Check
+
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+
+### I. Simplicity Over Features ✅ PASS
+
+- **Feature Justification**: LaTeX rendering directly supports core use case (readable block diagrams for control systems)
+- **Simplicity**: Leverages existing traitlet sync infrastructure, adds single property to base class
+- **Scope**: Limited to 3 block types, no feature creep
+
+### II. Python Ecosystem First ✅ PASS
+
+- **Integration**: Seamless Python API (`block.custom_latex = "..."`)
+- **No Vendor Lock-in**: LaTeX strings stored in JSON (open format), renderable by any LaTeX tool
+- **Ecosystem Fit**: Follows Jupyter widget conventions (anywidget + traitlets)
+
+### III. Test-Driven Development ✅ PASS
+
+- **Commitment**: Tests MUST be written first per constitution
+- **Coverage**: Python unit tests for `custom_latex` property, TypeScript tests for rendering/formatting
+- **Test Scope**:
+  - Python: Property getter/setter, persistence, default values
+  - TypeScript: LaTeX rendering, error handling, auto-scaling, number formatting
+
+### IV. Clean Separation of Concerns ✅ PASS
+
+- **Business Logic**: LaTeX generation logic separated into utilities (`formatNumber`, `generateDefaultLatex`)
+- **Presentation**: React components consume formatted strings, no domain logic in UI
+- **Testability**: Formatting functions testable without rendering, rendering testable with mock data
+
+### V. User Experience Standards ✅ PASS
+
+- **Immediately Usable**: Default LaTeX rendering requires zero configuration
+- **Performance Targets**: <50ms render time, <16ms auto-scale (measurable)
+- **Simplicity**: Single checkbox to enable custom LaTeX, property-based Python API
+
+**Re-check after Phase 1**: ✅ PASS (no violations introduced during design)
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/002-latex-block-rendering/
+├── spec.md              # Feature specification
+├── plan.md              # This file (implementation plan)
+├── research.md          # Technical decisions and alternatives
+├── data-model.md        # Block property and LaTeX content model
+├── quickstart.md        # Usage examples and testing scenarios
+├── checklists/
+│   └── requirements.md  # Specification quality checklist
+└── tasks.md             # Generated by /speckit.tasks (not yet created)
+```
+
+### Source Code (repository root)
+
+```text
+src/lynx/
+├── blocks/
+│   ├── base.py                    # MODIFIED: Add custom_latex property
+│   ├── state_space.py             # MODIFIED: Default LaTeX generation
+│   ├── transfer_function.py       # MODIFIED: Default LaTeX generation
+│   └── gain.py                    # MODIFIED: Default LaTeX generation
+└── utils/                         # NEW DIRECTORY
+    ├── __init__.py               # NEW
+    └── latex_formatting.py       # NEW: formatNumber utility
+
+js/
+├── package.json                   # MODIFIED: Add katex dependency
+├── src/
+│   ├── blocks/
+│   │   ├── StateSpaceBlock.tsx    # MODIFIED: LaTeX rendering
+│   │   ├── TransferFunctionBlock.tsx  # MODIFIED: LaTeX rendering
+│   │   └── GainBlock.tsx          # MODIFIED: LaTeX rendering
+│   ├── components/
+│   │   ├── ParameterPanel.tsx     # MODIFIED: Add custom LaTeX checkbox + input
+│   │   └── LaTeXRenderer.tsx      # NEW: KaTeX wrapper with auto-scaling
+│   ├── utils/
+│   │   ├── numberFormatting.ts    # NEW: formatNumber utility (mirrors Python)
+│   │   └── latexGeneration.ts     # NEW: Default LaTeX string generators
+│   └── hooks/
+│       └── useAutoScaledLatex.ts  # NEW: Auto-scaling hook
+
+tests/python/
+├── unit/
+│   ├── test_blocks.py             # MODIFIED: Add custom_latex tests
+│   └── test_latex_formatting.py   # NEW: Number formatting tests
+
+tests/js/
+└── unit/
+    ├── LaTeXRenderer.test.tsx     # NEW: Rendering + scaling tests
+    ├── numberFormatting.test.ts   # NEW: Formatting logic tests
+    └── latexGeneration.test.ts    # NEW: Default LaTeX generation tests
+```
+
+**Structure Decision**: Jupyter widget architecture (Python backend + React frontend). Modified files maintain existing structure. New utilities added to dedicated `utils/` directories in both Python and TypeScript to maintain separation of concerns. LaTeX rendering logic encapsulated in reusable components/hooks following React best practices.
+
+## Complexity Tracking
+
+No violations - all constitution checks passed. Feature maintains simplicity while delivering core value.

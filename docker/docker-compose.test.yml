@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+version: '3.8'
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      # Mount the entire project (read-write for Vite temp files)
+      - .:/workspace
+      # Mount node_modules as a separate volume to use container's deps
+      - /workspace/js/node_modules
+    working_dir: /workspace/js
+    stdin_open: true
+    tty: true
+    environment:
+      - CI=true
+      - NODE_ENV=test

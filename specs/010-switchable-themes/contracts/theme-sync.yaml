@@ -1,0 +1,541 @@
+# SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Theme Synchronization Contract
+# Python-JavaScript Communication API for Switchable Themes
+# Feature: 010-switchable-themes
+# Created: 2026-01-14
+
+# ==============================================================================
+# Overview
+# ==============================================================================
+# This contract defines the communication interface between Python (backend)
+# and JavaScript (frontend) for theme management in the Lynx widget. The
+# communication uses anywidget's traitlet system for bidirectional sync.
+
+# ==============================================================================
+# Traitlets (Python → JavaScript, bidirectional)
+# ==============================================================================
+
+traitlets:
+  - name: theme
+    type: string
+    direction: bidirectional
+    sync: true
+    description: |
+      Currently resolved theme name. Syncs automatically between Python and
+      JavaScript. Changes in Python trigger JS updates, and vice versa.
+
+    python_definition: |
+      theme = traitlets.Unicode(default_value="light").tag(sync=True)
+
+    javascript_access: |
+      // Read initial value
+      const currentTheme = model.get("theme");
+
+      // Listen to changes from Python
+      model.on("change:theme", () => {
+        const newTheme = model.get("theme");
+        console.log("Theme changed to:", newTheme);
+      });
+
+      // Send changes to Python
+      model.set("theme", "dark");
+      model.save_changes();
+
+    validation:
+      python: |
+        # Validated by _validate_theme() method in LynxWidget
+        # Only allows: "light", "dark", "high-contrast"
+        # Invalid values trigger warning and are ignored
+      javascript: |
+        # Validated by validateThemeName() in themeUtils.ts
+        # Only sends valid theme names to Python
+
+    default_value: "light"
+
+    examples:
+      - description: Initial theme resolution
+        python: |
+          # Widget initializes with resolved theme
+          widget = LynxWidget(diagram)
+          print(widget.theme)  # "light" (or from precedence chain)
+
+        javascript: |
+          // Read on component mount
+          const theme = model.get("theme");
+          setCurrentTheme(theme);
+
+      - description: User changes theme via UI
+        javascript: |
+          // User clicks "Dark" in theme selector
+          const newTheme = "dark";
+          model.set("theme", newTheme);
+          model.save_changes();  // Syncs to Python
+
+        python: |
+          # Python receives change automatically
+          # _on_theme_change observer triggered
+          # Updates diagram.theme = "dark"
+
+      - description: Programmatic theme change in Python
+        python: |
+          # User runs in notebook cell
+          diagram.theme = "high-contrast"
+          # Widget observer syncs to traitlet
+          # widget.theme = "high-contrast"
+
+        javascript: |
+          // JavaScript receives change event
+          model.on("change:theme", () => {
+            const newTheme = model.get("theme");
+            setCurrentTheme(newTheme);  // Updates data-theme attribute
+          });
+
+# ==============================================================================
+# Actions (JavaScript → Python, unidirectional)
+# ==============================================================================
+# Actions are one-way messages from JavaScript to Python. They're used when
+# JS needs to trigger Python logic but doesn't directly manipulate state.
+
+actions:
+  - name: updateTheme
+    direction: javascript_to_python
+    description: |
+      Request to change the diagram's theme. Sent when user interacts with
+      theme selector UI. Python handles validation, updates diagram.theme,
+      and syncs back to JS via theme traitlet.
+
+    payload_schema:
+      type: object
+      required:
+        - theme
+      properties:
+        theme:
+          type: string
+          enum: ["light", "dark", "high-contrast"]
+          description: The requested theme name
+
+    javascript_sender: |
+      import { sendAction } from "./utils/traitletSync.ts";
+
+      const handleThemeChange = (themeName: string) => {
+        // Validate before sending
+        if (!["light", "dark", "high-contrast"].includes(themeName)) {
+          console.warn("Invalid theme name:", themeName);
+          return;
+        }
+
+        // Send action to Python
+        sendAction(model, "updateTheme", { theme: themeName });
+      };
+
+    python_handler: |
+      # In src/lynx/widget.py
+
+      @traitlets.observe("_action")
+      def _on_action(self, change):
+          action = change["new"]
+          action_type = action.get("action")
+
+          if action_type == "updateTheme":
+              payload = action.get("payload", {})
+              theme = payload.get("theme")
+              self._handle_update_theme(theme)
+
+      def _handle_update_theme(self, theme: str) -> None:
+          """Handle theme update action from JavaScript."""
+          # Validate theme name
+          if theme not in {"light", "dark", "high-contrast"}:
+              logging.warning(f"Invalid theme from UI: {theme}")
+              return
+
+          # Update diagram theme (triggers traitlet sync)
+          self.diagram.theme = theme
+
+          # Theme traitlet observer automatically syncs back to JS
+
+    validation:
+      - rule: Theme name must be one of ["light", "dark", "high-contrast"]
+        enforced_in: JavaScript (before sending) and Python (on receive)
+        failure_action: Log warning, ignore action
+
+      - rule: Payload must include "theme" key
+        enforced_in: Python (on receive)
+        failure_action: Log error, ignore action
+
+    examples:
+      - description: User selects dark theme from UI
+        javascript: |
+          // User clicks "Dark" in theme dropdown
+          sendAction(model, "updateTheme", { theme: "dark" });
+
+        python_receives: |
+          {
+            "action": "updateTheme",
+            "payload": {
+              "theme": "dark"
+            }
+          }
+
+        python_response: |
+          # Handler updates diagram.theme = "dark"
+          # Theme traitlet syncs back to JS automatically
+          # JavaScript receives change:theme event
+
+      - description: Invalid theme name (validation failure)
+        javascript: |
+          // Malicious or buggy code sends invalid theme
+          sendAction(model, "updateTheme", { theme: "purple" });
+
+        python_receives: |
+          {
+            "action": "updateTheme",
+            "payload": {
+              "theme": "purple"
+            }
+          }
+
+        python_response: |
+          # Validation fails, logs warning:
+          # "Invalid theme from UI: purple"
+          # No state change, no sync to JS
+          # UI remains unchanged
+
+# ==============================================================================
+# State Sync Patterns
+# ==============================================================================
+
+sync_patterns:
+  - name: Initial Load
+    description: |
+      When widget is first created and displayed, Python resolves the theme
+      via precedence chain and syncs to JavaScript.
+
+    flow:
+      - step: 1
+        actor: Python
+        action: |
+          # Widget.__init__()
+          resolved_theme = resolve_theme(diagram.theme)
+          self.theme = resolved_theme
+
+      - step: 2
+        actor: anywidget
+        action: Sync theme traitlet to JavaScript model
+
+      - step: 3
+        actor: JavaScript
+        action: |
+          // Component mounts, reads theme
+          const theme = model.get("theme");
+          setCurrentTheme(theme);
+
+      - step: 4
+        actor: JavaScript
+        action: |
+          // Apply to DOM
+          <div data-theme={currentTheme}>...</div>
+
+  - name: UI-Triggered Theme Change
+    description: |
+      User selects a new theme from the settings dropdown menu.
+
+    flow:
+      - step: 1
+        actor: JavaScript
+        action: |
+          // User clicks theme in dropdown
+          handleThemeChange("dark");
+
+      - step: 2
+        actor: JavaScript
+        action: |
+          // Send action to Python
+          sendAction(model, "updateTheme", { theme: "dark" });
+
+      - step: 3
+        actor: Python
+        action: |
+          # _handle_update_theme("dark")
+          self.diagram.theme = "dark"
+
+      - step: 4
+        actor: Python
+        action: |
+          # _on_theme_change observer triggered
+          self.theme = resolve_theme(self.diagram.theme)
+
+      - step: 5
+        actor: anywidget
+        action: Sync theme traitlet to JavaScript model
+
+      - step: 6
+        actor: JavaScript
+        action: |
+          // change:theme event fired
+          model.on("change:theme", () => {
+            const newTheme = model.get("theme");
+            setCurrentTheme(newTheme);
+          });
+
+      - step: 7
+        actor: JavaScript
+        action: |
+          // React re-renders with new data-theme
+          <div data-theme="dark">...</div>
+
+  - name: Programmatic Python Change
+    description: |
+      User changes theme via Python API (diagram.theme = "...").
+
+    flow:
+      - step: 1
+        actor: Python
+        action: |
+          # User runs in notebook cell
+          diagram.theme = "high-contrast"
+
+      - step: 2
+        actor: Python
+        action: |
+          # Widget._on_theme_change observer triggered
+          self.theme = resolve_theme(self.diagram.theme)
+
+      - step: 3
+        actor: anywidget
+        action: Sync theme traitlet to JavaScript model
+
+      - step: 4
+        actor: JavaScript
+        action: |
+          // change:theme event fired
+          const newTheme = model.get("theme");
+          setCurrentTheme(newTheme);
+
+      - step: 5
+        actor: JavaScript
+        action: |
+          // React re-renders with new data-theme
+          <div data-theme="high-contrast">...</div>
+
+  - name: Session Default Change (No Sync)
+    description: |
+      Changing session default (set_default_theme()) does NOT sync to
+      existing widgets. Only affects newly created diagrams.
+
+    flow:
+      - step: 1
+        actor: Python
+        action: |
+          # User runs in notebook cell
+          lynx.set_default_theme("dark")
+
+      - step: 2
+        actor: Python
+        action: |
+          # Global _session_default updated
+          # NO widget observer triggered
+
+      - step: 3
+        actor: Python
+        action: |
+          # Existing widgets unchanged
+          # widget.theme still resolves from diagram.theme
+
+      - step: 4
+        actor: Python
+        action: |
+          # New diagrams use new default
+          new_diagram = lynx.Diagram()
+          # resolve_theme(None) → "dark" (from session default)
+
+# ==============================================================================
+# Error Handling
+# ==============================================================================
+
+error_handling:
+  - error: Invalid theme name from JavaScript
+    detection: Python validation in _handle_update_theme()
+    response: |
+      logging.warning(f"Invalid theme from UI: {theme}")
+      # No state change, no sync to JS
+    user_impact: Theme remains unchanged
+
+  - error: Invalid theme name in diagram.theme attribute
+    detection: Python validation in Diagram.theme setter
+    response: |
+      logging.warning(f"Invalid theme name: {theme}")
+      # Set to None, resolve via precedence chain
+    user_impact: Falls back to session/environment/default theme
+
+  - error: Traitlet sync failure (network/browser issue)
+    detection: anywidget automatically retries
+    response: |
+      # anywidget handles retry logic
+      # If persistent, user must refresh widget
+    user_impact: Theme change may be delayed or lost
+
+  - error: JavaScript model not initialized
+    detection: model.get("theme") returns undefined
+    response: |
+      // Fallback to default in component
+      const theme = model.get("theme") || "light";
+    user_impact: Temporarily shows light theme until sync completes
+
+# ==============================================================================
+# Performance Requirements
+# ==============================================================================
+
+performance:
+  - metric: Traitlet sync latency
+    target: <10ms
+    measurement: Time from model.set() to model.on("change") callback
+    rationale: anywidget uses efficient JSON serialization
+
+  - metric: React re-render latency
+    target: <5ms
+    measurement: Time from setCurrentTheme() to DOM update
+    rationale: Single state update, no cascading renders
+
+  - metric: CSS cascade latency
+    target: <50ms
+    measurement: Time from data-theme change to paint completion
+    rationale: Browser repaints with new CSS variables
+
+  - metric: Total UI update latency
+    target: <100ms
+    measurement: Time from user click to visual update complete
+    rationale: Meets WCAG 2.1 responsiveness guidelines (user perceives as instant)
+
+# ==============================================================================
+# Security Considerations
+# ==============================================================================
+
+security:
+  - concern: Malicious theme name injection
+    mitigation: |
+      - Whitelist validation in both JavaScript and Python
+      - Only ["light", "dark", "high-contrast"] allowed
+      - No eval() or dynamic code execution
+
+  - concern: CSS injection via custom themes
+    mitigation: |
+      - Built-in themes only in v1.0 (no user-defined themes)
+      - CSS variables defined in trusted styles.css
+      - No user-provided CSS strings
+
+  - concern: State desync causing infinite loops
+    mitigation: |
+      - anywidget prevents circular updates (change events don't trigger on same value)
+      - Validation prevents invalid states
+      - Logging helps diagnose issues
+
+# ==============================================================================
+# Testing Contracts
+# ==============================================================================
+
+test_contracts:
+  - test_case: JavaScript sends valid updateTheme action
+    setup: |
+      # Create widget with light theme
+      widget = LynxWidget(diagram)
+      assert widget.theme == "light"
+
+    action: |
+      // JavaScript sends action
+      sendAction(model, "updateTheme", { theme: "dark" });
+
+    assertions:
+      - diagram.theme == "dark"
+      - widget.theme == "dark"
+      - JavaScript receives change:theme event
+      - data-theme attribute updates to "dark"
+
+  - test_case: JavaScript sends invalid theme name
+    setup: |
+      widget = LynxWidget(diagram)
+      initial_theme = widget.theme
+
+    action: |
+      sendAction(model, "updateTheme", { theme: "purple" });
+
+    assertions:
+      - widget.theme == initial_theme (unchanged)
+      - diagram.theme == initial_theme (unchanged)
+      - Warning logged: "Invalid theme from UI: purple"
+      - JavaScript state unchanged
+
+  - test_case: Python changes diagram.theme attribute
+    setup: |
+      widget = LynxWidget(diagram)
+      assert widget.theme == "light"
+
+    action: |
+      diagram.theme = "high-contrast"
+
+    assertions:
+      - widget.theme == "high-contrast"
+      - JavaScript receives change:theme event
+      - data-theme attribute updates to "high-contrast"
+
+  - test_case: Traitlet round-trip (Python → JS → Python)
+    setup: |
+      widget = LynxWidget(diagram)
+      widget.theme = "light"
+
+    action: |
+      # JavaScript changes theme
+      model.set("theme", "dark")
+      model.save_changes()
+      # Wait for sync...
+      # Python observer updates diagram.theme
+      # Python observer re-syncs traitlet (no-op due to same value)
+
+    assertions:
+      - widget.theme == "dark"
+      - diagram.theme == "dark"
+      - No infinite loop (anywidget prevents redundant syncs)
+
+# ==============================================================================
+# Versioning
+# ==============================================================================
+
+versioning:
+  contract_version: 1.0.0
+  compatible_with:
+    - lynx_version: ">=0.1.0"
+    - anywidget_version: ">=0.9.0"
+  breaking_changes_in_v2:
+    - description: Add support for custom user themes
+      impact: |
+        - theme traitlet may contain theme names not in built-in set
+        - Validation logic must check theme registry
+        - Contract adds new action: registerCustomTheme
+
+# ==============================================================================
+# References
+# ==============================================================================
+
+references:
+  - name: anywidget Traitlet Documentation
+    url: https://anywidget.dev/en/traitlets/
+
+  - name: Lynx Widget Implementation
+    path: src/lynx/widget.py
+
+  - name: Lynx Diagram Class
+    path: src/lynx/diagram.py
+
+  - name: Theme Utilities (TypeScript)
+    path: js/src/utils/themeUtils.ts
+
+  - name: Traitlet Sync Utilities (TypeScript)
+    path: js/src/utils/traitletSync.ts
+
+  - name: Data Model Documentation
+    path: specs/010-switchable-themes/data-model.md
+
+  - name: Research Documentation
+    path: specs/010-switchable-themes/research.md

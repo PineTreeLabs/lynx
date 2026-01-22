@@ -1,0 +1,65 @@
+{
+  "name": "lynx",
+  "version": "1.0.0",
+  "description": "Lightweight block diagram GUI for control systems",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css}\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcallaham/lynx-dev.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/jcallaham/lynx-dev/issues"
+  },
+  "homepage": "https://github.com/jcallaham/lynx-dev#readme",
+  "dependencies": {
+    "@anywidget/react": "^0.2.0",
+    "html-to-image": "^1.11.11",
+    "katex": "^0.16.27",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "reactflow": "^11.11.4"
+  },
+  "devDependencies": {
+    "@anywidget/vite": "^0.2.2",
+    "@eslint/js": "^9.18.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "@vitest/ui": "^2.1.8",
+    "esbuild": "^0.27.2",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.12.0",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.4.2",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.19.1",
+    "vite": "^7.3.0",
+    "vitest": "^2.1.8"
+  }
+}

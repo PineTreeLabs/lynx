@@ -1,0 +1,474 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/**
+ * Lynx Widget Styles
+ *
+ * Global styles for the block diagram canvas
+ */
+
+/* Typography - Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@400;600;700&family=Source+Code+Pro:wght@400;500&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-ui: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: "Roboto Slab", Georgia, serif;
+  --font-mono: "Source Code Pro", "SF Mono", "Consolas", monospace;
+
+  /* Primary: Refined indigo with more saturation and depth */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #3e4d98;
+  --color-primary-700: #3d4670;
+  --color-primary-800: #2d3350;
+  --color-primary-900: #1f2437;
+
+  /* Neutrals: Warm grays with subtle blue undertone */
+  --color-slate-50: #fafbfc;
+  --color-slate-100: #f3f4f6;
+  --color-slate-200: #e5e7eb;
+  --color-slate-300: #d1d5db;
+  --color-slate-400: #9ca3af;
+  --color-slate-500: #6b7280;
+  --color-slate-600: #4b5563;
+  --color-slate-700: #374151;
+  --color-slate-800: #1f2937;
+  --color-slate-900: #111827;
+
+  /* Canvas atmosphere */
+  --color-lynx-50: #fafbfc;
+  --color-lynx-200: #e5e7eb;
+  --color-canvas-gradient-start: #fafbfc;
+  --color-canvas-gradient-end: #f3f4f6;
+
+  /* Enhanced depth via layered shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.16), 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-primary: 0 4px 16px rgba(79, 93, 230, 0.15), 0 2px 4px rgba(79, 93, 230, 0.1);
+  --color-shadow: rgba(0, 0, 0, 0.1);
+
+  /* Semantic colors (slightly more vibrant) */
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #10b981;
+
+  /* Connection accents */
+  --color-edge-hover: #4f5de6;
+  --color-edge-selected: #3d47c7;
+  --edge-glow: rgba(79, 93, 230, 0.3);
+}
+
+@layer base {
+  /* Dark theme - enhanced design with depth */
+  [data-theme="dark"] {
+    /* Primary: Lighter indigo for dark backgrounds - increased brightness for contrast */
+    --color-primary-50: #1f2567;
+    --color-primary-100: #2e369c;
+    --color-primary-200: #3d47c7;
+    --color-primary-300: #4f5de6;
+    --color-primary-400: #6272f3;
+    --color-primary-500: #8297f8;
+    --color-primary-600: #e4eafc;
+    --color-primary-700: #ecf0fc;
+    --color-primary-800: #f1f4fa;
+    --color-primary-900: #f4f6ff;
+
+    /* Neutrals: Cool dark grays with better contrast */
+    --color-slate-50: #151921;
+    --color-slate-100: #1f2531;
+    --color-slate-200: #3a4456;
+    --color-slate-300: #4e5968;
+    --color-slate-400: #6b7280;
+    --color-slate-500: #9ca3af;
+    --color-slate-600: #e0e3e8;
+    --color-slate-700: #ebeef2;
+    --color-slate-800: #f3f5f7;
+    --color-slate-900: #fafbfc;
+
+    /* Canvas atmosphere - lighter for better block separation */
+    --color-lynx-50: #1a1f2e;
+    --color-lynx-200: #242936;
+    --color-canvas-gradient-start: #1a1f2e;
+    --color-canvas-gradient-end: #242936;
+
+    /* Enhanced depth via layered shadows (darker) */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-primary: 0 4px 16px rgba(130, 151, 248, 0.2), 0 2px 4px rgba(130, 151, 248, 0.15);
+    --color-shadow: rgba(0, 0, 0, 0.5);
+
+    /* Semantic colors (adjusted for dark backgrounds) */
+    --color-error: #f87171;
+    --color-warning: #fbbf24;
+    --color-success: #34d399;
+
+    /* Connection accents */
+    --color-edge-hover: #8297f8;
+    --color-edge-selected: #a5b9fc;
+    --edge-glow: rgba(130, 151, 248, 0.4);
+  }
+
+  /* High-contrast theme - WCAG 2.1 AAA compliant (7:1 normal text, 4.5:1 large text) */
+  [data-theme="high-contrast"] {
+    /* Primary colors - pure black/white for maximum contrast */
+    --color-primary-50: #ffffff;
+    --color-primary-100: #f0f0f0;
+    --color-primary-200: #d0d0d0;
+    --color-primary-300: #b0b0b0;
+    --color-primary-400: #808080;
+    --color-primary-500: #606060;
+    --color-primary-600: #000000;
+    --color-primary-700: #000000;
+    --color-primary-800: #000000;
+    --color-primary-900: #000000;
+
+    /* Slate palette - high contrast black/white */
+    --color-slate-50: #ffffff;
+    --color-slate-100: #f5f5f5;
+    --color-slate-200: #e0e0e0;
+    --color-slate-300: #c0c0c0;
+    --color-slate-400: #a0a0a0;
+    --color-slate-500: #808080;
+    --color-slate-600: #606060;
+    --color-slate-700: #404040;
+    --color-slate-800: #202020;
+    --color-slate-900: #000000;
+
+    /* Lynx neutral grays - pure white backgrounds */
+    --color-lynx-50: #ffffff;
+    --color-lynx-200: #e0e0e0;
+
+    /* Semantic colors - high contrast variants (WCAG AAA compliant) */
+    --color-shadow: rgba(0, 0, 0, 0.3);
+    --color-error: #cc0000;
+    --color-warning: #cc8800;
+    --color-success: #008800;
+  }
+
+  /* Archimedes Light theme */
+  [data-theme="archimedes-light"] {
+    /* Primary: Weathered copper palette - earthy, refined terracotta */
+    --color-primary-50: #faf6f3;
+    --color-primary-100: #f4ebe3;
+    --color-primary-200: #e8d4c3;
+    --color-primary-300: #d9b59a;
+    --color-primary-400: #c6876d;
+    --color-primary-500: #b85c2e;
+    --color-primary-600: #a04d24;
+    --color-primary-700: #7d3d1c;
+    --color-primary-800: #5a2d15;
+    --color-primary-900: #3d1f0e;
+
+    /* Slate palette - Warm charcoal grays */
+    --color-slate-50: #f5f5f5;
+    --color-slate-100: #ebebeb;
+    --color-slate-200: #d4d4d4;
+    --color-slate-300: #ababab;
+    --color-slate-400: #7e7e7e;
+    --color-slate-500: #545454;
+    --color-slate-600: #464646;
+    --color-slate-700: #343434;
+    --color-slate-800: #2a2a2a;
+    --color-slate-900: #1f1f1f;
+
+    /* Canvas atmosphere - Light gray with warmth */
+    --color-lynx-50: #f5f5f5;
+    --color-lynx-200: #ebebeb;
+    --color-canvas-gradient-start: #f5f5f5;
+    --color-canvas-gradient-end: #ebebeb;
+
+    /* Enhanced depth via layered shadows */
+    --shadow-sm: 0 1px 2px rgba(42, 42, 42, 0.08);
+    --shadow-md: 0 2px 8px rgba(42, 42, 42, 0.12), 0 1px 2px rgba(42, 42, 42, 0.08);
+    --shadow-lg: 0 4px 16px rgba(42, 42, 42, 0.16), 0 2px 4px rgba(42, 42, 42, 0.1);
+    --shadow-xl: 0 8px 24px rgba(42, 42, 42, 0.2), 0 4px 8px rgba(42, 42, 42, 0.12);
+    --shadow-primary: 0 4px 16px rgba(184, 92, 46, 0.18), 0 2px 4px rgba(184, 92, 46, 0.12);
+    --color-shadow: rgba(42, 42, 42, 0.15);
+
+    /* Semantic colors - Refined forge theme */
+    --color-error: #b8432e;
+    --color-warning: #c68a3d;
+    --color-success: #5a7a4d;
+
+    /* Connection accents - Weathered copper with restraint */
+    --color-edge-hover: #c6876d;
+    --color-edge-selected: #b85c2e;
+    --edge-glow: rgba(184, 92, 46, 0.25);
+  }
+
+  /* Archimedes Dark theme */
+  [data-theme="archimedes-dark"] {
+    /* Primary: Aged brass palette - warm, muted, sophisticated */
+    --color-primary-50: #1a1612;
+    --color-primary-100: #2d2619;
+    --color-primary-200: #4a3d28;
+    --color-primary-300: #6b5838;
+    --color-primary-400: #8d7449;
+    --color-primary-500: #c9a961;
+    --color-primary-600: #d4b876;
+    --color-primary-700: #dfc894;
+    --color-primary-800: #ead9b3;
+    --color-primary-900: #f5ecd4;
+
+    /* Slate palette - Dark charcoal grays */
+    --color-slate-50: #1f1f1f;
+    --color-slate-100: #2a2a2a;
+    --color-slate-200: #3d3d3d;
+    --color-slate-300: #444444;
+    --color-slate-400: #7e7e7e;
+    --color-slate-500: #ababab;
+    --color-slate-600: #d4d4d4;
+    --color-slate-700: #ebebeb;
+    --color-slate-800: #f5f5f5;
+    --color-slate-900: #fafafa;
+
+    /* Canvas atmosphere - Dark charcoal */
+    --color-lynx-50: #2a2a2a;
+    --color-lynx-200: #3d3d3d;
+    --color-canvas-gradient-start: #2a2a2a;
+    --color-canvas-gradient-end: #1f1f1f;
+
+    /* Enhanced depth via layered shadows (darker) */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.5);
+    --shadow-primary: 0 4px 16px rgba(201, 169, 97, 0.22), 0 2px 4px rgba(201, 169, 97, 0.18);
+    --color-shadow: rgba(0, 0, 0, 0.5);
+
+    /* Semantic colors - Refined for dark backgrounds */
+    --color-error: #d9765f;
+    --color-warning: #d4a574;
+    --color-success: #7a9b6d;
+
+    /* Connection accents - Aged brass with subtlety */
+    --color-edge-hover: #b8965a;
+    --color-edge-selected: #c9a961;
+    --edge-glow: rgba(201, 169, 97, 0.3);
+  }
+}
+
+/* Widget container */
+.lynx-widget {
+  width: 100%;
+  height: 100%; /* Fill parent container (height controlled by Python) */
+  background: linear-gradient(
+    135deg,
+    var(--color-canvas-gradient-start) 0%,
+    var(--color-canvas-gradient-end) 100%
+  );
+  border: 1px solid var(--color-lynx-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* React Flow customizations */
+.react-flow__node {
+  border-radius: 4px;
+  filter: var(--shadow-md);
+  transition: filter 0.2s ease;
+}
+
+.react-flow__node:hover {
+  filter: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.react-flow__node.selected {
+  filter: var(--shadow-primary);
+  transform: translateY(-1px);
+}
+
+/* Enhanced edge styling with hover and selection effects */
+.react-flow__edge-path {
+  stroke-width: 2.5;
+  transition:
+    stroke-width 0.2s ease,
+    stroke 0.2s ease,
+    filter 0.2s ease;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 3.5;
+  stroke: var(--color-edge-hover);
+  filter: drop-shadow(0 0 6px var(--edge-glow));
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 4;
+  stroke: var(--color-edge-selected);
+  filter: drop-shadow(0 0 10px var(--edge-glow));
+}
+
+/* Arrow marker hover effects */
+.react-flow__edge:hover .react-flow__arrowhead {
+  fill: var(--color-edge-hover);
+}
+
+.react-flow__edge.selected .react-flow__arrowhead {
+  fill: var(--color-edge-selected);
+}
+
+/* React Flow Controls - Override defaults to use theme colors */
+.react-flow__controls {
+  box-shadow: var(--shadow-lg);
+}
+
+.react-flow__controls-button {
+  background-color: var(--color-slate-100);
+  border: 1px solid var(--color-slate-300);
+  color: var(--color-slate-900);
+  transition: all 0.2s ease;
+}
+
+/* Apply slate colors to all SVG icons except validation button (which uses semantic colors) */
+.react-flow__controls-button:not(.validation-button) svg {
+  fill: var(--color-slate-900);
+}
+
+.react-flow__controls-button:hover:not(:disabled) {
+  background-color: var(--color-slate-200);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.react-flow__controls-button:hover:not(:disabled):not(.validation-button) svg {
+  fill: var(--color-slate-900);
+}
+
+.react-flow__controls-button:disabled {
+  background-color: var(--color-slate-200);
+  color: var(--color-slate-400);
+}
+
+.react-flow__controls-button:disabled:not(.validation-button) svg {
+  fill: var(--color-slate-400);
+}
+
+/* Port Marker Styles - Simulink-style triangular markers */
+/* Make ALL handles transparent - port markers are now the only visual indicator */
+.react-flow__handle {
+  background-color: transparent !important;
+  border: none !important;
+  width: 8px;
+  height: 8px;
+}
+
+/* Capture mode - renders off-screen for static export */
+/* Remove all styling so only html-to-image backgroundColor is used */
+.lynx-widget.capture-mode {
+  position: relative;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  /* Remove container styling for clean capture */
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Override ALL React Flow backgrounds in capture mode */
+.lynx-widget.capture-mode .react-flow,
+.lynx-widget.capture-mode .react-flow__container,
+.lynx-widget.capture-mode .react-flow__renderer,
+.lynx-widget.capture-mode .react-flow__viewport,
+.lynx-widget.capture-mode .react-flow__pane {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Typography System - Apply font stacks */
+
+/* General UI text - Roboto */
+.react-flow__node {
+  font-family: var(--font-ui);
+}
+
+/* Headings and labels - Roboto Slab */
+.editable-label,
+[data-testid="block-palette"] > div:first-child {
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+/* Mathematical/LaTeX content - Source Code Pro */
+.katex,
+.latex-content,
+.parameter-value,
+.react-flow__node text {
+  font-family: var(--font-mono);
+}
+
+/* Micro-Interactions - Animations */
+
+/* Slide-in animation for palette buttons */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Pulse animation for port markers */
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.12);
+  }
+}
+
+/* Port marker hover pulse */
+.port-marker:hover {
+  animation: pulse-subtle 0.8s ease-in-out infinite;
+}
+
+/* Staggered entrance for palette buttons */
+.palette-button {
+  animation: slide-in 0.25s ease-out forwards;
+  opacity: 0;
+}
+
+/* Stagger delays for up to 6 buttons */
+.palette-button:nth-child(1) {
+  animation-delay: 0ms;
+}
+.palette-button:nth-child(2) {
+  animation-delay: 50ms;
+}
+.palette-button:nth-child(3) {
+  animation-delay: 100ms;
+}
+.palette-button:nth-child(4) {
+  animation-delay: 150ms;
+}
+.palette-button:nth-child(5) {
+  animation-delay: 200ms;
+}
+.palette-button:nth-child(6) {
+  animation-delay: 250ms;
+}

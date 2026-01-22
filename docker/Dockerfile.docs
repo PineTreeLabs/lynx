@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Match CI docs environment exactly (ubuntu-latest = 24.04)
+FROM ubuntu:24.04
+
+# Install Python 3 and curl (matching CI - actions/setup-python provides 3.11)
+# Ubuntu 24.04 has python3.12 by default, but CI uses setup-python@v5 which installs 3.11
+RUN apt-get update && \
+    apt-get install -y python3 python3-venv python3-pip curl make && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install UV (matching CI)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command: interactive bash
+CMD ["/bin/bash"]

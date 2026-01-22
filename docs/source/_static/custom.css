@@ -1,0 +1,438 @@
+/* Custom CSS for Lynx Documentation */
+/* Phase 1: Grid Background, Enhanced Code Blocks, Signal Colors */
+
+/* Import fonts - Lynx uses Roboto family */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@400;600;700&family=Source+Code+Pro:wght@400;500&display=swap');
+
+:root {
+    /* Lynx brand colors */
+    --lynx-indigo: #6366f1;
+    --lynx-indigo-deep: #4f46e5;
+    --lynx-indigo-bright: #818cf8;
+    --lynx-slate: #1f2937;
+    --lynx-light-gray: #f9fafb;
+
+    /* Engineering signal colors */
+    --color-signal-input: #10b981;      /* Green for inputs/success */
+    --color-signal-output: #f59e0b;     /* Amber for outputs/warnings */
+    --color-signal-feedback: #ef4444;   /* Red for feedback/errors */
+
+    /* Technical grays with cool undertone */
+    --color-bg-code: #0f1419;
+    --color-border-tech: #2d3748;
+}
+
+/* Fix for dark mode inconsistent background */
+[data-theme="dark"] {
+    --color-background-primary: #1f2937 !important;
+    --color-background-secondary: #111827 !important;
+    --color-background: #1a1f2e !important;
+    --color-foreground-primary: #f9fafb !important;
+    --color-foreground-secondary: #d1d5db !important;
+
+    /* Code blocks in dark mode */
+    --color-code-background: #2d3748 !important;
+    --color-code-foreground: #f9fafb !important;
+
+    /* Admonitions in dark mode */
+    --color-admonition-background: rgba(130, 151, 248, 0.15) !important;
+}
+
+/* Font family overrides */
+.sidebar-brand-text, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Roboto Slab', Georgia, serif !important;
+}
+
+.toc-title, .sidebar-tree .caption {
+    font-family: 'Roboto Slab', serif !important;
+    font-weight: 600;
+}
+
+.content {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+pre, code, .highlight {
+    font-family: 'Source Code Pro', 'SF Mono', Consolas, monospace !important;
+}
+
+/* Grid background pattern (like engineering graph paper) */
+body {
+    background-image:
+        linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-attachment: fixed;
+}
+
+[data-theme="dark"] body {
+    background-image:
+        linear-gradient(rgba(129, 140, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(129, 140, 248, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-attachment: fixed;
+}
+
+/* Logo styling in sidebar */
+.sidebar-brand-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.sidebar-logo {
+    height: 32px;
+    width: auto;
+    margin-right: 16px;
+}
+
+/* Terminal-style code blocks with enhanced styling */
+.highlight {
+    position: relative;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin: 1.5rem 0 !important;
+}
+
+[data-theme="dark"] .highlight {
+    border-color: var(--color-border-tech);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Terminal header bar - dynamic based on language */
+.highlight::before {
+    content: '▸ code';
+    display: block;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+    border-bottom: 1px solid #e5e7eb;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Language-specific labels - only target the inner .highlight div */
+.highlight-python .highlight::before {
+    content: '▸ python';
+}
+
+.highlight-bash .highlight::before,
+.highlight-sh .highlight::before,
+.highlight-shell .highlight::before,
+.highlight-console .highlight::before {
+    content: '▸ bash';
+}
+
+.highlight-javascript .highlight::before,
+.highlight-js .highlight::before {
+    content: '▸ javascript';
+}
+
+.highlight-typescript .highlight::before,
+.highlight-ts .highlight::before {
+    content: '▸ typescript';
+}
+
+.highlight-json .highlight::before {
+    content: '▸ json';
+}
+
+.highlight-yaml .highlight::before,
+.highlight-yml .highlight::before {
+    content: '▸ yaml';
+}
+
+.highlight-text .highlight::before,
+.highlight-none .highlight::before {
+    content: '▸ output';
+}
+
+[data-theme="dark"] .highlight::before {
+    background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+    border-bottom-color: var(--color-border-tech);
+    color: #9ca3af;
+}
+
+.highlight pre {
+    margin: 0 !important;
+    padding: 1rem !important;
+    background-color: #fafbfc !important;
+}
+
+[data-theme="dark"] .highlight pre {
+    background-color: var(--color-bg-code) !important;
+}
+
+/* Improve code highlighting in dark mode */
+[data-theme="dark"] pre {
+    background-color: var(--color-bg-code) !important;
+    border: 1px solid var(--color-border-tech);
+}
+
+/* Custom styling for syntax highlighting in dark mode */
+[data-theme="dark"] .highlight .s1 { color: #fca5a5; } /* Strings - light red */
+[data-theme="dark"] .highlight .nn { color: #86efac; } /* Module names - light green */
+[data-theme="dark"] .highlight .nb { color: #93c5fd; } /* Built-ins - light blue */
+[data-theme="dark"] .highlight .k { color: #a5b4fc; } /* Keywords - light indigo */
+[data-theme="dark"] .highlight .n { color: #f9fafb; } /* Names - light gray */
+[data-theme="dark"] .highlight .mi { color: #fde047; } /* Numbers - yellow */
+[data-theme="dark"] .highlight .kc { color: #f0abfc; } /* Constants - light purple */
+
+/* Function signature styling in dark mode */
+[data-theme="dark"] .sig {
+    background-color: #2d3748 !important;
+}
+
+/* Table styling in dark mode */
+[data-theme="dark"] table.docutils {
+    border-color: #374151;
+}
+
+[data-theme="dark"] table.docutils thead {
+    background-color: #2d3748;
+}
+
+[data-theme="dark"] table.docutils tbody tr:nth-child(odd) {
+    background-color: #1f2937;
+}
+
+[data-theme="dark"] table.docutils tbody tr:nth-child(even) {
+    background-color: #2d3748;
+}
+
+/* Theme image handling - MyST only-light/only-dark classes */
+.only-light {
+    display: block;
+}
+
+.only-dark {
+    display: none;
+}
+
+[data-theme="dark"] .only-light {
+    display: none;
+}
+
+[data-theme="dark"] .only-dark {
+    display: block;
+}
+
+/* Notebook cell styling - Input signal color */
+.cell_input {
+    border-left: 4px solid var(--color-signal-input) !important;
+    padding-left: 0.75rem;
+    background-color: rgba(16, 185, 129, 0.02);
+}
+
+[data-theme="dark"] .cell_input {
+    border-left-color: var(--color-signal-input);
+    background-color: rgba(16, 185, 129, 0.05);
+}
+
+/* Hide terminal header bar for notebook cells (they have their own styling) */
+.cell_input .highlight::before {
+    display: none;
+}
+
+/* Cell output styling */
+.cell_output {
+    margin-top: 0.5rem;
+    padding-left: 0.75rem;
+    border-left: 4px solid var(--color-signal-output);
+    background-color: rgba(245, 158, 11, 0.02);
+}
+
+[data-theme="dark"] .cell_output {
+    background-color: rgba(245, 158, 11, 0.05);
+}
+
+/* Inline code styling */
+code.literal {
+    font-family: 'Source Code Pro', monospace !important;
+    font-size: 0.88em;
+    background-color: rgba(99, 102, 241, 0.08);
+    color: var(--lynx-indigo-deep);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+[data-theme="dark"] code.literal {
+    background-color: rgba(129, 140, 248, 0.15);
+    color: var(--lynx-indigo-bright);
+    border-color: rgba(129, 140, 248, 0.25);
+}
+
+/* API documentation improvements - Engineering style */
+.sig {
+    font-family: 'Source Code Pro', monospace !important;
+    font-size: 0.9rem;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-left: 4px solid var(--lynx-indigo-deep);
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .sig {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border-color: var(--color-border-tech);
+    border-left-color: var(--lynx-indigo-bright);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Sidebar improvements */
+.sidebar-tree .caption {
+    color: var(--color-brand-primary);
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+/* Link styling improvements */
+a.reference.external::after {
+    content: " ↗";
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+/* Admonition styling - Engineering signal colors */
+.admonition {
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    border-left-width: 4px;
+    border-left-style: solid;
+}
+
+/* Signal color system */
+.admonition.note,
+.admonition.seealso {
+    border-left-color: var(--color-signal-input);
+    background-color: rgba(16, 185, 129, 0.05);
+}
+
+.admonition.warning,
+.admonition.attention,
+.admonition.caution {
+    border-left-color: var(--color-signal-output);
+    background-color: rgba(245, 158, 11, 0.05);
+}
+
+.admonition.danger,
+.admonition.error {
+    border-left-color: var(--color-signal-feedback);
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+.admonition.tip,
+.admonition.hint,
+.admonition.important {
+    border-left-color: var(--lynx-indigo);
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+[data-theme="dark"] .admonition.note,
+[data-theme="dark"] .admonition.seealso {
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+[data-theme="dark"] .admonition.warning,
+[data-theme="dark"] .admonition.attention,
+[data-theme="dark"] .admonition.caution {
+    background-color: rgba(245, 158, 11, 0.1);
+}
+
+[data-theme="dark"] .admonition.danger,
+[data-theme="dark"] .admonition.error {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+[data-theme="dark"] .admonition.tip,
+[data-theme="dark"] .admonition.hint,
+[data-theme="dark"] .admonition.important {
+    background-color: rgba(129, 140, 248, 0.1);
+}
+
+/* Grid card improvements (for sphinx-design) */
+.sd-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sd-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
+}
+
+[data-theme="dark"] .sd-card:hover {
+    box-shadow: 0 4px 16px rgba(130, 151, 248, 0.2);
+}
+
+/* Scrollbar styling for dark mode */
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+/* ============================================
+   Hero Video Section
+   ============================================ */
+
+.hero-video-container {
+    margin: 2.5rem auto 3rem;
+    max-width: 900px;
+    text-align: center;
+}
+
+.hero-video {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+}
+
+[data-theme="dark"] .hero-video {
+    border-color: var(--color-border-tech);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    background-color: #1a1f2e;
+}
+
+.hero-caption {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--color-foreground-secondary);
+    font-style: italic;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    .hero-video-container {
+        margin: 1.5rem auto 2rem;
+        max-width: 100%;
+    }
+
+    .hero-video {
+        border-radius: 6px;
+    }
+}

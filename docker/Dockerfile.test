@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Match CI environment exactly
+FROM ubuntu:latest
+
+# Install Node.js 20 (same as CI)
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace/js
+
+# Copy package files for dependency installation
+COPY js/package*.json ./
+
+# Install dependencies (use npm ci like CI does)
+RUN npm ci
+
+# Set up volume mount point for live code
+VOLUME /workspace
+
+# Default command: interactive bash
+CMD ["/bin/bash"]

@@ -1,0 +1,46 @@
+version = 1
+SPDX-PackageName = "Lynx"
+SPDX-PackageSupplier = "2026 Pine Tree Labs, LLC"
+SPDX-PackageDownloadLocation = "https://github.com/jcallaham/lynx"
+
+# Project configuration files
+[[annotations]]
+path = [".python-version", "uv.lock", "**/*.toml", "**/*.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Local development files
+[[annotations]]
+path = "local/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Binary image files
+[[annotations]]
+path = ["**/*.png", "**/*.svg"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Documentation files
+[[annotations]]
+path = ["docs/**", "specs/*/checklists/*.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# GitHub workflows
+[[annotations]]
+path = ".github/workflows/*.yml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Jupyter notebooks
+[[annotations]]
+path = "**/*.ipynb"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Pine Tree Labs, LLC"
+SPDX-License-Identifier = "GPL-3.0-or-later"

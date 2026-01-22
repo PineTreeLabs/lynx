@@ -1,0 +1,180 @@
+# SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Component Contract: PortMarker
+
+component:
+  name: PortMarker
+  type: React Functional Component
+  file: js/src/components/PortMarker.tsx
+  description: |
+    Triangular SVG marker rendered inside React Flow Handle components to indicate port direction.
+    Replaces default circular dots with Simulink-style directional triangles.
+
+interface:
+  props:
+    direction:
+      type: "input" | "output"
+      required: true
+      description: Port type - determines triangle orientation (input points left, output points right)
+      validation: Must be exactly "input" or "output"
+
+    isConnected:
+      type: boolean
+      required: true
+      description: Connection state derived from edges array - controls marker visibility
+      validation: Boolean value
+      notes: When true, marker is hidden (port is connected)
+
+    isFlipped:
+      type: boolean
+      required: false
+      default: false
+      description: Block horizontal flip state - inherited from parent block component
+      validation: Boolean value
+      notes: Affects triangle orientation via CSS transform (scaleX)
+
+    isDragTarget:
+      type: boolean
+      required: false
+      default: false
+      description: Whether this port is the hover target during connection drag operation
+      validation: Boolean value
+      notes: When true, marker is hidden (provides visual feedback during drag)
+
+    size:
+      type: number
+      required: false
+      default: 10
+      description: Triangle height/base in pixels
+      validation: Must be positive number > 0
+      notes: Start with 10px equilateral, adjustable to isosceles if needed
+
+    className:
+      type: string
+      required: false
+      default: ""
+      description: Additional CSS classes for styling override
+      validation: Valid CSS class string
+
+  return:
+    type: JSX.Element | null
+    description: SVG triangle element or null when marker should be hidden
+
+behavior:
+  visibility:
+    rule: "!isConnected && !isDragTarget"
+    states:
+      - name: VISIBLE
+        condition: isConnected=false AND isDragTarget=false
+        render: Triangle SVG
+
+      - name: HIDDEN_CONNECTED
+        condition: isConnected=true
+        render: null (marker hidden, port is connected)
+
+      - name: HIDDEN_DRAG
+        condition: isDragTarget=true
+        render: null (marker hidden during drag hover)
+
+      - name: HIDDEN_BOTH
+        condition: isConnected=true AND isDragTarget=true
+        render: null (both conditions hide marker)
+
+  orientation:
+    input:
+      direction: left-pointing triangle
+      points: "10,0 0,5 10,10"
+      notes: Vertex at left edge, base at right edge
+
+    output:
+      direction: right-pointing triangle
+      points: "0,0 10,5 0,10"
+      notes: Vertex at right edge, base at left edge
+
+    flip:
+      mechanism: Inherits CSS transform from parent block
+      transform: scaleX(-1)
+      notes: Block flip automatically mirrors triangle without explicit rotation
+
+  styling:
+    color: var(--color-primary-600)
+    stroke_width: 1.5px
+    fill: none
+    notes: Matches theme system, outline style like Simulink
+
+performance:
+  render_cost: Low (single SVG polygon)
+  update_frequency: Infrequent (only on connection/flip changes)
+  optimization: None needed initially (pure functional component sufficient)
+
+dependencies:
+  react: "^19.2.3"
+  internal:
+    - utils/portMarkerGeometry.ts (triangle point calculations)
+
+usage_example: |
+  ```typescript
+  import { Handle, Position } from 'reactflow';
+  import PortMarker from './components/PortMarker';
+  import { usePortConnected } from './hooks/usePortMarkerVisibility';
+
+  function GainBlock({ id, data }) {
+    const isFlipped = data.isFlipped || false;
+    const isInputConnected = usePortConnected(id, "in");
+
+    return (
+      <div>
+        <Handle
+          type="target"
+          position={Position.Left}
+          id="in"
+          className="!bg-transparent"
+        >
+          <PortMarker
+            direction="input"
+            isConnected={isInputConnected}
+            isFlipped={isFlipped}
+          />
+        </Handle>
+        {/* Block content */}
+      </div>
+    );
+  }
+  ```
+
+testing:
+  unit_tests:
+    - Test visibility logic (all 4 states)
+    - Test triangle points calculation for input/output
+    - Test size prop variations
+    - Test className pass-through
+
+  integration_tests:
+    - Test with React Flow Handle wrapper
+    - Test flip state inheritance from block
+    - Test connection state updates from edges array
+
+  visual_tests:
+    - Verify triangle appears on unconnected ports
+    - Verify triangle disappears on connected ports
+    - Verify triangle disappears during drag hover
+    - Verify triangle orientation correct for flipped blocks
+
+validation:
+  prop_types:
+    enforcement: TypeScript compile-time checks
+    runtime: Console warnings for invalid size values
+
+  invariants:
+    - Marker never visible when isConnected=true
+    - Marker never visible when isDragTarget=true
+    - Triangle points valid SVG polygon format
+    - Size > 0 when provided
+
+notes:
+  - This component is purely presentational - no internal state
+  - All state derives from parent block or React Flow edges
+  - Designed for easy testing and visual verification
+  - Flexible size parameter allows future adjustment to isosceles triangles
