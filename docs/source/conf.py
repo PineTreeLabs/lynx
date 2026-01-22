@@ -15,6 +15,9 @@ project = "Lynx"
 copyright = "2026, Jared Callaham"
 author = "Jared Callaham"
 
+# # Override default Sphinx title to just show project name
+# html_title = "Lynx"
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -42,11 +45,12 @@ html_css_files = ["custom.css"]
 # Furo theme options
 html_theme_options = {
     # Logos
-    "light_logo": "logo-light.png",
-    "dark_logo": "logo-dark.png",
+    # "light_logo": "logo-light.png",
+    # "dark_logo": "logo-dark.png",
     "sidebar_hide_name": False,
     # Navigation
     "navigation_with_keys": True,
+    "top_of_page_buttons": [],
     "source_repository": "https://github.com/pinetreelabs/lynx",
     "source_branch": "main",
     "source_directory": "docs/source/",

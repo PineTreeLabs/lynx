@@ -1,5 +1,3 @@
-# Lynx
-
 **Lynx** is a minimal, lightweight Jupyter widget for editing block diagrams. Design, visualize, and analyze linear SISO control systems using an interactive Jupyter workflow and seamless python-control integration.
 
 - **Classic Block Diagrams**: Drag-and-drop interface for creating control system schematics
