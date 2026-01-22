@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # Versioning and Release
 
 **In the last PR before a new release**: bump the version in `pyproject.toml` with:

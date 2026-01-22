@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 Jared Callaham <jared.callaham@gmail.com>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # Changelog
 
 All notable changes will be documented in this file.
