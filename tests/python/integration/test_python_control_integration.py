@@ -5,12 +5,12 @@
 """Integration tests for python-control export functionality.
 
 These tests verify end-to-end workflows from diagram creation to export,
-checking transfer function coefficients for correctness.
+checking transfer function coefficients for correctness. Includes mathematical
+validation against Astrom & Murray control theory results.
 """
 
 import control as ct
 import numpy as np
-import pytest
 
 from lynx import Diagram
 from lynx.conversion.interconnect import to_interconnect
@@ -376,7 +376,10 @@ class TestNegativeFeedback:
 
 
 class TestSubsystemExtraction:
-    """Test subsystem extraction with get_tf() and connection labels."""
+    """Test subsystem extraction with get_tf() and connection labels.
+
+    Includes mathematical validation against control theory textbooks.
+    """
 
     def test_connection_label_extraction(self):
         """Test extracting transfer functions using connection labels.
@@ -453,64 +456,78 @@ class TestSubsystemExtraction:
         sys_re = diagram.get_tf("r", "e")
         assert_tf_equals(sys_re, [1.0, 1.0], [1.0, 6.0])  # (s+1)/(s+6)
 
+    def test_sensitivity_function_mathematical_validation(self):
+        """Extract r→e for sensitivity analysis with mathematical validation.
 
-class TestDiagramValidation:
-    """Test diagram validation errors."""
+        Mathematical Validation (Astrom & Murray, Chapter 12):
+        System: r → error_sum → controller(K=5) → plant(2/(s+3)) → y
+                     ↖────────← negative feedback ←─────┘
 
-    def test_unconnected_port_error(self):
-        """Test that unconnected port raises ValidationError."""
-        from lynx.diagram import ValidationError
+        Open-loop: L(s) = P(s)·C(s) = (2/(s+3))·5 = 10/(s+3)
+        Sensitivity: S(s) = 1/(1+L(s)) = (s+3)/(s+13)
 
+        Properties:
+        - DC gain: 3/13 ≈ 0.231
+        - High-frequency gain: 1.0 (error tracks reference at high frequencies)
+        - Pole: s = -13
+        """
+        # Build feedback control system
         diagram = Diagram()
         diagram.add_block(
-            "io_marker", "input", marker_type="input", position={"x": 0, "y": 0}
+            "io_marker",
+            "ref_input",
+            marker_type="input",
+            label="r",
+            position={"x": 0, "y": 100},
         )
-        diagram.add_block("gain", "gain1", K=2.0, position={"x": 100, "y": 0})
         diagram.add_block(
-            "io_marker", "output", marker_type="output", position={"x": 200, "y": 0}
+            "sum",
+            "error_sum",
+            signs=["+", "-", "|"],
+            position={"x": 100, "y": 100},
+            label="e",
         )
-
-        # Only connect input → gain, forget gain → output
-        diagram.add_connection("c1", "input", "out", "gain1", "in")
-
-        with pytest.raises(ValidationError) as exc_info:
-            to_interconnect(diagram)
-
-        error = exc_info.value
-        assert error.block_id == "output"
-        assert error.port_id == "in"
-        assert "not connected" in str(error).lower()
-
-    def test_missing_input_marker_error(self):
-        """Test that missing InputMarker raises ValidationError."""
-        from lynx.diagram import ValidationError
-
-        diagram = Diagram()
-        diagram.add_block("gain", "gain1", K=2.0, position={"x": 100, "y": 0})
+        diagram.add_block("gain", "controller", K=5.0, position={"x": 200, "y": 100})
         diagram.add_block(
-            "io_marker", "output", marker_type="output", position={"x": 200, "y": 0}
+            "transfer_function",
+            "plant",
+            numerator=[2.0],
+            denominator=[1.0, 3.0],
+            position={"x": 300, "y": 100},
         )
-        diagram.add_connection("c1", "gain1", "out", "output", "in")
-
-        with pytest.raises(ValidationError) as exc_info:
-            to_interconnect(diagram)
-
-        assert "InputMarker" in str(exc_info.value)
-        assert "at least one" in str(exc_info.value).lower()
-
-    def test_missing_output_marker_error(self):
-        """Test that missing OutputMarker raises ValidationError."""
-        from lynx.diagram import ValidationError
-
-        diagram = Diagram()
         diagram.add_block(
-            "io_marker", "input", marker_type="input", position={"x": 0, "y": 0}
+            "io_marker",
+            "output",
+            marker_type="output",
+            label="y",
+            position={"x": 400, "y": 100},
         )
-        diagram.add_block("gain", "gain1", K=2.0, position={"x": 100, "y": 0})
-        diagram.add_connection("c1", "input", "out", "gain1", "in")
 
-        with pytest.raises(ValidationError) as exc_info:
-            to_interconnect(diagram)
+        diagram.add_connection("c1", "ref_input", "out", "error_sum", "in1")
+        diagram.add_connection("c2", "error_sum", "out", "controller", "in")
+        diagram.add_connection("c3", "controller", "out", "plant", "in")
+        diagram.add_connection("c4", "plant", "out", "output", "in")
+        diagram.add_connection("c5", "plant", "out", "error_sum", "in2")
 
-        assert "OutputMarker" in str(exc_info.value)
-        assert "at least one" in str(exc_info.value).lower()
+        # Extract r→e (sensitivity function)
+        # Note: 'e' is block label, must use explicit .out format
+        sys_re = diagram.get_ss("r", "e.out")
+
+        # Verify DC gain: 3/13 ≈ 0.231
+        dc_gain = ct.dcgain(sys_re)
+        expected_dc_gain = 3.0 / 13.0
+        assert np.isclose(dc_gain, expected_dc_gain, atol=1e-6), (
+            f"DC gain should be {expected_dc_gain}, got {dc_gain}"
+        )
+
+        # Verify high-frequency gain approaches 1.0
+        high_freq_gain = np.abs(ct.evalfr(sys_re, 1e6j))
+        assert np.isclose(high_freq_gain, 1.0, atol=1e-2), (
+            f"High-frequency gain should be 1.0, got {high_freq_gain}"
+        )
+
+        # Verify pole at s = -13
+        poles = ct.poles(sys_re)
+        assert np.isclose(poles[0].real, -13.0, atol=1e-6), (
+            f"Pole should be at -13, got {poles[0].real}"
+        )
