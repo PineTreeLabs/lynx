@@ -23,7 +23,7 @@ import type {
 } from "../utils/traitletSync";
 import { nodeTypes } from "../blocks";
 import type { CaptureRequest, CaptureResult } from "./types";
-import { captureToPng, captureToSvg, calculateContentBounds } from "./captureUtils";
+import { captureToPng, captureToSvg } from "./captureUtils";
 import {
   DEFAULT_VIEWPORT,
   MIN_ZOOM,
@@ -32,6 +32,7 @@ import {
   getDefaultEdgeOptions,
 } from "../utils/reactFlowConfig";
 import { blockToNode, connectionToEdge } from "../utils/nodeConversion";
+import { getContentBounds, calculateFitViewport } from "../utils/edgeAwareFitView";
 
 /**
  * Map edge types to custom edge components
@@ -86,13 +87,25 @@ function CaptureCanvasInner({
       try {
         console.log("[CaptureCanvasInner] Starting capture with", nodes.length, "nodes");
 
-        // Calculate natural content bounds including edges (for waypoint-based routing)
-        const contentBounds = calculateContentBounds(nodes, edges, null, null);
-        console.log("[CaptureCanvasInner] Content bounds:", contentBounds);
+        // Calculate content bounds including edge waypoints (not just nodes)
+        console.log("[CaptureCanvasInner] Nodes/edges:", { nodes: nodes.length, edges: edges.length });
+        const contentBounds = getContentBounds(nodes, edges);
+        console.log("[CaptureCanvasInner] Content bounds (with edges):", contentBounds);
+
+        // Add padding to content bounds
+        const PADDING_PX = 40; // 40px padding on all sides
+        const paddedBounds = {
+          x: contentBounds.x - PADDING_PX,
+          y: contentBounds.y - PADDING_PX,
+          width: contentBounds.width + PADDING_PX * 2,
+          height: contentBounds.height + PADDING_PX * 2,
+        };
+        console.log("[CaptureCanvasInner] Padded bounds (40px padding):", paddedBounds);
 
         // Determine output dimensions
-        const outputWidth = Math.ceil(captureRequest.width ?? contentBounds.width);
-        const outputHeight = Math.ceil(captureRequest.height ?? contentBounds.height);
+        const outputWidth = Math.ceil(captureRequest.width ?? paddedBounds.width);
+        const outputHeight = Math.ceil(captureRequest.height ?? paddedBounds.height);
+        console.log("[CaptureCanvasInner] Output dimensions:", { outputWidth, outputHeight });
 
         // Resize container to match output dimensions
         if (containerRef.current) {
@@ -103,12 +116,15 @@ function CaptureCanvasInner({
         // Wait for resize to take effect
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Use fitView with reduced padding for capture (0.2 for nice margins without black borders)
-        reactFlowInstance.current?.fitView({
-          padding: 0.2,
-          minZoom: MIN_ZOOM,
-          maxZoom: MAX_ZOOM,
-        });
+        // Calculate viewport to fit content bounds (including edges) with padding
+        const viewport = calculateFitViewport(
+          contentBounds,
+          outputWidth,
+          outputHeight,
+          { padding: PADDING_PX / Math.max(outputWidth, outputHeight), minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM }
+        );
+        console.log("[CaptureCanvasInner] Setting viewport:", viewport);
+        reactFlowInstance.current?.setViewport(viewport);
 
         // Wait for viewport adjustment and rendering to complete
         await new Promise((resolve) => setTimeout(resolve, 200));
@@ -193,10 +209,30 @@ function CaptureCanvasInner({
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onInit={(instance) => {
-          console.log("[CaptureCanvasInner] ReactFlow initialized");
+          console.log("[CaptureCanvasInner.onInit] ReactFlow initialized");
           reactFlowInstance.current = instance;
-          // Fit view after init with reduced padding for nice margins
-          instance.fitView({ padding: 0.2, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM });
+
+          // Use edge-aware fitView on init
+          console.log("[CaptureCanvasInner.onInit] Nodes/edges:", { nodes: nodes.length, edges: edges.length });
+          const contentBounds = getContentBounds(nodes, edges);
+          const container = containerRef.current;
+          if (container) {
+            console.log("[CaptureCanvasInner.onInit] Container size:", {
+              width: container.offsetWidth,
+              height: container.offsetHeight,
+            });
+            const viewport = calculateFitViewport(
+              contentBounds,
+              container.offsetWidth,
+              container.offsetHeight,
+              { padding: 0.1, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM }
+            );
+            console.log("[CaptureCanvasInner.onInit] Setting viewport:", viewport);
+            instance.setViewport(viewport);
+          } else {
+            console.log("[CaptureCanvasInner.onInit] No container");
+          }
+
           // Mark as ready after a short delay to ensure render is complete
           setTimeout(() => {
             console.log("[CaptureCanvasInner] Setting isReady=true");

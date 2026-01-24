@@ -42,6 +42,7 @@ import {
   getDefaultEdgeOptions,
 } from "./utils/reactFlowConfig";
 import { blockToNode, connectionToEdge } from "./utils/nodeConversion";
+import { getContentBounds, calculateFitViewport } from "./utils/edgeAwareFitView";
 import type {
   DiagramState,
   Block as DiagramBlock,
@@ -115,6 +116,7 @@ export default function DiagramCanvas() {
 
   // Track ReactFlow instance for programmatic control
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+  const [isReactFlowReady, setIsReactFlowReady] = useState(false);
 
   // Track drag start positions for distance calculation (drag detection)
   const dragStartPos = useRef<Record<string, { x: number; y: number }>>({});
@@ -373,6 +375,62 @@ export default function DiagramCanvas() {
     [model, edges, nodes]
   );
 
+  // Edge-aware fitView callback (defined before keyboard shortcuts that use it)
+  const edgeAwareFitView = useCallback(() => {
+    console.log("[DiagramCanvas.edgeAwareFitView] Called");
+    if (!reactFlowInstance.current) {
+      console.log("[DiagramCanvas.edgeAwareFitView] No reactFlowInstance");
+      return;
+    }
+
+    const containerElement = document.querySelector(".react-flow") as HTMLElement;
+    if (!containerElement) {
+      console.log("[DiagramCanvas.edgeAwareFitView] No container element");
+      return;
+    }
+
+    console.log("[DiagramCanvas.edgeAwareFitView] Container size:", {
+      width: containerElement.offsetWidth,
+      height: containerElement.offsetHeight,
+    });
+    console.log("[DiagramCanvas.edgeAwareFitView] Nodes/edges count:", {
+      nodes: nodes.length,
+      edges: edges.length,
+    });
+
+    const contentBounds = getContentBounds(nodes, edges);
+    const viewport = calculateFitViewport(
+      contentBounds,
+      containerElement.offsetWidth,
+      containerElement.offsetHeight,
+      FIT_VIEW_OPTIONS
+    );
+    console.log("[DiagramCanvas.edgeAwareFitView] Setting viewport:", viewport);
+    reactFlowInstance.current.setViewport(viewport);
+  }, [nodes, edges]);
+
+  // Initial fitView when diagram first loads
+  useEffect(() => {
+    console.log("[DiagramCanvas.initialFitView] Effect triggered:", {
+      isReactFlowReady,
+      nodeCount: nodes.length,
+    });
+
+    if (!isReactFlowReady || nodes.length === 0) {
+      console.log("[DiagramCanvas.initialFitView] Skipping (not ready or no nodes)");
+      return;
+    }
+
+    console.log("[DiagramCanvas.initialFitView] Scheduling fitView in 100ms");
+    // Wait for React Flow to render nodes, then fit view
+    const timer = setTimeout(() => {
+      console.log("[DiagramCanvas.initialFitView] Executing fitView now");
+      edgeAwareFitView();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isReactFlowReady, nodes.length, edgeAwareFitView]);
+
   // Keyboard shortcuts
   useEffect(() => {
     if (!model) return;
@@ -432,7 +490,7 @@ export default function DiagramCanvas() {
       // Spacebar: Zoom to fit
       if (event.key === " " && !isInputField) {
         event.preventDefault();
-        reactFlowInstance.current?.fitView({ padding: 0.4, minZoom: 0.3, maxZoom: 1 });
+        edgeAwareFitView();
         return;
       }
 
@@ -494,7 +552,7 @@ export default function DiagramCanvas() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [model, onNodesChange]);
+  }, [model, onNodesChange, edgeAwareFitView]);
 
   // Handle drag start - clear waypoints immediately for WYSIWYG preview
   const onNodeDragStart = useCallback((_event: React.MouseEvent, node: Node) => {
@@ -823,12 +881,11 @@ export default function DiagramCanvas() {
         onPaneClick={onPaneClick}
         onInit={(instance) => {
           reactFlowInstance.current = instance;
+          setIsReactFlowReady(true);
         }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodeDragThreshold={5}
-        fitView
-        fitViewOptions={FIT_VIEW_OPTIONS}
         defaultViewport={DEFAULT_VIEWPORT}
         minZoom={MIN_ZOOM}
         maxZoom={MAX_ZOOM}
@@ -847,11 +904,9 @@ export default function DiagramCanvas() {
           style={{ opacity: 0.1 }}
         />
         <Controls showInteractive={false} showZoom={false} showFitView={false}>
-          {/* Custom zoom-to-fit button with padding: 0.4 */}
+          {/* Custom zoom-to-fit button with edge-aware bounds */}
           <ControlButton
-            onClick={() =>
-              reactFlowInstance.current?.fitView(FIT_VIEW_OPTIONS)
-            }
+            onClick={edgeAwareFitView}
             title="Zoom to Fit (Spacebar)"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">

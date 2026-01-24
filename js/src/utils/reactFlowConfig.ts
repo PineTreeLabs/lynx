@@ -23,7 +23,7 @@ export const MAX_ZOOM = 2;
 
 /** Shared fitView options - padding ensures content isn't cut off */
 export const FIT_VIEW_OPTIONS: FitViewOptions = {
-  padding: 0.4,
+  padding: 0.1, // 10% padding on each side = 20% total, leaving 80% for content
   minZoom: MIN_ZOOM,
   maxZoom: MAX_ZOOM,
 };
