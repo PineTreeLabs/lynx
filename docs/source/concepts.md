@@ -7,9 +7,10 @@ This guide explains the fundamental concepts behind Lynx's design: diagrams, blo
 A **Diagram** is the top-level container for your control system. It holds all blocks and connections, and provides methods for:
 
 - Adding/removing blocks and connections
-- Exporting to python-control systems
+- Validating diagram structure
+- Editing parameters
+- Exporting to `python-control` system objects (state-space/transfer function)
 - Saving/loading to JSON files
-- Validation before export
 
 ```python
 import lynx
