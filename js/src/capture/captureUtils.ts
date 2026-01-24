@@ -141,23 +141,25 @@ function createCaptureFilter() {
  * @param width - Output width in pixels
  * @param height - Output height in pixels
  * @param transparent - If true, background is transparent
+ * @param backgroundColor - Background color (actual hex/rgb value, not CSS variable)
  * @returns Base64-encoded PNG data (without data URL prefix)
  */
 export async function captureToPng(
   element: HTMLElement,
   width: number,
   height: number,
-  transparent: boolean
+  transparent: boolean,
+  backgroundColor: string
 ): Promise<string> {
   const dataUrl = await toPng(element, {
     width,
     height,
-    backgroundColor: transparent ? undefined : "var(--color-slate-200)",
+    backgroundColor: transparent ? undefined : backgroundColor,
     pixelRatio: 2, // 2x resolution for crisp output
     filter: createCaptureFilter(),
     // Force the captured element itself to have the background
     style: {
-      background: transparent ? "transparent" : "var(--color-slate-200)",
+      background: transparent ? "transparent" : backgroundColor,
     },
   });
 

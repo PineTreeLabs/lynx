@@ -31,6 +31,7 @@ import {
   FIT_VIEW_OPTIONS,
   getDefaultEdgeOptions,
 } from "../utils/reactFlowConfig";
+import { blockToNode, connectionToEdge } from "../utils/nodeConversion";
 
 /**
  * Map edge types to custom edge components
@@ -39,69 +40,7 @@ const edgeTypes: EdgeTypes = {
   orthogonal: OrthogonalEditableEdge,
 };
 
-/**
- * Default dimensions for each block type (must match BLOCK_DEFAULTS in blockDefaults.ts)
- */
-const BLOCK_DEFAULTS: Record<string, { width: number; height: number }> = {
-  gain: { width: 120, height: 80 },
-  sum: { width: 56, height: 56 },
-  transfer_function: { width: 100, height: 50 },
-  state_space: { width: 100, height: 60 },
-  io_marker: { width: 60, height: 48 },
-};
-
-/**
- * Convert backend block to React Flow node
- * Important: width/height must be on the node itself for getNodesBounds to work
- */
-function blockToNode(block: DiagramBlock): Node {
-  const defaults = BLOCK_DEFAULTS[block.type] || { width: 100, height: 60 };
-  const width = block.width ?? defaults.width;
-  const height = block.height ?? defaults.height;
-
-  return {
-    id: block.id,
-    type: block.type,
-    position: block.position,
-    // Width/height on node for getNodesBounds calculation
-    width,
-    height,
-    data: {
-      parameters: block.parameters,
-      ports: block.ports,
-      label: block.label,
-      flipped: block.flipped || false,
-      custom_latex: block.custom_latex,
-      label_visible: block.label_visible || false,
-      width,
-      height,
-    },
-  };
-}
-
-/**
- * Convert backend connection to React Flow edge
- */
-function connectionToEdge(conn: DiagramConnection): Edge {
-  return {
-    id: conn.id,
-    source: conn.source_block_id,
-    sourceHandle: conn.source_port_id,
-    target: conn.target_block_id,
-    targetHandle: conn.target_port_id,
-    type: "orthogonal",
-    data: {
-      waypoints: conn.waypoints || [],
-      label: conn.label,
-      label_visible: conn.label_visible || false,
-    },
-    markerEnd: {
-      type: "arrowclosed",
-      width: 14,
-      height: 14,
-    },
-  };
-}
+// Block/edge conversion now imported from shared utils
 
 interface CaptureCanvasInnerProps {
   nodes: Node[];
@@ -164,9 +103,12 @@ function CaptureCanvasInner({
         // Wait for resize to take effect
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Use fitView to automatically center and fit content (same as DiagramCanvas)
-        // This ensures identical viewport positioning
-        reactFlowInstance.current?.fitView(FIT_VIEW_OPTIONS);
+        // Use fitView with reduced padding for capture (0.2 for nice margins without black borders)
+        reactFlowInstance.current?.fitView({
+          padding: 0.2,
+          minZoom: MIN_ZOOM,
+          maxZoom: MAX_ZOOM,
+        });
 
         // Wait for viewport adjustment and rendering to complete
         await new Promise((resolve) => setTimeout(resolve, 200));
@@ -189,13 +131,19 @@ function CaptureCanvasInner({
           outputHeight
         );
 
+        // Compute background color from theme (html-to-image can't resolve CSS variables)
+        const computedStyle = getComputedStyle(containerRef.current);
+        const backgroundColor = computedStyle.getPropertyValue("--color-slate-50").trim() || "#fafbfc";
+        console.log("[CaptureCanvasInner] Using background color:", backgroundColor);
+
         let data: string;
         if (captureRequest.format === "png") {
           data = await captureToPng(
             viewportElement,
             outputWidth,
             outputHeight,
-            captureRequest.transparent
+            captureRequest.transparent,
+            backgroundColor
           );
         } else {
           data = await captureToSvg(viewportElement, outputWidth, outputHeight);
@@ -247,8 +195,8 @@ function CaptureCanvasInner({
         onInit={(instance) => {
           console.log("[CaptureCanvasInner] ReactFlow initialized");
           reactFlowInstance.current = instance;
-          // Fit view after init using shared configuration
-          instance.fitView(FIT_VIEW_OPTIONS);
+          // Fit view after init with reduced padding for nice margins
+          instance.fitView({ padding: 0.2, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM });
           // Mark as ready after a short delay to ensure render is complete
           setTimeout(() => {
             console.log("[CaptureCanvasInner] Setting isReady=true");
@@ -289,7 +237,29 @@ export default function CaptureCanvas() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [captureRequest, setCaptureRequest] = useState<CaptureRequest | null>(null);
+  const [theme, setTheme] = useState<string>("light");
   const lastTimestamp = useRef<number>(0);
+
+  // Subscribe to theme changes from Python
+  useEffect(() => {
+    if (!model) return;
+
+    // Read initial theme
+    const initialTheme = model.get("theme") || "light";
+    setTheme(initialTheme);
+
+    // Listen for theme changes
+    const handleThemeChange = () => {
+      const newTheme = model.get("theme") || "light";
+      setTheme(newTheme);
+    };
+
+    model.on("change:theme", handleThemeChange);
+
+    return () => {
+      model.off("change:theme", handleThemeChange);
+    };
+  }, [model]);
 
   // Subscribe to diagram state from Python (like DiagramCanvas does)
   useEffect(() => {
@@ -299,13 +269,13 @@ export default function CaptureCanvas() {
     const initialState = getDiagramState(model);
     console.log("[CaptureCanvas] Initial state:", initialState.blocks.length, "blocks");
     setNodes(initialState.blocks.map(blockToNode));
-    setEdges(initialState.connections.map(connectionToEdge));
+    setEdges(initialState.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)")));
 
     // Subscribe to changes (in case state updates after mount)
     const unsubscribe = onDiagramStateChange(model, (state: DiagramState) => {
       console.log("[CaptureCanvas] State updated:", state.blocks.length, "blocks");
       setNodes(state.blocks.map(blockToNode));
-      setEdges(state.connections.map(connectionToEdge));
+      setEdges(state.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)")));
     });
 
     return unsubscribe;
@@ -420,6 +390,7 @@ export default function CaptureCanvas() {
   return (
     <div
       ref={outerRef}
+      data-theme={theme}
       style={{
         // Position off-screen but still render at full size
         position: "fixed",

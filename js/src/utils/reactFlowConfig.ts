@@ -30,8 +30,8 @@ export const FIT_VIEW_OPTIONS: FitViewOptions = {
 
 /** Shared edge marker dimensions */
 export const MARKER_END_SIZE = {
-  width: 16,
-  height: 16,
+  width: 14,
+  height: 14,
 };
 
 /** Shared edge stroke width */

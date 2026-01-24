@@ -41,6 +41,7 @@ import {
   FIT_VIEW_OPTIONS,
   getDefaultEdgeOptions,
 } from "./utils/reactFlowConfig";
+import { blockToNode, connectionToEdge } from "./utils/nodeConversion";
 import type {
   DiagramState,
   Block as DiagramBlock,
@@ -63,26 +64,7 @@ const edgeTypes: EdgeTypes = {
   orthogonal: OrthogonalEditableEdge,
 };
 
-/**
- * Convert backend block to React Flow node
- */
-function blockToNode(block: DiagramBlock): Node {
-  return {
-    id: block.id,
-    type: block.type,
-    position: block.position,
-    data: {
-      parameters: block.parameters,
-      ports: block.ports,
-      label: block.label,
-      flipped: block.flipped || false,
-      custom_latex: block.custom_latex,
-      label_visible: block.label_visible || false,
-      width: block.width,
-      height: block.height,
-    },
-  };
-}
+// Block-to-node conversion now imported from shared utils
 
 /**
  * Calculate squared distance between two points (avoids sqrt overhead)
@@ -203,28 +185,7 @@ export default function DiagramCanvas() {
 
   // Memoized edge converter that uses current marker color
   const connectionToEdgeWithColor = useCallback(
-    (conn: DiagramConnection): Edge => {
-      return {
-        id: conn.id,
-        source: conn.source_block_id,
-        sourceHandle: conn.source_port_id,
-        target: conn.target_block_id,
-        targetHandle: conn.target_port_id,
-        type: "orthogonal",
-        data: {
-          waypoints: conn.waypoints || [],
-          label: conn.label,
-          label_visible: conn.label_visible || false,
-        },
-        style: { stroke: markerColor, strokeWidth: 2.5 },
-        markerEnd: {
-          type: "arrowclosed",
-          width: 14,
-          height: 14,
-          color: markerColor,
-        },
-      };
-    },
+    (conn: DiagramConnection): Edge => connectionToEdge(conn, markerColor),
     [markerColor]
   );
 
