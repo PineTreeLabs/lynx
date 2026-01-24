@@ -255,8 +255,8 @@ class TestGetSSGetTFValidationBehavior:
         diagram.add_block(
             "transfer_function",
             "tf1",
-            numerator=[2.0],
-            denominator=[1.0, 3.0],
+            num=[2.0],
+            den=[1.0, 3.0],
             label="plant",
             position={"x": 200, "y": 0},
         )

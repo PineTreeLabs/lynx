@@ -77,7 +77,7 @@ def create_block(block_type: str, block_id: str, **kwargs: Any) -> Block:
                     raise ValueError("Sum block requires 'signs'") from e
                 elif block_type == BLOCK_TYPES["TRANSFER_FUNCTION"]:
                     raise ValueError(
-                        "Transfer function requires numerator and denominator"
+                        "Transfer function requires num and den"
                     ) from e
                 elif block_type == BLOCK_TYPES["STATE_SPACE"]:
                     raise ValueError(

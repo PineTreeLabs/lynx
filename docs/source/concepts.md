@@ -18,65 +18,38 @@ import lynx
 # Create an empty diagram
 diagram = lynx.Diagram()
 
+# Load from a pre-made template
+diagram = lynx.Diagram.from_template("feedback_tf")
+
 # Diagrams are serializable
 diagram.save('my_system.json')
 diagram_loaded = lynx.Diagram.load('my_system.json')
 ```
 
-### Diagram as Data
+Lynx diagrams are **pure data structures** - they can be created programmatically in Python (not recommended), saved to/loaded from JSON, or edited interactively in Jupyter notebooks with:
 
-Lynx diagrams are **pure data structures** - they can be:
-- Created programmatically in Python
-- Saved to/loaded from JSON files
-- Edited interactively with `lynx.edit(diagram)`
-- Exported to python-control for analysis
+```python
+lynx.edit(diagram)
+```
 
 ## Block
 
-A **Block** represents a computational unit in your control system. Each block has:
+A **Block** has the usual control system diagram semantics. Each block has:
 
 - **Type**: Defines behavior (Gain, TransferFunction, StateSpace, Sum, IOMarker)
 - **Parameters**: Configuration specific to the block type
 - **Ports**: Input and output connection points
-- **Label**: Optional human-readable identifier (not the same as block ID)
+- **Label**: Optional human-readable identifier
 
 ### Block Types Overview
 
-| Block Type | Use Case | Parameters | Ports |
+| Block Type | Parameters | Ports |
 |------------|----------|------------|-------|
-| **Gain** | Scalar multiplication, controller gains | `K` (gain value) | `in` → `out` |
-| **TransferFunction** | LTI systems in s-domain | `numerator`, `denominator` (coefficient arrays) | `in` → `out` |
-| **StateSpace** | MIMO systems, state feedback | `A`, `B`, `C`, `D` (matrices) | `in` → `out` |
-| **Sum** | Adding/subtracting signals | `signs` (list: `"+"`, `"-"`, `"|"` for each quadrant) | `in1`, `in2`, `in3` → `out` |
-| **IOMarker** | System boundaries for export | `marker_type` (`'input'` or `'output'`), `label` | `out` (InputMarker) or `in` (OutputMarker) |
-
-### When to Use Each Block
-
-**Gain** blocks are ideal for:
-- Simple controller gains (P, I, D components)
-- Unit conversions or scaling factors
-- Quick prototyping before implementing full controllers
-
-**TransferFunction** blocks are best for:
-- Plant models from system identification
-- Classical control design (lead/lag compensators, PID)
-- Single-input single-output (SISO) systems in frequency domain
-
-**StateSpace** blocks excel at:
-- Multi-input multi-output (MIMO) systems
-- State feedback control
-- Systems derived from physical models (Newton's laws, circuit equations)
-- Observer design
-
-**Sum** blocks are used for:
-- Error calculation (reference - output)
-- Combining multiple signals (feedforward + feedback)
-- Weighted sums with different signs per input
-
-**IOMarker** blocks define:
-- System boundaries for subsystem extraction
-- Named signals for `diagram.get_ss()` and `diagram.get_tf()` calls
-- Documentation of system inputs and outputs
+| **Gain** | `K` (gain value) | `in` → `out` |
+| **TransferFunction** | `num`, `den` (coefficient arrays) | `in` → `out` |
+| **StateSpace** | `A`, `B`, `C`, `D` (matrices) | `in` → `out` |
+| **Sum** | `signs` (list: `"+"`, `"-"`, `"|"` for each quadrant) | `in1`, `in2`, `in3` → `out` |
+| **IOMarker** | `marker_type` (`'input'` or `'output'`), `label` | `out` (InputMarker) or `in` (OutputMarker) |
 
 ### Creating Blocks
 
@@ -109,15 +82,14 @@ diagram.add_block('io_marker', 'y', marker_type='output', label='y')
 
 A **Connection** represents a directed signal flow from one block's output port to another block's input port.
 
-### Connection Anatomy
-
 ```python
 diagram.add_connection(
     'connection_id',  # Unique identifier
     'source_block',   # Source block ID
     'source_port',    # Output port ID (e.g., 'out')
     'target_block',   # Target block ID
-    'target_port'     # Input port ID (e.g., 'in', 'in1', 'in2')
+    'target_port',    # Input port ID (e.g., 'in', 'in1', 'in2')
+    label="signal",   # Optional signal name
 )
 ```
 
@@ -125,7 +97,7 @@ diagram.add_connection(
 
 1. **One output to many inputs** is allowed (signal fanout)
 2. **Many outputs to one input** is NOT allowed (use Sum block to combine)
-3. **All input ports must be connected** before export (except InputMarker blocks)
+3. **All input ports must be connected** before export
 4. **Output ports can remain unconnected** (signals computed but not used)
 
 ### Example: Feedback Loop
@@ -149,11 +121,7 @@ A **Port** is a typed connection point on a block. Every port has:
 - **Port ID**: Identifier like `'in'`, `'out'`, `'in1'`, `'in2'`
 - **Block**: The block it belongs to
 
-### Port Conventions
-
-- **Single-input blocks** (Gain, TransferFunction, StateSpace): Use `'in'` and `'out'`
-- **Multi-input blocks** (Sum): Use `'in1'`, `'in2'`, `'in3'` for top, left, bottom quadrants
-- **IOMarkers**: InputMarker has `'out'` only, OutputMarker has `'in'` only
+Single-input/output blocks (Gain, TransferFunction, StateSpace) have `'in'` and `'out'` ports, while multi-input blocks (Sum) use `'in1'`, `'in2'`, etc. IOMarker blocks have one port, either `'out'` or `'in'` for input and output markers, respectively.
 
 ## Signal References for Export
 

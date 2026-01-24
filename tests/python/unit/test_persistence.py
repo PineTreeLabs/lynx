@@ -235,7 +235,7 @@ class TestNumPyArraySerialization:
         num = np.array([1, 2, 3])
         den = np.array([1, 4, 5, 6])
 
-        diagram.add_block("transfer_function", "tf1", numerator=num, denominator=den)
+        diagram.add_block("transfer_function", "tf1", num=num, den=den)
 
         # Serialize to JSON
         json_str = json.dumps(diagram.to_dict())
@@ -245,8 +245,8 @@ class TestNumPyArraySerialization:
         tf1 = loaded_diagram.get_block("tf1")
 
         params = {p.name: p.value for p in tf1._parameters}
-        assert np.array_equal(params["numerator"], num)
-        assert np.array_equal(params["denominator"], den)
+        assert np.array_equal(params["num"], num)
+        assert np.array_equal(params["den"], den)
 
 
 class TestErrorHandling:

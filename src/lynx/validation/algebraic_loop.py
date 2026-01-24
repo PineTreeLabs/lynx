@@ -105,9 +105,9 @@ def has_direct_feedthrough(block: Block) -> bool:
         num = None
         den = None
         for param in block._parameters:
-            if param.name == "numerator":
+            if param.name == "num":
                 num = np.asarray(param.value)
-            elif param.name == "denominator":
+            elif param.name == "den":
                 den = np.asarray(param.value)
 
         if num is not None and den is not None:

@@ -96,14 +96,14 @@
       "height": null,
       "parameters": [
         {
-          "name": "numerator",
+          "name": "num",
           "value": [
             1
           ],
           "expression": null
         },
         {
-          "name": "denominator",
+          "name": "den",
           "value": [
             1,
             1
@@ -139,14 +139,14 @@
       "height": null,
       "parameters": [
         {
-          "name": "numerator",
+          "name": "num",
           "value": [
             1
           ],
           "expression": null
         },
         {
-          "name": "denominator",
+          "name": "den",
           "value": [
             1,
             1
@@ -323,14 +323,14 @@
       "height": null,
       "parameters": [
         {
-          "name": "numerator",
+          "name": "num",
           "value": [
             1
           ],
           "expression": null
         },
         {
-          "name": "denominator",
+          "name": "den",
           "value": 1,
           "expression": "1"
         }

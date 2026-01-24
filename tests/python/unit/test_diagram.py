@@ -121,7 +121,7 @@ class TestDiagram:
         """Test adding a transfer function block."""
         diagram = Diagram()
         block = diagram.add_block(
-            "transfer_function", "tf1", numerator=[1], denominator=[1, 1]
+            "transfer_function", "tf1", num=[1], den=[1, 1]
         )
         assert block.id == "tf1"
         assert block.type == "transfer_function"
@@ -193,7 +193,7 @@ class TestDiagram:
         """Test that transfer function requires numerator."""
         diagram = Diagram()
         with pytest.raises(ValueError, match="Transfer function requires"):
-            diagram.add_block("transfer_function", "tf1", denominator=[1, 1])
+            diagram.add_block("transfer_function", "tf1", den=[1, 1])
 
     def test_add_block_state_space_missing_matrices(self):
         """Test that state space requires all matrices."""
@@ -536,7 +536,7 @@ class TestDiagram:
         diagram.add_block("io_marker", "out1", marker_type="output", label="y")
         diagram.add_block("sum", "s1", signs=["+", "+", "-"])
         diagram.add_block(
-            "transfer_function", "tf1", numerator=[1, 2], denominator=[1, 3, 2]
+            "transfer_function", "tf1", num=[1, 2], den=[1, 3, 2]
         )
         diagram.add_block(
             "state_space",
@@ -565,7 +565,7 @@ class TestDiagram:
         diagram = Diagram()
         diagram.add_block("gain", "g1", K=2.5)
         diagram.add_block(
-            "transfer_function", "tf1", numerator=[1, 2], denominator=[1, 3, 2]
+            "transfer_function", "tf1", num=[1, 2], den=[1, 3, 2]
         )
 
         # Flip one block
@@ -845,7 +845,7 @@ class TestUndoRedo:
     def test_flip_block_toggle(self):
         """Test that flip_block toggles state."""
         diagram = Diagram()
-        diagram.add_block("transfer_function", "tf1", numerator=[1], denominator=[1, 1])
+        diagram.add_block("transfer_function", "tf1", num=[1], den=[1, 1])
         block = diagram.get_block("tf1")
 
         # Initial state

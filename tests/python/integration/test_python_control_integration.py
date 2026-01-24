@@ -72,8 +72,8 @@ class TestSeriesConnection:
         diagram.add_block(
             "transfer_function",
             "plant",
-            numerator=[2.0],
-            denominator=[1.0, 3.0],
+            num=[2.0],
+            den=[1.0, 3.0],
             position={"x": 200, "y": 0},
         )
         diagram.add_block(
@@ -304,8 +304,8 @@ class TestNegativeFeedback:
         diagram.add_block(
             "transfer_function",
             "plant",
-            numerator=[2.0],
-            denominator=[1.0, 3.0],
+            num=[2.0],
+            den=[1.0, 3.0],
             position={"x": 300, "y": 100},
         )
         diagram.add_block(
@@ -351,8 +351,8 @@ class TestNegativeFeedback:
         diagram.add_block(
             "transfer_function",
             "plant",
-            numerator=[1.0],
-            denominator=[1.0, 1.0],
+            num=[1.0],
+            den=[1.0, 1.0],
             position={"x": 300, "y": 100},
         )
         diagram.add_block(
@@ -413,8 +413,8 @@ class TestSubsystemExtraction:
         diagram.add_block(
             "transfer_function",
             "plant",
-            numerator=[1.0],
-            denominator=[1.0, 1.0],
+            num=[1.0],
+            den=[1.0, 1.0],
             label="plant",
             position={"x": 300, "y": 0},
         )
@@ -491,8 +491,8 @@ class TestSubsystemExtraction:
         diagram.add_block(
             "transfer_function",
             "plant",
-            numerator=[2.0],
-            denominator=[1.0, 3.0],
+            num=[2.0],
+            den=[1.0, 3.0],
             position={"x": 300, "y": 100},
         )
         diagram.add_block(

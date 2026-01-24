@@ -102,8 +102,8 @@ class TestBasicExport:
         diagram.add_block(
             "transfer_function",
             "tf1",
-            numerator=[2.0],
-            denominator=[1.0, 3.0],
+            num=[2.0],
+            den=[1.0, 3.0],
             position={"x": 100, "y": 0},
         )
         diagram.add_block(
@@ -353,8 +353,8 @@ class TestSumBlockSignHandling:
         diagram.add_block(
             "transfer_function",
             "plant",
-            numerator=[1.0],
-            denominator=[1.0, 1.0],  # 1/(s+1)
+            num=[1.0],
+            den=[1.0, 1.0],  # 1/(s+1)
             position={"x": 300, "y": 0},
         )
         diagram.add_block(

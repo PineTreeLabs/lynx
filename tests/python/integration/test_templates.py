@@ -190,11 +190,11 @@ def test_template_parameter_modification_transfer_function():
 
     # Modify numerator parameter
     new_num = [5.0, 2.0]
-    diagram.update_block_parameter(controller.id, "numerator", new_num)
+    diagram.update_block_parameter(controller.id, "num", new_num)
 
     # Verify change persisted
     controller_after = diagram.get_block(controller.id)
-    assert controller_after.get_parameter("numerator") == new_num
+    assert controller_after.get_parameter("num") == new_num
 
 
 def test_template_parameter_modification_state_space():
@@ -223,12 +223,12 @@ def test_template_parameter_modification_gain():
     controller = next(b for b in diagram.blocks if b.label == "controller")
 
     # Make it a proportional controller (numerator = [K], denominator = [1])
-    diagram.update_block_parameter(controller.id, "numerator", [10.0])
-    diagram.update_block_parameter(controller.id, "denominator", [1.0])
+    diagram.update_block_parameter(controller.id, "num", [10.0])
+    diagram.update_block_parameter(controller.id, "den", [1.0])
 
     controller_after = diagram.get_block(controller.id)
-    assert controller_after.get_parameter("numerator") == [10.0]
-    assert controller_after.get_parameter("denominator") == [1.0]
+    assert controller_after.get_parameter("num") == [10.0]
+    assert controller_after.get_parameter("den") == [1.0]
 
 
 def test_template_round_trip_serialization():
@@ -362,13 +362,13 @@ def test_template_modified_parameters_affect_export():
 
     # Modify controller gain
     controller = next(b for b in diagram.blocks if b.label == "controller")
-    diagram.update_block_parameter(controller.id, "numerator", [10.0])  # K=10
-    diagram.update_block_parameter(controller.id, "denominator", [1.0])
+    diagram.update_block_parameter(controller.id, "num", [10.0])  # K=10
+    diagram.update_block_parameter(controller.id, "den", [1.0])
 
     # Modify plant
     plant = next(b for b in diagram.blocks if b.label == "plant")
-    diagram.update_block_parameter(plant.id, "numerator", [2.0])
-    diagram.update_block_parameter(plant.id, "denominator", [1.0, 1.0])  # 2/(s+1)
+    diagram.update_block_parameter(plant.id, "num", [2.0])
+    diagram.update_block_parameter(plant.id, "den", [1.0, 1.0])  # 2/(s+1)
 
     # Get new system
     sys_modified = diagram.get_tf("r", "y")
@@ -393,10 +393,10 @@ def test_template_step_response():
     controller = next(b for b in diagram.blocks if b.label == "controller")
     plant = next(b for b in diagram.blocks if b.label == "plant")
 
-    diagram.update_block_parameter(controller.id, "numerator", [5.0])
-    diagram.update_block_parameter(controller.id, "denominator", [1.0])
-    diagram.update_block_parameter(plant.id, "numerator", [2.0])
-    diagram.update_block_parameter(plant.id, "denominator", [1.0, 3.0])
+    diagram.update_block_parameter(controller.id, "num", [5.0])
+    diagram.update_block_parameter(controller.id, "den", [1.0])
+    diagram.update_block_parameter(plant.id, "num", [2.0])
+    diagram.update_block_parameter(plant.id, "den", [1.0, 3.0])
 
     # Get closed-loop system
     sys = diagram.get_tf("u", "y")

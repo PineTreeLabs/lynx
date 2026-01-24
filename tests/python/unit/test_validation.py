@@ -62,7 +62,7 @@ class TestAlgebraicLoopDetection:
         #           |_____|  (feedback through Gain)
         diagram.add_block("io_marker", "in1", marker_type="input", label="r")
         diagram.add_block("sum", "sum1", signs=["+", "-", "|"])
-        diagram.add_block("transfer_function", "tf1", numerator=[1], denominator=[1, 1])
+        diagram.add_block("transfer_function", "tf1", num=[1], den=[1, 1])
         diagram.add_block("gain", "g1", K=0.5)  # Feedback gain
         diagram.add_block("io_marker", "out1", marker_type="output", label="y")
 
@@ -120,7 +120,7 @@ class TestAlgebraicLoopDetection:
         diagram.add_block("io_marker", "in1", marker_type="input", label="r")
         diagram.add_block("sum", "sum1", signs=["+", "-", "|"])
         diagram.add_block(
-            "transfer_function", "tf1", numerator=[2, 1], denominator=[1, 1]
+            "transfer_function", "tf1", num=[2, 1], den=[1, 1]
         )  # Same order!
         diagram.add_block("gain", "g1", K=0.5)
         diagram.add_block("io_marker", "out1", marker_type="output", label="y")
