@@ -5,7 +5,7 @@
       "id": "io_marker_1769104376714",
       "type": "io_marker",
       "position": {
-        "x": -240.5905970616593,
+        "x": -197.64702939683562,
         "y": 152.0
       },
       "label": "ref",
@@ -30,7 +30,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "ref"
+          "label": "io_marker_1769104376714"
         }
       ]
     },
@@ -38,7 +38,7 @@
       "id": "sum_1769104378916",
       "type": "sum",
       "position": {
-        "x": -104.06501749566351,
+        "x": -34.28172004032503,
         "y": 140.0
       },
       "label": "sum_1769104378916",
@@ -80,13 +80,13 @@
       "id": "transfer_function_1769104391099",
       "type": "transfer_function",
       "position": {
-        "x": 23.219236918925873,
+        "x": 110.89568756794091,
         "y": 143.0
       },
-      "label": "transfer_function_1769104391099",
+      "label": "controller2",
       "flipped": false,
       "custom_latex": "C_\\mathrm{outer}",
-      "label_visible": false,
+      "label_visible": true,
       "width": null,
       "height": null,
       "parameters": [
@@ -168,10 +168,10 @@
         "x": 409.02688281546693,
         "y": 143.0
       },
-      "label": "transfer_function_1769104432548",
+      "label": "controller1",
       "flipped": false,
       "custom_latex": "C_\\mathrm{inner}",
-      "label_visible": false,
+      "label_visible": true,
       "width": null,
       "height": null,
       "parameters": [
@@ -211,10 +211,10 @@
         "x": 695.0769322737476,
         "y": 143.0
       },
-      "label": "transfer_function_1769104459099",
+      "label": "plant1",
       "flipped": false,
       "custom_latex": "G_\\mathrm{inner}",
-      "label_visible": false,
+      "label_visible": true,
       "width": null,
       "height": null,
       "parameters": [
@@ -318,7 +318,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "noise_inner"
+          "label": "io_marker_1769104543998"
         }
       ]
     },
@@ -329,10 +329,10 @@
         "x": 990.9726020194248,
         "y": 143.0
       },
-      "label": "transfer_function_1769104565181",
+      "label": "plant2",
       "flipped": false,
       "custom_latex": "G_\\mathrm{outer}",
-      "label_visible": false,
+      "label_visible": true,
       "width": null,
       "height": null,
       "parameters": [
@@ -436,7 +436,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "noise_outer"
+          "label": "io_marker_1769104595580"
         }
       ]
     },
@@ -469,7 +469,7 @@
         {
           "id": "in",
           "type": "input",
-          "label": "output1"
+          "label": "io_marker_1769104636965"
         }
       ]
     },
@@ -502,7 +502,7 @@
         {
           "id": "in",
           "type": "input",
-          "label": "output2"
+          "label": "io_marker_1769104757730"
         }
       ]
     },
@@ -577,40 +577,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "disturbance_inner"
-        }
-      ]
-    },
-    {
-      "id": "gain_1769247559324",
-      "type": "gain",
-      "position": {
-        "x": 185.54285070597902,
-        "y": 145.5
-      },
-      "label": "gain_1769247559324",
-      "flipped": false,
-      "custom_latex": null,
-      "label_visible": false,
-      "width": 60.0,
-      "height": 45.0,
-      "parameters": [
-        {
-          "name": "K",
-          "value": 1,
-          "expression": null
-        }
-      ],
-      "ports": [
-        {
-          "id": "in",
-          "type": "input",
-          "label": null
-        },
-        {
-          "id": "out",
-          "type": "output",
-          "label": null
+          "label": "io_marker_1769113271705"
         }
       ]
     }
@@ -741,20 +708,16 @@
       "target_port_id": "in2",
       "waypoints": [
         {
-          "x": 1239.7888728020953,
-          "y": 168.00051625622424
+          "x": 1239.7887693656594,
+          "y": 168.0002396564157
         },
         {
-          "x": 1239.7888728020953,
-          "y": 341.0815860618435
+          "x": 1239.7887693656594,
+          "y": 293.1515970827903
         },
         {
-          "x": -76.0649817653404,
-          "y": 341.0815860618435
-        },
-        {
-          "x": -76.0649817653404,
-          "y": 218.0000202612333
+          "x": -6.281726108969533,
+          "y": 293.1515970827903
         }
       ],
       "label": null,
@@ -820,40 +783,12 @@
       "label_visible": true
     },
     {
-      "id": "conn_1769247571655",
+      "id": "conn_1769254067632",
       "source_block_id": "transfer_function_1769104391099",
-      "source_port_id": "out",
-      "target_block_id": "gain_1769247559324",
-      "target_port_id": "in",
-      "waypoints": [
-        {
-          "x": 155.87722946344257,
-          "y": 168.0002668913587
-        },
-        {
-          "x": 155.87722946344257,
-          "y": 168.0002668913587
-        }
-      ],
-      "label": "u1",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769247573307",
-      "source_block_id": "gain_1769247559324",
       "source_port_id": "out",
       "target_block_id": "sum_1769104411915",
       "target_port_id": "in1",
-      "waypoints": [
-        {
-          "x": 269.54296964050775,
-          "y": 167.99993873069732
-        },
-        {
-          "x": 269.54296964050775,
-          "y": 167.99993873069732
-        }
-      ],
+      "waypoints": [],
       "label": "r2",
       "label_visible": true
     }
