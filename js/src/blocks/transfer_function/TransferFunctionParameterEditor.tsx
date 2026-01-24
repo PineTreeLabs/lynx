@@ -19,8 +19,8 @@ export interface ParameterEditorProps {
 
 export default function TransferFunctionParameterEditor({ block, onUpdate }: ParameterEditorProps) {
   // Get parameter objects
-  const numParam = block.parameters?.find((p) => p.name === "numerator");
-  const denParam = block.parameters?.find((p) => p.name === "denominator");
+  const numParam = block.parameters?.find((p) => p.name === "num");
+  const denParam = block.parameters?.find((p) => p.name === "den");
 
   // Extract expressions (fallback to stringified values for old diagrams)
   const numExpression =
@@ -42,7 +42,7 @@ export default function TransferFunctionParameterEditor({ block, onUpdate }: Par
 
   // Initialize expressions when block changes
   useEffect(() => {
-    const param = block.parameters?.find((p) => p.name === "numerator");
+    const param = block.parameters?.find((p) => p.name === "num");
     const expr =
       param?.expression ??
       (Array.isArray(param?.value) ? param.value.join(",") : String(param?.value ?? "[1]"));
@@ -50,7 +50,7 @@ export default function TransferFunctionParameterEditor({ block, onUpdate }: Par
   }, [block.parameters]);
 
   useEffect(() => {
-    const param = block.parameters?.find((p) => p.name === "denominator");
+    const param = block.parameters?.find((p) => p.name === "den");
     const expr =
       param?.expression ??
       (Array.isArray(param?.value) ? param.value.join(",") : String(param?.value ?? "[1,1]"));
@@ -74,7 +74,7 @@ export default function TransferFunctionParameterEditor({ block, onUpdate }: Par
 
   // Apply numerator expression
   const handleNumApply = () => {
-    onUpdate(block.id, "numerator", numExpressionInput);
+    onUpdate(block.id, "num", numExpressionInput);
   };
 
   // Handle denominator expression change
@@ -84,7 +84,7 @@ export default function TransferFunctionParameterEditor({ block, onUpdate }: Par
 
   // Apply denominator expression
   const handleDenApply = () => {
-    onUpdate(block.id, "denominator", denExpressionInput);
+    onUpdate(block.id, "den", denExpressionInput);
   };
 
   return (

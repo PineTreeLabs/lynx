@@ -197,6 +197,7 @@ export default function DiagramCanvas() {
 
     // Initial load
     const initialState = getDiagramState(model);
+    setDiagramState(initialState); // Store initial state for parameter panel
     setNodes(initialState.blocks.map(blockToNode));
     setEdges(initialState.connections.map(connectionToEdgeWithColor));
 
@@ -377,26 +378,10 @@ export default function DiagramCanvas() {
 
   // Edge-aware fitView callback (defined before keyboard shortcuts that use it)
   const edgeAwareFitView = useCallback(() => {
-    console.log("[DiagramCanvas.edgeAwareFitView] Called");
-    if (!reactFlowInstance.current) {
-      console.log("[DiagramCanvas.edgeAwareFitView] No reactFlowInstance");
-      return;
-    }
+    if (!reactFlowInstance.current) return;
 
     const containerElement = document.querySelector(".react-flow") as HTMLElement;
-    if (!containerElement) {
-      console.log("[DiagramCanvas.edgeAwareFitView] No container element");
-      return;
-    }
-
-    console.log("[DiagramCanvas.edgeAwareFitView] Container size:", {
-      width: containerElement.offsetWidth,
-      height: containerElement.offsetHeight,
-    });
-    console.log("[DiagramCanvas.edgeAwareFitView] Nodes/edges count:", {
-      nodes: nodes.length,
-      edges: edges.length,
-    });
+    if (!containerElement) return;
 
     const contentBounds = getContentBounds(nodes, edges);
     const viewport = calculateFitViewport(
@@ -405,26 +390,15 @@ export default function DiagramCanvas() {
       containerElement.offsetHeight,
       FIT_VIEW_OPTIONS
     );
-    console.log("[DiagramCanvas.edgeAwareFitView] Setting viewport:", viewport);
     reactFlowInstance.current.setViewport(viewport);
   }, [nodes, edges]);
 
   // Initial fitView when diagram first loads
   useEffect(() => {
-    console.log("[DiagramCanvas.initialFitView] Effect triggered:", {
-      isReactFlowReady,
-      nodeCount: nodes.length,
-    });
+    if (!isReactFlowReady || nodes.length === 0) return;
 
-    if (!isReactFlowReady || nodes.length === 0) {
-      console.log("[DiagramCanvas.initialFitView] Skipping (not ready or no nodes)");
-      return;
-    }
-
-    console.log("[DiagramCanvas.initialFitView] Scheduling fitView in 100ms");
     // Wait for React Flow to render nodes, then fit view
     const timer = setTimeout(() => {
-      console.log("[DiagramCanvas.initialFitView] Executing fitView now");
       edgeAwareFitView();
     }, 100);
 
@@ -671,7 +645,10 @@ export default function DiagramCanvas() {
 
   // Handle block double-click (opens parameter panel)
   const onNodeDoubleClick = useCallback(
-    (_event: React.MouseEvent, node: Node) => {
+    (event: React.MouseEvent, node: Node) => {
+      event.stopPropagation(); // Prevent zoom behavior
+      event.preventDefault();  // Prevent any default browser behavior
+
       // Update our custom selectedBlockId for ParameterPanel
       setSelectedBlockId(node.id);
       if (model) {
@@ -886,6 +863,7 @@ export default function DiagramCanvas() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodeDragThreshold={5}
+        zoomOnDoubleClick={false}
         defaultViewport={DEFAULT_VIEWPORT}
         minZoom={MIN_ZOOM}
         maxZoom={MAX_ZOOM}

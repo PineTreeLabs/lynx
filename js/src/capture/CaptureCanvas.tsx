@@ -65,47 +65,37 @@ function CaptureCanvasInner({
 
   // Perform capture when request changes and canvas is ready
   useEffect(() => {
-    console.log("[CaptureCanvasInner] Capture effect check:", {
-      hasCaptureRequest: !!captureRequest,
-      isReady,
-      hasContainer: !!containerRef.current,
-      hasInstance: !!reactFlowInstance.current,
-      nodeCount: nodes.length,
-    });
-
     if (!captureRequest || !isReady || !containerRef.current || !reactFlowInstance.current) {
       return;
     }
 
     // Wait for nodes to be available
     if (nodes.length === 0) {
-      console.log("[CaptureCanvasInner] Waiting for nodes...");
       return;
     }
 
     const performCapture = async () => {
       try {
-        console.log("[CaptureCanvasInner] Starting capture with", nodes.length, "nodes");
-
         // Calculate content bounds including edge waypoints (not just nodes)
-        console.log("[CaptureCanvasInner] Nodes/edges:", { nodes: nodes.length, edges: edges.length });
         const contentBounds = getContentBounds(nodes, edges);
-        console.log("[CaptureCanvasInner] Content bounds (with edges):", contentBounds);
 
-        // Add padding to content bounds
-        const PADDING_PX = 40; // 40px padding on all sides
-        const paddedBounds = {
-          x: contentBounds.x - PADDING_PX,
-          y: contentBounds.y - PADDING_PX,
-          width: contentBounds.width + PADDING_PX * 2,
-          height: contentBounds.height + PADDING_PX * 2,
-        };
-        console.log("[CaptureCanvasInner] Padded bounds (40px padding):", paddedBounds);
+        // Use percentage-based padding for consistency with DiagramCanvas
+        const CAPTURE_PADDING = 0.1; // 10% padding on each side
 
-        // Determine output dimensions
-        const outputWidth = Math.ceil(captureRequest.width ?? paddedBounds.width);
-        const outputHeight = Math.ceil(captureRequest.height ?? paddedBounds.height);
-        console.log("[CaptureCanvasInner] Output dimensions:", { outputWidth, outputHeight });
+        // Determine output dimensions (use content with padding if not specified)
+        let outputWidth: number;
+        let outputHeight: number;
+
+        if (captureRequest.width !== null || captureRequest.height !== null) {
+          // User specified dimensions
+          outputWidth = Math.ceil(captureRequest.width ?? contentBounds.width * 1.2);
+          outputHeight = Math.ceil(captureRequest.height ?? contentBounds.height * 1.2);
+        } else {
+          // Auto-size to content with padding
+          const paddingMultiplier = 1 / (1 - CAPTURE_PADDING * 2); // Inverse of available space
+          outputWidth = Math.ceil(contentBounds.width * paddingMultiplier);
+          outputHeight = Math.ceil(contentBounds.height * paddingMultiplier);
+        }
 
         // Resize container to match output dimensions
         if (containerRef.current) {
@@ -116,14 +106,13 @@ function CaptureCanvasInner({
         // Wait for resize to take effect
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Calculate viewport to fit content bounds (including edges) with padding
+        // Calculate viewport to fit content bounds with padding
         const viewport = calculateFitViewport(
           contentBounds,
           outputWidth,
           outputHeight,
-          { padding: PADDING_PX / Math.max(outputWidth, outputHeight), minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM }
+          { padding: CAPTURE_PADDING, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM }
         );
-        console.log("[CaptureCanvasInner] Setting viewport:", viewport);
         reactFlowInstance.current?.setViewport(viewport);
 
         // Wait for viewport adjustment and rendering to complete
@@ -138,19 +127,9 @@ function CaptureCanvasInner({
           throw new Error("Could not find React Flow viewport element");
         }
 
-        console.log(
-          "[CaptureCanvasInner] Capturing",
-          captureRequest.format,
-          "at",
-          outputWidth,
-          "x",
-          outputHeight
-        );
-
         // Compute background color from theme (html-to-image can't resolve CSS variables)
         const computedStyle = getComputedStyle(containerRef.current);
         const backgroundColor = computedStyle.getPropertyValue("--color-slate-50").trim() || "#fafbfc";
-        console.log("[CaptureCanvasInner] Using background color:", backgroundColor);
 
         let data: string;
         if (captureRequest.format === "png") {
@@ -164,8 +143,6 @@ function CaptureCanvasInner({
         } else {
           data = await captureToSvg(viewportElement, outputWidth, outputHeight);
         }
-
-        console.log("[CaptureCanvasInner] Capture successful, data length:", data.length);
 
         onCaptureComplete({
           success: true,
@@ -209,33 +186,23 @@ function CaptureCanvasInner({
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onInit={(instance) => {
-          console.log("[CaptureCanvasInner.onInit] ReactFlow initialized");
           reactFlowInstance.current = instance;
 
           // Use edge-aware fitView on init
-          console.log("[CaptureCanvasInner.onInit] Nodes/edges:", { nodes: nodes.length, edges: edges.length });
           const contentBounds = getContentBounds(nodes, edges);
           const container = containerRef.current;
           if (container) {
-            console.log("[CaptureCanvasInner.onInit] Container size:", {
-              width: container.offsetWidth,
-              height: container.offsetHeight,
-            });
             const viewport = calculateFitViewport(
               contentBounds,
               container.offsetWidth,
               container.offsetHeight,
               { padding: 0.1, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM }
             );
-            console.log("[CaptureCanvasInner.onInit] Setting viewport:", viewport);
             instance.setViewport(viewport);
-          } else {
-            console.log("[CaptureCanvasInner.onInit] No container");
           }
 
           // Mark as ready after a short delay to ensure render is complete
           setTimeout(() => {
-            console.log("[CaptureCanvasInner] Setting isReady=true");
             setIsReady(true);
           }, 100);
         }}
@@ -303,13 +270,11 @@ export default function CaptureCanvas() {
 
     // Initial load
     const initialState = getDiagramState(model);
-    console.log("[CaptureCanvas] Initial state:", initialState.blocks.length, "blocks");
     setNodes(initialState.blocks.map(blockToNode));
     setEdges(initialState.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)")));
 
     // Subscribe to changes (in case state updates after mount)
     const unsubscribe = onDiagramStateChange(model, (state: DiagramState) => {
-      console.log("[CaptureCanvas] State updated:", state.blocks.length, "blocks");
       setNodes(state.blocks.map(blockToNode));
       setEdges(state.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)")));
     });
@@ -329,7 +294,6 @@ export default function CaptureCanvas() {
       if (request.timestamp <= lastTimestamp.current) return;
       lastTimestamp.current = request.timestamp;
 
-      console.log("[CaptureCanvas] Received capture request:", request);
       setCaptureRequest(request);
     };
 
@@ -352,21 +316,14 @@ export default function CaptureCanvas() {
     (result: CaptureResult) => {
       if (!model) return;
 
-      console.log("[CaptureCanvas] Capture complete:", result.success ? "success" : result.error);
-
       if (result.success && result.data) {
         const displayInline = captureRequest?.displayInline ?? true;
         const mimeType = result.format === "png" ? "image/png" : "image/svg+xml";
 
         if (displayInline) {
           // Display inline - inject <img> into the widget container
-          console.log("[CaptureCanvas] Displaying inline");
-          console.log("[CaptureCanvas] outerRef.current:", outerRef.current);
-
-          // Find the anywidget container (parent of our React root)
           // Navigate up from our ref to find the .lynx-widget container
           const lynxWidget = outerRef.current?.closest(".lynx-widget");
-          console.log("[CaptureCanvas] Found .lynx-widget:", lynxWidget);
 
           if (lynxWidget) {
             // Create image element
@@ -398,17 +355,8 @@ export default function CaptureCanvas() {
               }
               parent = parent.parentElement;
             }
-
-            console.log("[CaptureCanvas] Image injected successfully");
           } else {
-            console.error("[CaptureCanvas] Could not find .lynx-widget container");
-            // Fallback: try to find any parent and log the DOM structure
-            let parent = outerRef.current?.parentElement;
-            console.log("[CaptureCanvas] Parent chain:");
-            while (parent) {
-              console.log("  -", parent.tagName, parent.className);
-              parent = parent.parentElement;
-            }
+            console.error("[CaptureCanvas] Could not find .lynx-widget container for inline display");
           }
         }
       }

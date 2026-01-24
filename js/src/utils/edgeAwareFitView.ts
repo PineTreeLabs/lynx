@@ -50,7 +50,6 @@ const BLOCK_DEFAULTS: Record<string, { width: number; height: number }> = {
  */
 export function getContentBounds(nodes: Node[], edges: Edge[]): ContentBounds {
   if (nodes.length === 0) {
-    console.log("[getContentBounds] No nodes, returning default bounds");
     return { x: 0, y: 0, width: 800, height: 600 };
   }
 
@@ -60,41 +59,22 @@ export function getContentBounds(nodes: Node[], edges: Edge[]): ContentBounds {
   let maxX = -Infinity;
   let maxY = -Infinity;
 
-  console.log(`[getContentBounds] Calculating bounds for ${nodes.length} nodes, ${edges.length} edges`);
-
   nodes.forEach((node) => {
     const defaults = BLOCK_DEFAULTS[node.type || "gain"] || { width: 100, height: 60 };
     const width = node.data?.width ?? defaults.width;
     const height = node.data?.height ?? defaults.height;
 
-    const nodeMinX = node.position.x;
-    const nodeMinY = node.position.y;
-    const nodeMaxX = node.position.x + width;
-    const nodeMaxY = node.position.y + height;
-
-    minX = Math.min(minX, nodeMinX);
-    minY = Math.min(minY, nodeMinY);
-    maxX = Math.max(maxX, nodeMaxX);
-    maxY = Math.max(maxY, nodeMaxY);
+    minX = Math.min(minX, node.position.x);
+    minY = Math.min(minY, node.position.y);
+    maxX = Math.max(maxX, node.position.x + width);
+    maxY = Math.max(maxY, node.position.y + height);
   });
 
-  const nodeBounds = {
-    x: minX,
-    y: minY,
-    width: maxX - minX,
-    height: maxY - minY,
-  };
-  console.log("[getContentBounds] Node-only bounds:", nodeBounds);
-
   // Expand to include edge waypoints
-  let waypointCount = 0;
-  let edgesWithWaypoints = 0;
   edges.forEach((edge) => {
     const waypoints = edge.data?.waypoints;
-    if (waypoints && Array.isArray(waypoints) && waypoints.length > 0) {
-      edgesWithWaypoints++;
+    if (waypoints && Array.isArray(waypoints)) {
       waypoints.forEach((waypoint: { x: number; y: number }) => {
-        waypointCount++;
         minX = Math.min(minX, waypoint.x);
         minY = Math.min(minY, waypoint.y);
         maxX = Math.max(maxX, waypoint.x);
@@ -103,17 +83,12 @@ export function getContentBounds(nodes: Node[], edges: Edge[]): ContentBounds {
     }
   });
 
-  console.log(`[getContentBounds] Found ${waypointCount} waypoints across ${edgesWithWaypoints} edges`);
-
-  const finalBounds = {
+  return {
     x: minX,
     y: minY,
     width: maxX - minX,
     height: maxY - minY,
   };
-  console.log("[getContentBounds] Final bounds (with edges):", finalBounds);
-
-  return finalBounds;
 }
 
 /**
@@ -131,34 +106,19 @@ export function calculateFitViewport(
   containerHeight: number,
   options: FitViewOptions = {}
 ): Viewport {
-  const { padding = 0.4, minZoom = 0.3, maxZoom = 2 } = options;
-
-  console.log("[calculateFitViewport] Input:", {
-    contentBounds,
-    containerWidth,
-    containerHeight,
-    padding,
-    minZoom,
-    maxZoom,
-  });
+  const { padding = 0.1, minZoom = 0.3, maxZoom = 2 } = options;
 
   // Calculate available space after padding
   const availableWidth = containerWidth * (1 - padding * 2);
   const availableHeight = containerHeight * (1 - padding * 2);
-
-  console.log("[calculateFitViewport] Available space:", { availableWidth, availableHeight });
 
   // Calculate zoom to fit content
   const scaleX = availableWidth / contentBounds.width;
   const scaleY = availableHeight / contentBounds.height;
   let zoom = Math.min(scaleX, scaleY);
 
-  console.log("[calculateFitViewport] Calculated zoom:", { scaleX, scaleY, rawZoom: zoom });
-
   // Apply zoom limits
   zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
-
-  console.log("[calculateFitViewport] Zoom after limits:", zoom);
 
   // Calculate center position
   const contentCenterX = contentBounds.x + contentBounds.width / 2;
@@ -168,8 +128,5 @@ export function calculateFitViewport(
   const x = containerWidth / 2 - contentCenterX * zoom;
   const y = containerHeight / 2 - contentCenterY * zoom;
 
-  const viewport = { x, y, zoom };
-  console.log("[calculateFitViewport] Final viewport:", viewport);
-
-  return viewport;
+  return { x, y, zoom };
 }
