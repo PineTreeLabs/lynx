@@ -56,12 +56,12 @@ except ValidationError as e:
 ```python
 # Before (invalid)
 diagram.add_block('gain', 'K1', K=5.0)
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 
 # After (valid)
 diagram.add_block('io_marker', 'r', marker_type='input', label='r')
 diagram.add_block('gain', 'K1', K=5.0)
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 diagram.add_block('io_marker', 'y', marker_type='output', label='y')
 ```
 
@@ -76,12 +76,12 @@ diagram.add_block('io_marker', 'y', marker_type='output', label='y')
 ```python
 # Before (invalid) - plant has no input connection
 diagram.add_block('io_marker', 'r', marker_type='input', label='r')
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 # Missing connection!
 
 # After (valid)
 diagram.add_block('io_marker', 'r', marker_type='input', label='r')
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 diagram.add_connection('c1', 'r', 'out', 'plant', 'in')  # Connect input
 ```
 
@@ -106,7 +106,7 @@ diagram.add_connection('c3', 'K2', 'out', 'error', 'in2')  # Direct feedback - a
 diagram.add_block('sum', 'error', signs=['+', '-', '|'])
 diagram.add_block('gain', 'K1', K=5.0)
 diagram.add_block('transfer_function', 'plant',  # Add dynamics here
-                  numerator=[1.0], denominator=[1.0, 1.0])
+                  num=[1.0], den=[1.0, 1.0])
 diagram.add_connection('c1', 'error', 'out', 'K1', 'in')
 diagram.add_connection('c2', 'K1', 'out', 'plant', 'in')
 diagram.add_connection('c3', 'plant', 'out', 'error', 'in2')  # Now valid

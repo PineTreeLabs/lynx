@@ -68,8 +68,8 @@ diagram.add_block('gain', 'controller', K=5.0,
 
 # Add plant: 2/(s+3)
 diagram.add_block('transfer_function', 'plant',
-                  numerator=[2.0],
-                  denominator=[1.0, 3.0],
+                  num=[2.0],
+                  den=[1.0, 3.0],
                   position={'x': 300, 'y': 0})
 
 # Add summing junction for error calculation

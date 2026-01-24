@@ -7,7 +7,7 @@ Lynx provides five block types for building control system diagrams. Each block 
 | Block Type | Use Case | Key Parameters | Ports |
 |------------|----------|----------------|-------|
 | **Gain** | Scalar multiplication, controller gains | `K` (float) | 1 input, 1 output |
-| **TransferFunction** | LTI systems in s-domain, plant models | `numerator`, `denominator` (arrays) | 1 input, 1 output |
+| **TransferFunction** | LTI systems in s-domain, plant models | `num`, `den` (arrays) | 1 input, 1 output |
 | **StateSpace** | MIMO systems, state feedback | `A`, `B`, `C`, `D` (matrices) | 1+ inputs, 1+ outputs |
 | **Sum** | Adding/subtracting signals, error calculation | `signs` (list: +/-/\|) | 3 inputs max, 1 output |
 | **IOMarker** | System boundaries, signal labels | `marker_type`, `label` | 1 input OR 1 output |
@@ -46,8 +46,8 @@ Represents LTI systems in Laplace domain: $G(s) = \frac{N(s)}{D(s)}$
 
 ### Parameters
 
-- **numerator** (`list[float]`): Numerator coefficients (descending powers of s)
-- **denominator** (`list[float]`): Denominator coefficients (descending powers of s)
+- **num** (`list[float]`): Numerator coefficients (descending powers of s)
+- **den** (`list[float]`): den coefficients (descending powers of s)
 - **label** (`str`, optional): Block label
 - **custom_latex** (`str`, optional): Custom LaTeX for rendering
 - **position** (`dict`, optional): Position coordinates
@@ -57,18 +57,18 @@ Represents LTI systems in Laplace domain: $G(s) = \frac{N(s)}{D(s)}$
 ```python
 # First-order system: G(s) = 2/(s+3)
 diagram.add_block('transfer_function', 'plant',
-                  numerator=[2.0],
-                  denominator=[1.0, 3.0])
+                  num=[2.0],
+                  den=[1.0, 3.0])
 
 # Second-order system: G(s) = (s+1)/(s^2 + 2s + 1)
 diagram.add_block('transfer_function', 'filter',
-                  numerator=[1.0, 1.0],
-                  denominator=[1.0, 2.0, 1.0])
+                  num=[1.0, 1.0],
+                  den=[1.0, 2.0, 1.0])
 
 # Pure integrator: G(s) = 1/s
 diagram.add_block('transfer_function', 'integrator',
-                  numerator=[1.0],
-                  denominator=[1.0, 0.0])
+                  num=[1.0],
+                  den=[1.0, 0.0])
 ```
 
 ### LaTeX Rendering

@@ -69,7 +69,7 @@ pip install jupyter
 :hidden:
 
 quickstart
-concepts
+concepts/index
 examples/index
 api/index
 ```

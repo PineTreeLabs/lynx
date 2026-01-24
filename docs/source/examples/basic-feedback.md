@@ -44,7 +44,7 @@ diagram.add_block('io_marker', 'r', marker_type='input', label='r', position={'x
 diagram.add_block('sum', 'error', signs=['+', '-', '|'], position={'x': 80, 'y': 0})
 diagram.add_block('gain', 'controller', K=5.0, position={'x': 180, 'y': 0})
 diagram.add_block('transfer_function', 'plant',
-                  numerator=[2.0], denominator=[1.0, 3.0],
+                  num=[2.0], den=[1.0, 3.0],
                   position={'x': 300, 'y': 0})
 diagram.add_block('io_marker', 'y', marker_type='output', label='y', position={'x': 420, 'y': 0})
 

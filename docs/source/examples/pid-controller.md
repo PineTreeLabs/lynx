@@ -42,14 +42,14 @@ diagram.add_block('sum', 'error', signs=['+', '-', '|'], position={'x': 60, 'y':
 # Implementing as: C(s) = (Kp*s + Ki) / s
 Kp, Ki = 10.0, 5.0
 diagram.add_block('transfer_function', 'pid',
-                  numerator=[Kp, Ki],
-                  denominator=[1.0, 0.0],
+                  num=[Kp, Ki],
+                  den=[1.0, 0.0],
                   position={'x': 180, 'y': 0})
 
 # Plant: G(s) = 1/(s^2 + 2s + 1)
 diagram.add_block('transfer_function', 'plant',
-                  numerator=[1.0],
-                  denominator=[1.0, 2.0, 1.0],
+                  num=[1.0],
+                  den=[1.0, 2.0, 1.0],
                   position={'x': 320, 'y': 0})
 
 # Connections

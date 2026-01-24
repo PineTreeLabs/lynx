@@ -35,8 +35,8 @@ diagram.add_block('gain', 'controller', K=5.0, position={'x': 100, 'y': 50})
 
 # Transfer function: G(s) = 2/(s+3)
 diagram.add_block('transfer_function', 'plant',
-                  numerator=[2.0],
-                  denominator=[1.0, 3.0],
+                  num=[2.0],
+                  den=[1.0, 3.0],
                   position={'x': 200, 'y': 50})
 
 # State-space block with A, B, C, D matrices
@@ -140,7 +140,7 @@ diagram.add_block('io_marker', 'r', marker_type='input', label='r', position={'x
 diagram.add_block('sum', 'error', signs=['+', '-', '|'], position={'x': 80, 'y': 0})
 diagram.add_block('gain', 'Kp', K=10.0, label='Proportional', position={'x': 150, 'y': 0})
 diagram.add_block('transfer_function', 'plant',
-                  numerator=[1.0], denominator=[1.0, 2.0, 1.0],
+                  num=[1.0], den=[1.0, 2.0, 1.0],
                   position={'x': 250, 'y': 0})
 diagram.add_block('io_marker', 'y', marker_type='output', label='y', position={'x': 350, 'y': 0})
 
