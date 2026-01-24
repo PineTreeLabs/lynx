@@ -62,29 +62,29 @@ Single Python library project:
 
 > **RED Phase**: Write failing tests BEFORE implementing __getitem__
 
-- [ ] T001 [P] [US1] Test TypeError for integer key in tests/test_diagram.py
-- [ ] T002 [P] [US1] Test TypeError for None key in tests/test_diagram.py
-- [ ] T003 [P] [US1] Test TypeError for object key in tests/test_diagram.py
-- [ ] T004 [P] [US1] Test KeyError for missing label in tests/test_diagram.py
-- [ ] T005 [P] [US1] Test KeyError for empty diagram in tests/test_diagram.py
-- [ ] T006 [P] [US1] Test KeyError for empty string label in tests/test_diagram.py
-- [ ] T007 [P] [US1] Test successful retrieval with unique label in tests/test_diagram.py
-- [ ] T008 [P] [US1] Test unlabeled blocks (None) are skipped in tests/test_diagram.py
-- [ ] T009 [P] [US1] Test case-sensitive matching ("Plant" vs "plant") in tests/test_diagram.py
-- [ ] T010 [P] [US1] Test special characters in labels in tests/test_diagram.py
+- [X] T001 [P] [US1] Test TypeError for integer key in tests/test_diagram.py
+- [X] T002 [P] [US1] Test TypeError for None key in tests/test_diagram.py
+- [X] T003 [P] [US1] Test TypeError for object key in tests/test_diagram.py
+- [X] T004 [P] [US1] Test KeyError for missing label in tests/test_diagram.py
+- [X] T005 [P] [US1] Test KeyError for empty diagram in tests/test_diagram.py
+- [X] T006 [P] [US1] Test KeyError for empty string label in tests/test_diagram.py
+- [X] T007 [P] [US1] Test successful retrieval with unique label in tests/test_diagram.py
+- [X] T008 [P] [US1] Test unlabeled blocks (None) are skipped in tests/test_diagram.py
+- [X] T009 [P] [US1] Test case-sensitive matching ("Plant" vs "plant") in tests/test_diagram.py
+- [X] T010 [P] [US1] Test special characters in labels in tests/test_diagram.py
 
 ### Implementation for User Story 1
 
 > **GREEN Phase**: Implement __getitem__ to make tests pass
 
-- [ ] T011 [US1] Implement Diagram.__getitem__ method with type validation in src/lynx/diagram.py
-- [ ] T012 [US1] Add label matching logic (case-sensitive, skip unlabeled blocks) in src/lynx/diagram.py
-- [ ] T013 [US1] Add error messages with requested label for KeyError in src/lynx/diagram.py
-- [ ] T014 [US1] Run tests and verify all US1 tests pass
+- [X] T011 [US1] Implement Diagram.__getitem__ method with type validation in src/lynx/diagram.py
+- [X] T012 [US1] Add label matching logic (case-sensitive, skip unlabeled blocks) in src/lynx/diagram.py
+- [X] T013 [US1] Add error messages with requested label for KeyError in src/lynx/diagram.py
+- [X] T014 [US1] Run tests and verify all US1 tests pass
 
 > **REFACTOR Phase**: Improve implementation if needed (optional)
 
-- [ ] T015 [US1] Refactor __getitem__ for readability if needed in src/lynx/diagram.py
+- [X] T015 [US1] Refactor __getitem__ for readability if needed in src/lynx/diagram.py
 
 **Checkpoint**: Label indexing works for unique labels. Can retrieve blocks via diagram["label"].
 
@@ -100,21 +100,21 @@ Single Python library project:
 
 > **RED Phase**: Write failing tests BEFORE implementing duplicate detection
 
-- [ ] T016 [P] [US2] Test ValidationError for 2 duplicate labels with count and IDs in tests/test_diagram.py
-- [ ] T017 [P] [US2] Test ValidationError for 3+ duplicate labels in tests/test_diagram.py
-- [ ] T018 [P] [US2] Test unique label succeeds when duplicates exist elsewhere in tests/test_diagram.py
+- [X] T016 [P] [US2] Test ValidationError for 2 duplicate labels with count and IDs in tests/test_diagram.py
+- [X] T017 [P] [US2] Test ValidationError for 3+ duplicate labels in tests/test_diagram.py
+- [X] T018 [P] [US2] Test unique label succeeds when duplicates exist elsewhere in tests/test_diagram.py
 
 ### Implementation for User Story 2
 
 > **GREEN Phase**: Enhance __getitem__ to detect duplicates
 
-- [ ] T019 [US2] Add duplicate label detection to Diagram.__getitem__ in src/lynx/diagram.py
-- [ ] T020 [US2] Raise ValidationError with label, count, and block IDs for duplicates in src/lynx/diagram.py
-- [ ] T021 [US2] Run tests and verify all US2 tests pass
+- [X] T019 [US2] Add duplicate label detection to Diagram.__getitem__ in src/lynx/diagram.py
+- [X] T020 [US2] Raise ValidationError with label, count, and block IDs for duplicates in src/lynx/diagram.py
+- [X] T021 [US2] Run tests and verify all US2 tests pass
 
 > **REFACTOR Phase**: Improve implementation if needed (optional)
 
-- [ ] T022 [US2] Refactor duplicate detection logic for clarity if needed in src/lynx/diagram.py
+- [X] T022 [US2] Refactor duplicate detection logic for clarity if needed in src/lynx/diagram.py
 
 **Checkpoint**: Duplicate label detection works. diagram["label"] raises ValidationError with actionable info for duplicates.
 
@@ -130,27 +130,27 @@ Single Python library project:
 
 > **RED Phase**: Write failing tests BEFORE implementing parent references
 
-- [ ] T023 [P] [US3] Test Block.set_parameter() syncs to diagram in tests/test_diagram.py or tests/test_blocks.py
-- [ ] T024 [P] [US3] Test RuntimeError when block not attached to diagram in tests/test_blocks.py
-- [ ] T025 [P] [US3] Test RuntimeError when parent diagram deleted in tests/test_blocks.py
-- [ ] T026 [P] [US3] Test update_block_parameter accepts Block objects in tests/test_diagram.py
-- [ ] T027 [P] [US3] Test update_block_parameter still accepts string IDs (backward compat) in tests/test_diagram.py
-- [ ] T028 [P] [US3] Test serialization excludes _diagram attribute in tests/test_blocks.py
+- [X] T023 [P] [US3] Test Block.set_parameter() syncs to diagram in tests/test_diagram.py or tests/test_blocks.py
+- [X] T024 [P] [US3] Test RuntimeError when block not attached to diagram in tests/test_blocks.py
+- [X] T025 [P] [US3] Test RuntimeError when parent diagram deleted in tests/test_blocks.py
+- [X] T026 [P] [US3] Test update_block_parameter accepts Block objects in tests/test_diagram.py
+- [X] T027 [P] [US3] Test update_block_parameter still accepts string IDs (backward compat) in tests/test_diagram.py
+- [X] T028 [P] [US3] Test serialization excludes _diagram attribute in tests/test_blocks.py
 
 ### Implementation for User Story 3
 
 > **GREEN Phase**: Implement parent references and parameter update methods
 
-- [ ] T029 [P] [US3] Add _diagram weakref attribute to Block base class in src/lynx/blocks/base.py
-- [ ] T030 [P] [US3] Implement Block.set_parameter() method with delegation in src/lynx/blocks/base.py
-- [ ] T031 [US3] Update Diagram.add_block() to set block._diagram weakref in src/lynx/diagram.py
-- [ ] T032 [US3] Enhance Diagram.update_block_parameter() to accept Union[Block, str] in src/lynx/diagram.py
-- [ ] T033 [US3] Verify _diagram excluded from Block.to_dict() serialization in src/lynx/blocks/base.py
-- [ ] T034 [US3] Run tests and verify all US3 tests pass
+- [X] T029 [P] [US3] Add _diagram weakref attribute to Block base class in src/lynx/blocks/base.py
+- [X] T030 [P] [US3] Implement Block.set_parameter() method with delegation in src/lynx/blocks/base.py
+- [X] T031 [US3] Update Diagram.add_block() to set block._diagram weakref in src/lynx/diagram.py
+- [X] T032 [US3] Enhance Diagram.update_block_parameter() to accept Union[Block, str] in src/lynx/diagram.py
+- [X] T033 [US3] Verify _diagram excluded from Block.to_dict() serialization in src/lynx/blocks/base.py
+- [X] T034 [US3] Run tests and verify all US3 tests pass
 
 > **REFACTOR Phase**: Improve implementation if needed (optional)
 
-- [ ] T035 [US3] Refactor weakref handling for clarity if needed in src/lynx/blocks/base.py
+- [X] T035 [US3] Refactor weakref handling for clarity if needed in src/lynx/blocks/base.py
 
 **Checkpoint**: Parameter updates work naturally. Engineers can use block.set_parameter() or diagram.update_block_parameter(block, ...).
 
@@ -160,10 +160,10 @@ Single Python library project:
 
 **Purpose**: Verify all three user stories work together and validate against quickstart.md
 
-- [ ] T036 [P] Integration test: label indexing → parameter update → widget sync in tests/test_diagram.py
-- [ ] T037 [P] Integration test: label indexing with python-control export in tests/test_diagram.py
-- [ ] T038 Run all scenarios from quickstart.md and verify results
-- [ ] T039 Verify performance: 1000 blocks label lookup <10ms per quickstart.md
+- [X] T036 [P] Integration test: label indexing → parameter update → widget sync in tests/test_diagram.py
+- [X] T037 [P] Integration test: label indexing with python-control export in tests/test_diagram.py
+- [X] T038 Run all scenarios from quickstart.md and verify results
+- [X] T039 Verify performance: 1000 blocks label lookup <10ms per quickstart.md
 
 ---
 
@@ -171,11 +171,11 @@ Single Python library project:
 
 **Purpose**: Documentation and final cleanup
 
-- [ ] T040 [P] Update Diagram class docstring with label indexing examples in src/lynx/diagram.py
-- [ ] T041 [P] Update Block class docstring with set_parameter() examples in src/lynx/blocks/base.py
-- [ ] T042 Run full test suite (407 Python tests) and verify all pass
-- [ ] T043 Run type checker (mypy) and verify no new type errors
-- [ ] T044 Run linter (ruff) and verify no new lint errors
+- [X] T040 [P] Update Diagram class docstring with label indexing examples in src/lynx/diagram.py
+- [X] T041 [P] Update Block class docstring with set_parameter() examples in src/lynx/blocks/base.py
+- [X] T042 Run full test suite (489 Python tests) and verify all pass
+- [X] T043 Run type checker (mypy) and verify no new type errors
+- [X] T044 Run linter (ruff) and verify no new lint errors
 
 ---
 

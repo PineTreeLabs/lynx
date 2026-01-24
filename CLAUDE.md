@@ -225,6 +225,7 @@ When tests are included, they follow the same user story organization.
 - TypeScript 5.9 (frontend), Python 3.11+ (backend) + React 19.2.3, React Flow 11.11.4, anywidget, KaTeX 0.16.27, Pydantic (014-iomarker-latex-rendering)
 - JSON diagram files (existing persistence via Pydantic schemas) (014-iomarker-latex-rendering)
 - TypeScript 5.9 (frontend), Python 3.11+ (backend) + React 19.2.3, React Flow 11.11.4, anywidget (Jupyter widget framework), Pydantic (schema validation) (015-block-drag-detection)
+- Python 3.11+ + Pydantic 2.12+ (existing schema validation), python-control 0.10+ (existing) (017-diagram-label-indexing)
 
 ## Key Components
 
@@ -605,6 +606,7 @@ blocks/
 - `js/src/test/` - Test configuration and setup files
 
 ## Recent Changes
+- 017-diagram-label-indexing: Added Python 3.11+ + Pydantic 2.12+ (existing schema validation), python-control 0.10+ (existing)
 - **015-block-drag-detection**: Intelligent drag detection with 5-pixel movement threshold
   - Click-to-select (< 5px movement) vs drag-to-move (≥ 5px movement) behavior
   - Uses React Flow 11.11.4's `nodeDragThreshold={5}` prop for automatic click/drag separation
@@ -628,7 +630,6 @@ blocks/
   - 14 backend tests (5 auto-indexing + 6 renumbering + 3 integration), 13 frontend tests (6 parameter editor + 7 block including performance)
   - 95% coverage for io_marker.py, renumbering methods fully covered in diagram.py
   - TDD approach (RED-GREEN-REFACTOR) throughout implementation with strict test-first discipline
-- 013-editable-block-labels: Added TypeScript 5.9 (frontend), Python 3.11+ (backend) + React 19.2.3, React Flow 11.11.4, anywidget (Jupyter widget framework), Pydantic (schema validation)
   - Added `diagram.get_ss(from_signal, to_signal)` and `diagram.get_tf(from_signal, to_signal)` API
   - 3-tier signal reference system (IOMarker labels → connection labels → block_label.output_port)
   - Break-and-inject architecture for subsystem extraction preserving diagram immutability

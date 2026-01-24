@@ -385,9 +385,14 @@ class Diagram:
             factory_kwargs.update(kwargs)
 
         # Create block using factory
+        import weakref
+
         from lynx.blocks import create_block
 
         block = create_block(block_type, id, **factory_kwargs)
+
+        # Set parent diagram reference (weak reference to avoid circular refs)
+        block._diagram = weakref.ref(self)
 
         # Save state before modification (for undo)
         self._save_state()
@@ -411,6 +416,57 @@ class Diagram:
                     self._ensure_index(block)
                 return block
         return None
+
+    def __getitem__(self, label: str) -> Block:
+        """Get block by label using bracket notation.
+
+        Enables dictionary-style access to blocks via their label attribute:
+            controller = diagram["controller"]
+            plant = diagram["plant"]
+
+        Args:
+            label: Block label to search for (case-sensitive, exact match)
+
+        Returns:
+            Block with matching label
+
+        Raises:
+            TypeError: If label is not a string
+            KeyError: If no block has the specified label
+            ValidationError: If multiple blocks have the specified label
+
+        Example:
+            >>> diagram = Diagram()
+            >>> diagram.add_block('gain', 'g1', K=5.0, label='controller')
+            >>> controller = diagram["controller"]
+            >>> print(controller.K)
+            5.0
+        """
+        # Type validation
+        if not isinstance(label, str):
+            raise TypeError(
+                f"Label must be a string, got {type(label).__name__}"
+            )
+
+        # Find all blocks with matching label (skip unlabeled blocks)
+        matches = [
+            block
+            for block in self.blocks
+            if block.label and block.label == label
+        ]
+
+        # Check match count
+        if len(matches) == 0:
+            raise KeyError(f"No block found with label: {label!r}")
+        elif len(matches) == 1:
+            return matches[0]
+        else:
+            # Multiple matches - raise ValidationError with block IDs
+            block_ids = [block.id for block in matches]
+            raise ValidationError(
+                f"Label {label!r} appears on {len(block_ids)} blocks: {block_ids}",
+                block_id=block_ids[0] if block_ids else None
+            )
 
     def remove_block(self, block_id: str) -> bool:
         """Remove block from diagram and all connected edges.
@@ -879,7 +935,8 @@ class Diagram:
                 factory_kwargs["marker_type"] = param_kwargs["marker_type"]
             if "index" in param_kwargs:
                 factory_kwargs["index"] = param_kwargs["index"]
-            # Note: Old "label" parameter is ignored if present (backwards compatibility)
+            # Note: Old "label" parameter is ignored if present
+            # (backwards compatibility)
         else:
             # For other blocks, block label is just 'label'
             if label is not None:
@@ -1119,15 +1176,24 @@ class Diagram:
 
     def update_block_parameter(
         self,
-        block_id: str,
+        block_or_id: Union[Block, str],
         param_name: str,
         value: Any,
         expression: Optional[str] = None,
     ) -> bool:
         """Update block parameter (with undo support).
 
+        Accepts either a Block object or a string block ID, enabling
+        both traditional ID-based updates and natural block object updates:
+
+            # Via block object (Feature 017 - US3)
+            diagram.update_block_parameter(diagram["plant"], "K", 5.0)
+
+            # Via string ID (backward compatible)
+            diagram.update_block_parameter("plant_id", "K", 5.0)
+
         Args:
-            block_id: Block identifier
+            block_or_id: Block object OR block identifier string
             param_name: Parameter name (e.g., "K", "numerator", "A")
             value: New parameter value
             expression: Optional expression string (for hybrid storage)
@@ -1135,6 +1201,9 @@ class Diagram:
         Returns:
             True if block and parameter were found and updated, False otherwise
         """
+        # Extract block ID from Block object or use string directly
+        block_id = block_or_id.id if isinstance(block_or_id, Block) else block_or_id
+
         block = self.get_block(block_id)
         if not block:
             return False
