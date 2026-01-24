@@ -22,11 +22,11 @@ This enables all of the simulation, analysis, and design tools in python-control
 
 For instance, the `"cascaded"` template provides a pre-built diagram structure with 16 blocks including plant models, inner and outer control loops, and noise and disturbance inputs.
 
-```{image} _static/cascade-light.png
+```{image} _static/cascaded-light.png
 :class: only-light
 ```
 
-```{image} _static/cascade-dark.png
+```{image} _static/cascaded-dark.png
 :class: only-dark
 ```
 

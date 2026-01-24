@@ -20,14 +20,14 @@ Create, save, and load diagrams. The central class for all Lynx operations.
 :link: blocks
 :link-type: doc
 
-Five block types for building control systems: Gain, TransferFunction, StateSpace, Sum, IOMarker.
+Basic control systems blocks: gain, transfer function, state space, sum
 :::
 
 :::{grid-item-card} Validation
 :link: validation
 :link-type: doc
 
-Pre-export validation to catch errors: algebraic loops, connectivity, label uniqueness.
+Diagram correctness: algebraic loops, connectivity, label uniqueness.
 :::
 
 :::{grid-item-card} Python-Control Export
@@ -43,11 +43,12 @@ Export diagrams to python-control for analysis and simulation.
 
 Common tasks and their corresponding API methods:
 
-| Task | API Method | Example |
-|------|------------|---------|
+|      Task      | API Method | Example |
+|----------------|------------|---------|
 | Create diagram | `lynx.Diagram()` | `diagram = lynx.Diagram()` |
 | Add block | `diagram.add_block()` | `diagram.add_block('gain', 'K1', K=5.0)` |
 | Add connection | `diagram.add_connection()` | `diagram.add_connection('c1', 'K1', 'out', 'plant', 'in')` |
+| Update parameter | `block.set_parameter()` | `diagram["block_label"].set_parameter("parameter_name", new_value)` |
 | Save diagram | `diagram.save()` | `diagram.save('my_diagram.json')` |
 | Load diagram | `lynx.Diagram.load()` | `diagram = lynx.Diagram.load('my_diagram.json')` |
 | Export transfer function | `diagram.get_tf()` | `sys = diagram.get_tf('r', 'y')` |

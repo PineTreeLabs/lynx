@@ -56,11 +56,11 @@ Single-input/output blocks (Gain, TransferFunction, StateSpace) have `'in'` and 
 ### Block Types Overview
 
 | Block Type | Parameters | Ports |
-|------------|----------|------------|-------|
+|------------|------------|-------|
 | **Gain** | `K` (gain value) | `in` → `out` |
 | **TransferFunction** | `num`, `den` (coefficient arrays) | `in` → `out` |
 | **StateSpace** | `A`, `B`, `C`, `D` (matrices) | `in` → `out` |
-| **Sum** | `signs` (list: `"+"`, `"-"`, `"|"` for each quadrant) | `in1`, `in2`, `in3` → `out` |
+| **Sum** | `signs` (list: `"+"`, `"-"`, `"\|"` for each quadrant) | `in1`, `in2`, `in3` → `out` |
 | **IOMarker** | `marker_type` (`'input'` or `'output'`), `label` | `out` (InputMarker) or `in` (OutputMarker) |
 
 ### Creating Blocks
@@ -132,6 +132,7 @@ Now that you understand the basic block diagram components, continue on with:
 
 
 - {doc}`editor` - Quick intro to the graphical editor
+- {doc}`templates` - Pre-built control system architectures
 - {doc}`export` - Interoperability with the Python control systems library
 - {doc}`validation` - Checks for diagram consistency
 
@@ -142,6 +143,7 @@ Now that you understand the basic block diagram components, continue on with:
 :hidden:
 
 editor
+templates
 export
 validation
 ```
