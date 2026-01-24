@@ -24,6 +24,13 @@ import type {
 import { nodeTypes } from "../blocks";
 import type { CaptureRequest, CaptureResult } from "./types";
 import { captureToPng, captureToSvg, calculateContentBounds } from "./captureUtils";
+import {
+  DEFAULT_VIEWPORT,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  FIT_VIEW_OPTIONS,
+  getDefaultEdgeOptions,
+} from "../utils/reactFlowConfig";
 
 /**
  * Map edge types to custom edge components
@@ -140,22 +147,13 @@ function CaptureCanvasInner({
       try {
         console.log("[CaptureCanvasInner] Starting capture with", nodes.length, "nodes");
 
-        // Calculate natural content bounds (without target dimensions)
-        const contentBounds = calculateContentBounds(nodes, null, null);
+        // Calculate natural content bounds including edges (for waypoint-based routing)
+        const contentBounds = calculateContentBounds(nodes, edges, null, null);
         console.log("[CaptureCanvasInner] Content bounds:", contentBounds);
 
         // Determine output dimensions
         const outputWidth = Math.ceil(captureRequest.width ?? contentBounds.width);
         const outputHeight = Math.ceil(captureRequest.height ?? contentBounds.height);
-
-        // Calculate zoom to fit content within output dimensions
-        let zoom = 1;
-        if (captureRequest.width !== null || captureRequest.height !== null) {
-          const scaleX = outputWidth / contentBounds.width;
-          const scaleY = outputHeight / contentBounds.height;
-          zoom = Math.min(scaleX, scaleY); // Fit while preserving aspect ratio
-        }
-        console.log("[CaptureCanvasInner] Calculated zoom:", zoom);
 
         // Resize container to match output dimensions
         if (containerRef.current) {
@@ -166,20 +164,9 @@ function CaptureCanvasInner({
         // Wait for resize to take effect
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Calculate viewport position to center content within output
-        // Content center in canvas coordinates
-        const contentCenterX = contentBounds.x + contentBounds.width / 2;
-        const contentCenterY = contentBounds.y + contentBounds.height / 2;
-
-        // Viewport position to center scaled content
-        const viewportX = outputWidth / 2 - contentCenterX * zoom;
-        const viewportY = outputHeight / 2 - contentCenterY * zoom;
-
-        reactFlowInstance.current?.setViewport({
-          x: viewportX,
-          y: viewportY,
-          zoom,
-        });
+        // Use fitView to automatically center and fit content (same as DiagramCanvas)
+        // This ensures identical viewport positioning
+        reactFlowInstance.current?.fitView(FIT_VIEW_OPTIONS);
 
         // Wait for viewport adjustment and rendering to complete
         await new Promise((resolve) => setTimeout(resolve, 200));
@@ -241,14 +228,7 @@ function CaptureCanvasInner({
     performCapture();
   }, [captureRequest, isReady, nodes, onCaptureComplete]);
 
-  // Calculate initial viewport to fit all nodes
-  const defaultViewport = useMemo(() => {
-    if (nodes.length === 0) {
-      return { x: 0, y: 0, zoom: 1 };
-    }
-    // Will be set by fitView
-    return { x: 0, y: 0, zoom: 1 };
-  }, [nodes]);
+  // Note: defaultViewport is set by shared config, fitView will override it anyway
 
   return (
     <div
@@ -267,8 +247,8 @@ function CaptureCanvasInner({
         onInit={(instance) => {
           console.log("[CaptureCanvasInner] ReactFlow initialized");
           reactFlowInstance.current = instance;
-          // Fit view after init
-          instance.fitView({ padding: 0.1 });
+          // Fit view after init using shared configuration
+          instance.fitView(FIT_VIEW_OPTIONS);
           // Mark as ready after a short delay to ensure render is complete
           setTimeout(() => {
             console.log("[CaptureCanvasInner] Setting isReady=true");
@@ -276,10 +256,10 @@ function CaptureCanvasInner({
           }, 100);
         }}
         fitView
-        fitViewOptions={{ padding: 0.1, minZoom: 0.1, maxZoom: 4 }}
-        defaultViewport={defaultViewport}
-        minZoom={0.1}
-        maxZoom={4}
+        fitViewOptions={FIT_VIEW_OPTIONS}
+        defaultViewport={DEFAULT_VIEWPORT}
+        minZoom={MIN_ZOOM}
+        maxZoom={MAX_ZOOM}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
@@ -288,13 +268,7 @@ function CaptureCanvasInner({
         zoomOnPinch={false}
         zoomOnDoubleClick={false}
         preventScrolling={false}
-        defaultEdgeOptions={{
-          style: { stroke: "var(--color-primary-600)", strokeWidth: 2 },
-          type: "orthogonal",
-          markerEnd: {
-            type: "arrowclosed",
-          },
-        }}
+        defaultEdgeOptions={getDefaultEdgeOptions("var(--color-primary-600)")}
         style={{ backgroundColor: "transparent" }}
         defaultMarkerColor="var(--color-primary-600)"
         proOptions={{ hideAttribution: true }}

@@ -34,6 +34,13 @@ import { getDiagramState, onDiagramStateChange, sendAction } from "./utils/trait
 import { findCollinearSnap } from "./utils/collinearSnapping";
 import { INTERACTION } from "./config/constants";
 import lynxLogo from "./assets/lynx-logo.png";
+import {
+  DEFAULT_VIEWPORT,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  FIT_VIEW_OPTIONS,
+  getDefaultEdgeOptions,
+} from "./utils/reactFlowConfig";
 import type {
   DiagramState,
   Block as DiagramBlock,
@@ -860,22 +867,13 @@ export default function DiagramCanvas() {
         edgeTypes={edgeTypes}
         nodeDragThreshold={5}
         fitView
-        fitViewOptions={{ padding: 0.4, minZoom: 0.3, maxZoom: 1 }}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
-        minZoom={0.3}
-        maxZoom={2}
+        fitViewOptions={FIT_VIEW_OPTIONS}
+        defaultViewport={DEFAULT_VIEWPORT}
+        minZoom={MIN_ZOOM}
+        maxZoom={MAX_ZOOM}
         connectionMode="loose"
         isValidConnection={() => true}
-        defaultEdgeOptions={{
-          style: { stroke: markerColor, strokeWidth: 2.5 },
-          type: "orthogonal",
-          markerEnd: {
-            type: "arrowclosed",
-            width: 16,
-            height: 16,
-            color: markerColor,
-          },
-        }}
+        defaultEdgeOptions={getDefaultEdgeOptions(markerColor)}
         style={{ backgroundColor: "var(--color-slate-50)" }}
         defaultMarkerColor={markerColor}
         proOptions={{ hideAttribution: true }}
@@ -891,7 +889,7 @@ export default function DiagramCanvas() {
           {/* Custom zoom-to-fit button with padding: 0.4 */}
           <ControlButton
             onClick={() =>
-              reactFlowInstance.current?.fitView({ padding: 0.4, minZoom: 0.3, maxZoom: 1 })
+              reactFlowInstance.current?.fitView(FIT_VIEW_OPTIONS)
             }
             title="Zoom to Fit (Spacebar)"
           >
