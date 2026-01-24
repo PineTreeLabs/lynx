@@ -1,5 +1,17 @@
 # Graphical Editing
 
+The main interface for editing block diagrams in Lynx is a Jupyter widget, which allows interactive editing inline in Jupyter notebooks.
+
+This is strongly recommended over programmatic diagram construction - put simply, it is very difficult to design an inutitive API for what is fundamentally a graphical "language".
+A convenient workflow is to:
+
+1. Create a diagram in the interactive widget
+2. Save the diagram to JSON (can also check into git)
+3. Edit parameters and [extract subsystems](./export.md) using Python
+4. Use the widget for visualization or further structural changes or visualization, saving changes to the JSON file
+
+## State Synchronization
+
 The Python code and the interactive widget have bidirectional syncing:
 
 ```python
@@ -20,24 +32,11 @@ lynx.edit(diagram)
 #    - Adjust routing waypoints
 
 # 4. The diagram object is updated automatically
-print(diagram.blocks['K'].parameters['K'])  # May have changed if user edited it
+print(diagram["gain"].get_parameter("K"))
 ```
 
-### Use Cases
+This allows you to update Python variables used in expressions in the diagram and have the changes automatically propagate to the diagram, or to edit the diagram and have the changes automatically sync to the Python `Diagram` object.
 
-**Visual verification**:
-- Check that programmatic diagram construction is correct
-- Verify signal routing and connection topology
+## Static Rendering
 
-**Manual layout adjustments**:
-- Position blocks for clear visualization
-- Adjust connection routing for readability
-
-**Exploratory design**:
-- Quickly try different topologies
-- Add/remove blocks interactively
-- Experiment with parameter values
-
-**Documentation**:
-- Generate clean block diagrams for papers/presentations
-- Export screenshots with `lynx.edit(diagram).export_png('diagram.png')`
+For documentation/publication/presentations, you can also create static renderings with `lynx.render(diagram, 'diagram.png')`, which supports both PNG and SVG exports.
