@@ -1500,6 +1500,118 @@ class Diagram:
         """
         return Diagram.from_dict(self.to_dict())
 
+    def __str__(self) -> str:
+        """Return a human-readable summary of the diagram.
+
+        Provides a concise overview of diagram structure including block types,
+        labels, key parameters, and connections. Omits visual details like
+        positions, dimensions, and custom LaTeX.
+
+        Returns:
+            String summary with blocks and connections
+
+        Example:
+            >>> diagram = Diagram()
+            >>> diagram.add_block('gain', 'g1', K=5.0, label='controller')
+            >>> diagram.add_block('io_marker', 'm1', marker_type='input', label='r')
+            >>> diagram.add_connection('c1', 'm1', 'out', 'g1', 'in')
+            >>> print(diagram)
+            Diagram: 2 blocks, 1 connections
+
+            Blocks:
+              controller [Gain] K=5.0
+              r [IOMarker] type=input, index=0
+
+            Connections:
+              r.out -> controller.in
+        """
+        lines = []
+
+        # Header
+        num_blocks = len(self.blocks)
+        num_connections = len(self.connections)
+        lines.append(f"Diagram: {num_blocks} blocks, {num_connections} connections")
+        lines.append("")
+
+        # Blocks section
+        if self.blocks:
+            lines.append("Blocks:")
+            for block in self.blocks:
+                # Format block type name (e.g., "transfer_function" -> "TransferFunction")
+                type_parts = block.type.split("_")
+                type_name = "".join(part.capitalize() for part in type_parts)
+
+                # Get block-specific parameters
+                params = []
+                if block.type == "gain":
+                    K = block.get_parameter("K")
+                    params.append(f"K={K}")
+                elif block.type == "transfer_function":
+                    num = block.get_parameter("num")
+                    den = block.get_parameter("den")
+                    params.append(f"num={num}, den={den}")
+                elif block.type == "state_space":
+                    A = block.get_parameter("A")
+                    B = block.get_parameter("B")
+                    C = block.get_parameter("C")
+                    D = block.get_parameter("D")
+                    # Calculate dimensions
+                    A_rows = len(A)
+                    A_cols = len(A[0]) if A and len(A) > 0 else 0
+                    B_rows = len(B)
+                    B_cols = len(B[0]) if B and len(B) > 0 else 0
+                    C_rows = len(C)
+                    C_cols = len(C[0]) if C and len(C) > 0 else 0
+                    D_rows = len(D)
+                    D_cols = len(D[0]) if D and len(D) > 0 else 0
+                    params.append(
+                        f"A: {A_rows}x{A_cols}, B: {B_rows}x{B_cols}, "
+                        f"C: {C_rows}x{C_cols}, D: {D_rows}x{D_cols}"
+                    )
+                elif block.type == "sum":
+                    signs = block.get_parameter("signs")
+                    params.append(f"signs={signs}")
+                elif block.type == "io_marker":
+                    marker_type = block.get_parameter("marker_type")
+                    # Ensure block has index (backward compatibility)
+                    self._ensure_index(block)
+                    index = block.get_parameter("index")
+                    params.append(f"type={marker_type}, index={index}")
+
+                # Format line: label [Type] params
+                param_str = " ".join(params) if params else ""
+                if param_str:
+                    lines.append(f"  {block.label} [{type_name}] {param_str}")
+                else:
+                    lines.append(f"  {block.label} [{type_name}]")
+
+        # Connections section
+        if self.connections:
+            lines.append("")
+            lines.append("Connections:")
+            for conn in self.connections:
+                # Get block labels
+                source_block = self.get_block(conn.source_block_id)
+                target_block = self.get_block(conn.target_block_id)
+
+                if source_block and target_block:
+                    source_label = source_block.label
+                    target_label = target_block.label
+
+                    # Format: source_label.port_id -> target_label.port_id
+                    conn_str = (
+                        f"  {source_label}.{conn.source_port_id} -> "
+                        f"{target_label}.{conn.target_port_id}"
+                    )
+
+                    # Add connection label if present
+                    if conn.label:
+                        conn_str += f" (label='{conn.label}')"
+
+                    lines.append(conn_str)
+
+        return "\n".join(lines)
+
     def get_ss(self, from_signal: str, to_signal: str) -> Any:
         """Extract state-space model from one signal to another.
 

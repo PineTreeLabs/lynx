@@ -8,6 +8,8 @@ Provides get_ss() and get_tf() methods for extracting arbitrary
 signal-to-signal transfer functions from diagrams.
 """
 
+import warnings
+
 from typing import TYPE_CHECKING, List, Tuple, cast
 from collections import Counter
 
@@ -429,8 +431,11 @@ def get_ss(diagram: "Diagram", from_signal: str, to_signal: str) -> ct.StateSpac
         >>> # Note: 'controller' and 'plant' are block labels, not IDs
         >>> sys_uy = diagram.get_ss('controller.out', 'plant.out')
     """
-    sys, from_name, to_name = _prepare_for_extraction(diagram, from_signal, to_signal)
-    return sys[to_name, from_name]
+    # Filter UserWarnings (flags unused output ports but we don't care here)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        sys, from_name, to_name = _prepare_for_extraction(diagram, from_signal, to_signal)
+        return sys[to_name, from_name]
 
 
 def get_tf(diagram: "Diagram", from_signal: str, to_signal: str) -> ct.TransferFunction:

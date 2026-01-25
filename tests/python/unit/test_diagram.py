@@ -1570,3 +1570,123 @@ class TestLabelIndexingIntegration:
         # Verify performance requirement (<10ms per lookup)
         assert avg_time_ms < 10.0, f"Lookup too slow: {avg_time_ms} ms"
         assert block.get_parameter("K") == 500.0
+
+
+class TestDiagramStringRepresentation:
+    """Test Diagram.__str__() method for human-readable summaries."""
+
+    def test_empty_diagram_str(self):
+        """Test string representation of empty diagram."""
+        diagram = Diagram()
+        output = str(diagram)
+        assert "Diagram: 0 blocks, 0 connections" in output
+
+    def test_blocks_only_str(self):
+        """Test string representation with blocks but no connections."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=10.0, label="gain1")
+        diagram.add_block("gain", "g2", K=20.0, label="gain2")
+
+        output = str(diagram)
+        assert "Diagram: 2 blocks, 0 connections" in output
+        assert "Blocks:" in output
+        assert "gain1 [Gain] K=10.0" in output
+        assert "gain2 [Gain] K=20.0" in output
+        assert "Connections:" not in output
+
+    def test_feedback_control_loop_str(self):
+        """Test string representation of complete feedback control loop."""
+        diagram = Diagram()
+        diagram.add_block("io_marker", "ref", marker_type="input", label="r")
+        diagram.add_block("sum", "error_sum", signs=["+", "-", "|"], label="error_sum")
+        diagram.add_block("gain", "controller", K=5.0, label="controller")
+        diagram.add_block(
+            "transfer_function", "plant", num=[2.0], den=[1.0, 3.0], label="plant"
+        )
+        diagram.add_block("io_marker", "output", marker_type="output", label="y")
+
+        diagram.add_connection("c1", "ref", "out", "error_sum", "in1")
+        diagram.add_connection(
+            "c2", "error_sum", "out", "controller", "in", label="error"
+        )
+        diagram.add_connection("c3", "controller", "out", "plant", "in")
+        diagram.add_connection("c4", "plant", "out", "output", "in")
+        diagram.add_connection("c5", "plant", "out", "error_sum", "in2")
+
+        output = str(diagram)
+
+        # Header
+        assert "Diagram: 5 blocks, 5 connections" in output
+
+        # Blocks section
+        assert "Blocks:" in output
+        assert "r [IoMarker] type=input, index=0" in output
+        assert "error_sum [Sum] signs=['+', '-', '|']" in output
+        assert "controller [Gain] K=5.0" in output
+        assert "plant [TransferFunction] num=[2.0], den=[1.0, 3.0]" in output
+        assert "y [IoMarker] type=output, index=0" in output
+
+        # Connections section
+        assert "Connections:" in output
+        assert "r.out -> error_sum.in1" in output
+        assert "error_sum.out -> controller.in (label='error')" in output
+        assert "controller.out -> plant.in" in output
+        assert "plant.out -> y.in" in output
+        assert "plant.out -> error_sum.in2" in output
+
+    def test_state_space_block_str(self):
+        """Test string representation of StateSpace block shows matrix dimensions."""
+        diagram = Diagram()
+        diagram.add_block("io_marker", "input", marker_type="input", label="u")
+        diagram.add_block(
+            "state_space",
+            "sys",
+            A=[[0, 1], [-2, -3]],
+            B=[[0], [1]],
+            C=[[1, 0]],
+            D=[[0]],
+            label="plant",
+        )
+        diagram.add_block("io_marker", "output", marker_type="output", label="y")
+
+        diagram.add_connection("c1", "input", "out", "sys", "in")
+        diagram.add_connection("c2", "sys", "out", "output", "in", label="output_signal")
+
+        output = str(diagram)
+
+        # Verify matrix dimensions are shown, not full matrices
+        assert "plant [StateSpace] A: 2x2, B: 2x1, C: 1x2, D: 1x1" in output
+        # Verify actual matrix values are NOT shown
+        assert "[[0, 1], [-2, -3]]" not in output
+        # Verify connection label is shown
+        assert "plant.out -> y.in (label='output_signal')" in output
+
+    def test_all_block_types_str(self):
+        """Test string representation includes all block types correctly."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=2.5, label="gain_block")
+        diagram.add_block(
+            "transfer_function", "tf1", num=[1.0, 2.0], den=[1.0, 3.0, 2.0], label="tf_block"
+        )
+        diagram.add_block(
+            "state_space",
+            "ss1",
+            A=[[1, 2], [3, 4]],
+            B=[[5], [6]],
+            C=[[7, 8]],
+            D=[[9]],
+            label="ss_block",
+        )
+        diagram.add_block("sum", "sum1", signs=["+", "+", "-"], label="sum_block")
+        diagram.add_block("io_marker", "in1", marker_type="input", label="input_block")
+        diagram.add_block("io_marker", "out1", marker_type="output", label="output_block")
+
+        output = str(diagram)
+
+        # Verify each block type is formatted correctly
+        assert "gain_block [Gain] K=2.5" in output
+        assert "tf_block [TransferFunction] num=[1.0, 2.0], den=[1.0, 3.0, 2.0]" in output
+        assert "ss_block [StateSpace] A: 2x2, B: 2x1, C: 1x2, D: 1x1" in output
+        assert "sum_block [Sum] signs=['+', '+', '-']" in output
+        assert "input_block [IoMarker] type=input, index=0" in output
+        assert "output_block [IoMarker] type=output, index=0" in output
