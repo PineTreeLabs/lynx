@@ -122,5 +122,5 @@ print(f"Final value: {y_out[-1]}")
 
 ## Next Steps
 
-- {doc}`../examples/index`: Learn through more advanced examples
+- {doc}`../examples/cruise-control`: Complete example of a control system workflow
 - {doc}`../api/index`: Explore all available blocks and methods

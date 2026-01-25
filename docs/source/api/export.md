@@ -26,4 +26,4 @@ For more information see {doc}`../concepts/export`.
 - {doc}`diagram` - Building diagrams
 - {doc}`blocks` - IOMarker block details
 - {doc}`validation` - Error handling and validation
-- {doc}`../examples/index` - Export examples
+- {doc}`../examples/cruise-control` - Workflow including export

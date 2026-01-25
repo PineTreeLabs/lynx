@@ -118,14 +118,6 @@ print(f"Closed-loop transfer function:")
 print(G_yr)
 ```
 
-Or the loop transfer function $L(s) = C(s) G(s)$ from `e` to `y`:
-
-```{code-cell} python
-L = diagram.get_tf('e', 'y')
-print(f"Loop transfer function:")
-print(L)
-```
-
 Then these subsystems can be further analyzed using any of the python-control tools.
 
 For instance, to evaluate the step response:

@@ -91,6 +91,24 @@ body {
     content: "" !important;
 }
 
+/* Hide specific titles */
+.hidden-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+}
+
+/* Reduce spacing for h1 elements that only contain hidden titles */
+h1:has(.hidden-title) {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
 /* Terminal-style code blocks with enhanced styling */
 .highlight {
     position: relative;
@@ -109,7 +127,7 @@ body {
 
 /* Terminal header bar - dynamic based on language */
 .highlight::before {
-    content: '▸ code';
+    /* content: '▸ code'; */
     display: block;
     padding: 0.5rem 1rem;
     background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
@@ -243,6 +261,18 @@ body {
 /* Hide terminal header bar for notebook cells (they have their own styling) */
 .cell_input .highlight::before {
     display: none;
+}
+
+/* Fix: Ensure code blocks in notebook cells have dark background in dark mode */
+[data-theme="dark"] .cell_input .highlight-ipython3 pre,
+[data-theme="dark"] .cell_input .highlight pre,
+[data-theme="dark"] .cell_input .highlight {
+    background-color: var(--color-bg-code) !important;
+}
+
+[data-theme="dark"] .cell_input .highlight-ipython3,
+[data-theme="dark"] .highlight-ipython3 .highlight {
+    background-color: var(--color-bg-code) !important;
 }
 
 /* Cell output styling */

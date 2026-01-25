@@ -35,4 +35,3 @@ Lynx provides five block types for building control system diagrams. Each block 
 
 - {doc}`diagram` - Adding blocks to diagrams
 - {doc}`export` - Using IOMarker labels for export
-- {doc}`../examples/index` - Block usage examples
