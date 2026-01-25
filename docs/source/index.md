@@ -70,6 +70,6 @@ pip install jupyter
 
 quickstart
 concepts/index
-examples/index
+examples/cruise-control
 api/index
 ```

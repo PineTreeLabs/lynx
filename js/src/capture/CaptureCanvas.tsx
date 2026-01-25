@@ -80,7 +80,7 @@ function CaptureCanvasInner({
         const contentBounds = getContentBounds(nodes, edges);
 
         // Use percentage-based padding for consistency with DiagramCanvas
-        const CAPTURE_PADDING = 0.1; // 10% padding on each side
+        const CAPTURE_PADDING = 0.15; // 15% padding on each side
 
         // Determine output dimensions (use content with padding if not specified)
         let outputWidth: number;

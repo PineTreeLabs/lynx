@@ -5,7 +5,7 @@
       "id": "io_marker_1769102540105",
       "type": "io_marker",
       "position": {
-        "x": -20.718489400001502,
+        "x": 153.3051560191013,
         "y": 166.0
       },
       "label": "ref",
@@ -30,7 +30,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "u"
+          "label": "ref"
         }
       ]
     },
@@ -153,7 +153,7 @@
         {
           "id": "in",
           "type": "input",
-          "label": "y"
+          "label": "output"
         }
       ]
     },
@@ -301,45 +301,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "u"
-        }
-      ]
-    },
-    {
-      "id": "transfer_function_1769112585529",
-      "type": "transfer_function",
-      "position": {
-        "x": 129.66275576166487,
-        "y": 157.0
-      },
-      "label": "reference_shaping",
-      "flipped": false,
-      "custom_latex": "F(s)",
-      "label_visible": true,
-      "width": null,
-      "height": null,
-      "parameters": [
-        {
-          "name": "num",
-          "value": 1,
-          "expression": null
-        },
-        {
-          "name": "den",
-          "value": 1,
-          "expression": null
-        }
-      ],
-      "ports": [
-        {
-          "id": "in",
-          "type": "input",
-          "label": null
-        },
-        {
-          "id": "out",
-          "type": "output",
-          "label": null
+          "label": "noise"
         }
       ]
     },
@@ -372,7 +334,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "u"
+          "label": "disturbance"
         }
       ]
     }
@@ -438,26 +400,6 @@
       "label_visible": true
     },
     {
-      "id": "conn_1769112597997",
-      "source_block_id": "io_marker_1769102540105",
-      "source_port_id": "out",
-      "target_block_id": "transfer_function_1769112585529",
-      "target_port_id": "in",
-      "waypoints": [],
-      "label": "r",
-      "label_visible": true
-    },
-    {
-      "id": "conn_1769112704664",
-      "source_block_id": "transfer_function_1769112585529",
-      "source_port_id": "out",
-      "target_block_id": "sum_1769102547306",
-      "target_port_id": "in2",
-      "waypoints": [],
-      "label": null,
-      "label_visible": false
-    },
-    {
       "id": "conn_1769112709248",
       "source_block_id": "sum_1769105176411",
       "source_port_id": "out",
@@ -488,6 +430,16 @@
       "target_port_id": "in1",
       "waypoints": [],
       "label": "d",
+      "label_visible": true
+    },
+    {
+      "id": "conn_1769282423324",
+      "source_block_id": "io_marker_1769102540105",
+      "source_port_id": "out",
+      "target_block_id": "sum_1769102547306",
+      "target_port_id": "in2",
+      "waypoints": [],
+      "label": "r",
       "label_visible": true
     }
   ],

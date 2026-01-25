@@ -5,6 +5,8 @@ While every control system is unique, there are several common architectures tha
 To simplify construction of these diagrams, Lynx provides pre-built "template" systems that you can instantiate and edit.
 In many cases, you may only need to edit the block parameters, block/signal labels, LaTeX content to make the diagram consistent with your own system.
 
+For an example using templates to quickly construct a system, see {doc}`../examples/cruise-control`.
+
 ## Example
 
 For a simple feedback controller with a transfer function plant model we can load the `"feedback_tf"` template:
@@ -51,11 +53,6 @@ ki = 0.1
 diagram["controller"].set_parameter("num", [kp, ki])
 diagram["controller"].set_parameter("den", [1, 0])
 diagram["controller"].custom_latex = None
-
-# No reference shaping filter
-diagram["reference_shaping"].set_parameter("num", [1])
-diagram["reference_shaping"].set_parameter("den", [1])
-diagram["reference_shaping"].custom_latex = "1"
 ```
 
 ```{image} _static/edited-template-light.png

@@ -5,7 +5,7 @@
       "id": "io_marker_1769102540105",
       "type": "io_marker",
       "position": {
-        "x": -9.445531640680983,
+        "x": 173.45204597582648,
         "y": 166.0
       },
       "label": "ref",
@@ -30,7 +30,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "u"
+          "label": "io_marker_1769102540105"
         }
       ]
     },
@@ -196,7 +196,7 @@
         {
           "id": "in",
           "type": "input",
-          "label": "y"
+          "label": "io_marker_1769102614871"
         }
       ]
     },
@@ -271,7 +271,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "u"
+          "label": "io_marker_1769105091712"
         }
       ]
     },
@@ -279,8 +279,8 @@
       "id": "io_marker_1769112438327",
       "type": "io_marker",
       "position": {
-        "x": 182.62098901703015,
-        "y": 50.50281938153603
+        "x": 174.21505475618997,
+        "y": 70.99163293970742
       },
       "label": "disturbance",
       "flipped": false,
@@ -304,47 +304,7 @@
         {
           "id": "out",
           "type": "output",
-          "label": "u"
-        }
-      ]
-    },
-    {
-      "id": "transfer_function_1769112492212",
-      "type": "transfer_function",
-      "position": {
-        "x": 147.98514262269015,
-        "y": 157.0
-      },
-      "label": "reference_shaping",
-      "flipped": false,
-      "custom_latex": "F(s)",
-      "label_visible": true,
-      "width": null,
-      "height": null,
-      "parameters": [
-        {
-          "name": "num",
-          "value": [
-            1
-          ],
-          "expression": null
-        },
-        {
-          "name": "den",
-          "value": 1,
-          "expression": "1"
-        }
-      ],
-      "ports": [
-        {
-          "id": "in",
-          "type": "input",
-          "label": null
-        },
-        {
-          "id": "out",
-          "type": "output",
-          "label": null
+          "label": "io_marker_1769112438327"
         }
       ]
     }
@@ -439,22 +399,21 @@
       "label_visible": true
     },
     {
-      "id": "conn_1769112495012",
-      "source_block_id": "transfer_function_1769112492212",
+      "id": "conn_1769282343642",
+      "source_block_id": "io_marker_1769102540105",
       "source_port_id": "out",
       "target_block_id": "sum_1769102547306",
       "target_port_id": "in2",
-      "waypoints": [],
-      "label": null,
-      "label_visible": false
-    },
-    {
-      "id": "conn_1769112499045",
-      "source_block_id": "io_marker_1769102540105",
-      "source_port_id": "out",
-      "target_block_id": "transfer_function_1769112492212",
-      "target_port_id": "in",
-      "waypoints": [],
+      "waypoints": [
+        {
+          "x": 272.22602262415523,
+          "y": 182.0004228581666
+        },
+        {
+          "x": 272.22602262415523,
+          "y": 182.0004228581666
+        }
+      ],
       "label": "r",
       "label_visible": true
     }

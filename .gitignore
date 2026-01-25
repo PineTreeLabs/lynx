@@ -2,6 +2,20 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# Frontend build output
+js/dist/
+js/build/
+src/lynx/static/
+
+# Sphinx documentation
+docs/_build/
+docs/source/api/generated/
+docs/source/.jupyter_cache/
+docs/source/**/.ipynb_checkpoints/
+docs/source/**/_plots/
+*.doctree
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -71,13 +85,6 @@ instance/
 
 # Scrapy stuff:
 .scrapy
-
-# Sphinx documentation
-docs/_build/
-docs/source/api/generated/
-docs/source/.jupyter_cache/
-docs/source/**/.ipynb_checkpoints/
-*.doctree
 
 # PyBuilder
 .pybuilder/
@@ -230,11 +237,6 @@ lerna-debug.log*
 pnpm-debug.log*
 .pnpm-store/
 *.tsbuildinfo
-
-# Frontend build output
-js/dist/
-js/build/
-src/lynx/static/
 
 # IDE
 .vscode/

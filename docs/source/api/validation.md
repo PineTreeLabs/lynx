@@ -163,17 +163,6 @@ except ValidationError as e:
         print(f"  Check connections for block '{e.block_id}' port '{e.port_id}'")
 ```
 
-## Validation Checklist
-
-Before exporting, ensure:
-
-- [ ] At least one InputMarker (`marker_type='input'`)
-- [ ] At least one OutputMarker (`marker_type='output'`)
-- [ ] All non-InputMarker input ports have connections
-- [ ] All connections reference valid blocks and ports
-- [ ] No algebraic loops (feedback paths have dynamics)
-- [ ] Unique labels for all blocks and connections (optional, but recommended)
-
 ## SignalNotFoundError
 
 Separate from `ValidationError`, this exception occurs when the specified signal references don't exist:

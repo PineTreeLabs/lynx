@@ -20,7 +20,10 @@ import lynx
 diagram = lynx.Diagram()
 
 # Load existing diagram
-diagram = lynx.Diagram.load('my_diagram.json')
+diagram = lynx.Diagram.load("diagram.json")
+
+# Create new diagram from template
+diagram = lynx.Diagram.from_template("feedforward_tf")
 ```
 
 ## Adding Blocks
@@ -125,40 +128,6 @@ This opens a visual editor where you can:
 
 Changes in the widget sync back to the Python object.
 
-## Complete Example
-
-```python
-import lynx
-import control as ct
-import numpy as np
-
-# Create PID feedback control system
-diagram = lynx.Diagram()
-
-# Add blocks
-diagram.add_block('io_marker', 'r', marker_type='input', label='r', position={'x': 0, 'y': 0})
-diagram.add_block('sum', 'error', signs=['+', '-', '|'], position={'x': 80, 'y': 0})
-diagram.add_block('gain', 'Kp', K=10.0, label='Proportional', position={'x': 150, 'y': 0})
-diagram.add_block('transfer_function', 'plant',
-                  num=[1.0], den=[1.0, 2.0, 1.0],
-                  position={'x': 250, 'y': 0})
-diagram.add_block('io_marker', 'y', marker_type='output', label='y', position={'x': 350, 'y': 0})
-
-# Connect blocks
-diagram.add_connection('c1', 'r', 'out', 'error', 'in1')
-diagram.add_connection('c2', 'error', 'out', 'Kp', 'in')
-diagram.add_connection('c3', 'Kp', 'out', 'plant', 'in')
-diagram.add_connection('c4', 'plant', 'out', 'y', 'in')
-diagram.add_connection('c5', 'plant', 'out', 'error', 'in2')  # Feedback
-
-# Save
-diagram.save('pid_system.json')
-
-# Export and analyze
-sys = diagram.get_tf('r', 'y')
-t, y = ct.step_response(sys, np.linspace(0, 10, 1000))
-print(f"Settling time: {ct.step_info(sys)['SettlingTime']:.2f}s")
-```
 
 ## API Reference
 

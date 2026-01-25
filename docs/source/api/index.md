@@ -2,10 +2,6 @@
 
 Complete reference documentation for Lynx's Python API. All public methods, parameters, and examples are documented here.
 
-## Overview
-
-Lynx provides a simple, intuitive API for creating and analyzing control system diagrams:
-
 ::::{grid} 1 2 2 2
 :gutter: 3
 

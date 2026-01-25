@@ -1,6 +1,6 @@
 # Subsystem Export
 
-A key feature of Lynx is interoperability with the [Python Control Systems Library](https://python-control.readthedocs.io/),referred to here as python-control or `control`.
+A key feature of Lynx is interoperability with the [Python Control Systems Library](https://python-control.readthedocs.io/), referred to here as python-control or `control`.
 
 Python-control stores system parameters as NumPy arrays, so they can easily be translated to block parameters by directly referencing the variables:
 
