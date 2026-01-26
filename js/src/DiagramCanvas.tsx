@@ -121,6 +121,9 @@ export default function DiagramCanvas() {
   // Track drag start positions for distance calculation (drag detection)
   const dragStartPos = useRef<Record<string, { x: number; y: number }>>({});
 
+  // Track if we've done the initial fitView (prevent re-running on every node add)
+  const hasInitialFitView = useRef(false);
+
   // Subscribe to theme changes from Python
   useEffect(() => {
     if (!model) return;
@@ -393,13 +396,14 @@ export default function DiagramCanvas() {
     reactFlowInstance.current.setViewport(viewport);
   }, [nodes, edges]);
 
-  // Initial fitView when diagram first loads
+  // Initial fitView when diagram first loads (ONE TIME ONLY)
   useEffect(() => {
-    if (!isReactFlowReady || nodes.length === 0) return;
+    if (!isReactFlowReady || nodes.length === 0 || hasInitialFitView.current) return;
 
     // Wait for React Flow to render nodes, then fit view
     const timer = setTimeout(() => {
       edgeAwareFitView();
+      hasInitialFitView.current = true; // Mark as completed
     }, 100);
 
     return () => clearTimeout(timer);

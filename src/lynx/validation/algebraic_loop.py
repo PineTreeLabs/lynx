@@ -106,9 +106,9 @@ def has_direct_feedthrough(block: Block) -> bool:
         den = None
         for param in block._parameters:
             if param.name == "num":
-                num = np.asarray(param.value)
+                num = np.atleast_1d(param.value)
             elif param.name == "den":
-                den = np.asarray(param.value)
+                den = np.atleast_1d(param.value)
 
         if num is not None and den is not None:
             # Direct feedthrough if same length (same order)
