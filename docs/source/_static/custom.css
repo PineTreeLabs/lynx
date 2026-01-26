@@ -38,6 +38,24 @@
     --color-admonition-background: rgba(130, 151, 248, 0.15) !important;
 }
 
+/* Fix for auto theme mode when system prefers dark */
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+        --color-background-primary: #1f2937 !important;
+        --color-background-secondary: #111827 !important;
+        --color-background: #1a1f2e !important;
+        --color-foreground-primary: #f9fafb !important;
+        --color-foreground-secondary: #d1d5db !important;
+
+        /* Code blocks in dark mode */
+        --color-code-background: #2d3748 !important;
+        --color-code-foreground: #f9fafb !important;
+
+        /* Admonitions in dark mode */
+        --color-admonition-background: rgba(130, 151, 248, 0.15) !important;
+    }
+}
+
 /* Font family overrides */
 .sidebar-brand-text, h1, h2, h3, h4, h5, h6 {
     font-family: 'Roboto Slab', Georgia, serif !important;
@@ -71,6 +89,17 @@ body {
         linear-gradient(90deg, rgba(129, 140, 248, 0.05) 1px, transparent 1px);
     background-size: 20px 20px;
     background-attachment: fixed;
+}
+
+/* Auto theme mode - dark grid background */
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+        background-image:
+            linear-gradient(rgba(129, 140, 248, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(129, 140, 248, 0.05) 1px, transparent 1px);
+        background-size: 20px 20px;
+        background-attachment: fixed;
+    }
 }
 
 /* Logo styling in sidebar */
@@ -470,6 +499,164 @@ a.reference.external::after {
 
     .hero-video {
         border-radius: 6px;
+    }
+}
+
+/* ============================================
+   Auto Theme Mode Dark Styles
+   When body[data-theme="auto"] and system prefers dark
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    /* Code blocks and highlights */
+    body:not([data-theme="light"]) .highlight {
+        border-color: var(--color-border-tech);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        background-color: var(--color-bg-code);
+    }
+
+    body:not([data-theme="light"]) .highlight::before {
+        background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+        border-bottom-color: var(--color-border-tech);
+        color: #9ca3af;
+    }
+
+    body:not([data-theme="light"]) .highlight pre {
+        background-color: var(--color-bg-code) !important;
+    }
+
+    body:not([data-theme="light"]) pre {
+        background-color: var(--color-bg-code) !important;
+        border: 1px solid var(--color-border-tech);
+    }
+
+    /* Syntax highlighting colors */
+    body:not([data-theme="light"]) .highlight .s1 { color: #fca5a5; }
+    body:not([data-theme="light"]) .highlight .nn { color: #86efac; }
+    body:not([data-theme="light"]) .highlight .nb { color: #93c5fd; }
+    body:not([data-theme="light"]) .highlight .k { color: #a5b4fc; }
+    body:not([data-theme="light"]) .highlight .n { color: #f9fafb; }
+    body:not([data-theme="light"]) .highlight .mi { color: #fde047; }
+    body:not([data-theme="light"]) .highlight .kc { color: #f0abfc; }
+
+    /* Function signatures */
+    body:not([data-theme="light"]) .sig {
+        background-color: #2d3748 !important;
+    }
+
+    /* Tables */
+    body:not([data-theme="light"]) table.docutils {
+        border-color: #374151;
+    }
+
+    body:not([data-theme="light"]) table.docutils thead {
+        background-color: #2d3748;
+    }
+
+    body:not([data-theme="light"]) table.docutils tbody tr:nth-child(odd) {
+        background-color: #1f2937;
+    }
+
+    body:not([data-theme="light"]) table.docutils tbody tr:nth-child(even) {
+        background-color: #2d3748;
+    }
+
+    /* Theme images */
+    body:not([data-theme="light"]) .only-light {
+        display: none;
+    }
+
+    body:not([data-theme="light"]) .only-dark {
+        display: block;
+    }
+
+    /* Notebook cells */
+    body:not([data-theme="light"]) .cell_input {
+        border-left-color: var(--color-signal-input);
+        background-color: rgba(16, 185, 129, 0.05);
+    }
+
+    body:not([data-theme="light"]) .cell_input .highlight-ipython3 pre,
+    body:not([data-theme="light"]) .cell_input .highlight pre,
+    body:not([data-theme="light"]) .cell_input .highlight {
+        background-color: var(--color-bg-code) !important;
+    }
+
+    body:not([data-theme="light"]) .cell_input .highlight-ipython3,
+    body:not([data-theme="light"]) .highlight-ipython3 .highlight {
+        background-color: var(--color-bg-code) !important;
+    }
+
+    body:not([data-theme="light"]) .cell_output {
+        background-color: rgba(245, 158, 11, 0.05);
+    }
+
+    /* Inline code */
+    body:not([data-theme="light"]) code.literal {
+        background-color: rgba(129, 140, 248, 0.15);
+        color: var(--lynx-indigo-bright);
+        border-color: rgba(129, 140, 248, 0.25);
+    }
+
+    /* Function signatures */
+    body:not([data-theme="light"]) .sig {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        border-color: var(--color-border-tech);
+        border-left-color: var(--lynx-indigo-bright);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Admonitions */
+    body:not([data-theme="light"]) .admonition.note,
+    body:not([data-theme="light"]) .admonition.seealso {
+        background-color: rgba(16, 185, 129, 0.1);
+    }
+
+    body:not([data-theme="light"]) .admonition.warning,
+    body:not([data-theme="light"]) .admonition.attention,
+    body:not([data-theme="light"]) .admonition.caution {
+        background-color: rgba(245, 158, 11, 0.1);
+    }
+
+    body:not([data-theme="light"]) .admonition.danger,
+    body:not([data-theme="light"]) .admonition.error {
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    body:not([data-theme="light"]) .admonition.tip,
+    body:not([data-theme="light"]) .admonition.hint,
+    body:not([data-theme="light"]) .admonition.important {
+        background-color: rgba(129, 140, 248, 0.1);
+    }
+
+    /* Cards */
+    body:not([data-theme="light"]) .sd-card:hover {
+        box-shadow: 0 4px 16px rgba(130, 151, 248, 0.2);
+    }
+
+    /* Scrollbars */
+    body:not([data-theme="light"]) ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    body:not([data-theme="light"]) ::-webkit-scrollbar-track {
+        background: #1f2937;
+    }
+
+    body:not([data-theme="light"]) ::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 5px;
+    }
+
+    body:not([data-theme="light"]) ::-webkit-scrollbar-thumb:hover {
+        background: #4b5563;
+    }
+
+    /* Hero video */
+    body:not([data-theme="light"]) .hero-video {
+        border-color: var(--color-border-tech);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        background-color: #1a1f2e;
     }
 }
 
