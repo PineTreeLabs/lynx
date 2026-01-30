@@ -41,6 +41,7 @@ exclude_patterns = []
 html_theme = "furo"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
+html_baseurl = "https://pinetreelabs.github.io/lynx/"
 
 # Furo theme options
 html_theme_options = {
