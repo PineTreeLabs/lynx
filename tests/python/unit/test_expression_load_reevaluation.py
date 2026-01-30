@@ -10,7 +10,6 @@ are available in the Python environment, but currently they are not.
 """
 
 import numpy as np
-import pytest
 
 from lynx.diagram import Diagram
 
@@ -22,7 +21,6 @@ class TestExpressionLoadReEvaluation:
         """Test that loading a diagram re-evaluates expressions with namespace."""
         # Step 1: Create diagram with original variable values
         kp_original = 2.5
-        ki_original = 0.5
 
         diagram1 = Diagram()
         block = diagram1.add_block("gain", "g1", K=kp_original)
@@ -39,7 +37,6 @@ class TestExpressionLoadReEvaluation:
 
         # Step 2: In a new session, variables have DIFFERENT values
         kp_current = 5.0  # CHANGED
-        ki_current = 1.0  # CHANGED
 
         # Step 3: Load diagram with namespace - expressions re-evaluate with NEW values
         diagram2 = Diagram.load(filepath, namespace={"kp": kp_current})

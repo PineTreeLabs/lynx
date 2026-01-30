@@ -4,11 +4,11 @@
 
 """Tests for diagram templates."""
 
-import pytest
 import control as ct
+import pytest
+
 import lynx
 from lynx.templates import DIAGRAM_TEMPLATES
-
 
 # ============================================================================
 # Level 1: Structural Validation Tests
@@ -39,9 +39,10 @@ def test_template_loads(template_name):
 def test_template_has_minimum_blocks(template_name, min_blocks):
     """Each template should have expected minimum number of blocks."""
     diagram = lynx.Diagram.from_template(template_name)
-    assert (
-        len(diagram.blocks) >= min_blocks
-    ), f"{template_name} has {len(diagram.blocks)} blocks, expected at least {min_blocks}"
+    assert len(diagram.blocks) >= min_blocks, (
+        f"{template_name} has {len(diagram.blocks)} blocks, "
+        f"expected at least {min_blocks}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -61,7 +62,15 @@ def test_template_has_minimum_blocks(template_name, min_blocks):
         ),
         (
             "filtered",
-            ["ref", "ref_filter", "feedforward", "feedback", "obs_filter", "plant", "output"],
+            [
+                "ref",
+                "ref_filter",
+                "feedforward",
+                "feedback",
+                "obs_filter",
+                "plant",
+                "output",
+            ],
         ),
         (
             "cascaded",
@@ -76,16 +85,21 @@ def test_template_has_expected_block_labels(template_name, expected_block_labels
 
     # For "output" label, check both "output" and "output1" (some templates may vary)
     if "output" in expected_block_labels:
-        output_blocks = [b for b in diagram.blocks if b.label and b.label.startswith("output")]
+        output_blocks = [
+            b for b in diagram.blocks if b.label and b.label.startswith("output")
+        ]
         assert len(output_blocks) > 0, f"No output block found in {template_name}"
-        expected_block_labels_mod = [l for l in expected_block_labels if l != "output"]
+        expected_block_labels_mod = [
+            lbl for lbl in expected_block_labels if lbl != "output"
+        ]
     else:
         expected_block_labels_mod = expected_block_labels
 
     for label in expected_block_labels_mod:
-        assert (
-            label in block_labels
-        ), f"Missing block with label '{label}' in {template_name}. Found: {block_labels}"
+        assert label in block_labels, (
+            f"Missing block with label '{label}' in {template_name}. "
+            f"Found: {block_labels}"
+        )
 
 
 def test_template_has_input_and_output_markers():
@@ -101,12 +115,12 @@ def test_template_has_input_and_output_markers():
             m for m in io_markers if m.get_parameter("marker_type") == "output"
         ]
 
-        assert (
-            len(input_markers) >= 1
-        ), f"{template_name} should have at least 1 input marker"
-        assert (
-            len(output_markers) >= 1
-        ), f"{template_name} should have at least 1 output marker"
+        assert len(input_markers) >= 1, (
+            f"{template_name} should have at least 1 input marker"
+        )
+        assert len(output_markers) >= 1, (
+            f"{template_name} should have at least 1 output marker"
+        )
 
 
 def test_template_io_markers_have_unique_labels():
@@ -132,13 +146,15 @@ def test_template_io_markers_have_unique_labels():
         # Check for duplicates
         if len(input_labels) > 1:
             assert len(input_labels) == len(set(input_labels)), (
-                f"{template_name}: Input markers have duplicate block labels: {input_labels}. "
+                f"{template_name}: Input markers have duplicate block labels: "
+                f"{input_labels}. "
                 "Each input should have a unique label like 'r', 'n', 'd', etc."
             )
 
         if len(output_labels) > 1:
             assert len(output_labels) == len(set(output_labels)), (
-                f"{template_name}: Output markers have duplicate block labels: {output_labels}. "
+                f"{template_name}: Output markers have duplicate block labels: "
+                f"{output_labels}. "
                 "Each output should have a unique label like 'y0', 'y1', 'y2', etc."
             )
 
@@ -152,28 +168,34 @@ def test_template_connections_are_valid():
 
         for conn in diagram.connections:
             # Check source block exists
-            assert (
-                conn.source_block_id in block_ids
-            ), f"{template_name}: Connection {conn.id} references non-existent source block {conn.source_block_id}"
+            assert conn.source_block_id in block_ids, (
+                f"{template_name}: Connection {conn.id} references "
+                f"non-existent source block {conn.source_block_id}"
+            )
 
             # Check target block exists
-            assert (
-                conn.target_block_id in block_ids
-            ), f"{template_name}: Connection {conn.id} references non-existent target block {conn.target_block_id}"
+            assert conn.target_block_id in block_ids, (
+                f"{template_name}: Connection {conn.id} references "
+                f"non-existent target block {conn.target_block_id}"
+            )
 
             # Check source port exists
             source_block = diagram.get_block(conn.source_block_id)
             source_port_ids = {p.id for p in source_block._ports}
-            assert (
-                conn.source_port_id in source_port_ids
-            ), f"{template_name}: Connection {conn.id} references non-existent source port {conn.source_port_id} on block {source_block.label or source_block.id}"
+            assert conn.source_port_id in source_port_ids, (
+                f"{template_name}: Connection {conn.id} references "
+                f"non-existent source port {conn.source_port_id} "
+                f"on block {source_block.label or source_block.id}"
+            )
 
             # Check target port exists
             target_block = diagram.get_block(conn.target_block_id)
             target_port_ids = {p.id for p in target_block._ports}
-            assert (
-                conn.target_port_id in target_port_ids
-            ), f"{template_name}: Connection {conn.id} references non-existent target port {conn.target_port_id} on block {target_block.label or target_block.id}"
+            assert conn.target_port_id in target_port_ids, (
+                f"{template_name}: Connection {conn.id} references "
+                f"non-existent target port {conn.target_port_id} "
+                f"on block {target_block.label or target_block.id}"
+            )
 
 
 # ============================================================================
@@ -289,9 +311,7 @@ def test_template_exports_to_python_control_single_output(template_name):
 
     # Get IOMarker labels
     io_markers = [b for b in diagram.blocks if b.type == "io_marker"]
-    input_markers = [
-        m for m in io_markers if m.get_parameter("marker_type") == "input"
-    ]
+    input_markers = [m for m in io_markers if m.get_parameter("marker_type") == "input"]
     output_markers = [
         m for m in io_markers if m.get_parameter("marker_type") == "output"
     ]
@@ -311,9 +331,9 @@ def test_template_exports_to_python_control_single_output(template_name):
     # Check that it's a proper transfer function (not just identity)
     # by verifying it has denominator
     if hasattr(sys, "den"):
-        assert (
-            len(sys.den[0][0]) > 0
-        ), f"{template_name}: Transfer function has no denominator"
+        assert len(sys.den[0][0]) > 0, (
+            f"{template_name}: Transfer function has no denominator"
+        )
 
 
 @pytest.mark.parametrize(
@@ -334,9 +354,7 @@ def test_template_exports_to_state_space(template_name):
 
     # Get IOMarker labels
     io_markers = [b for b in diagram.blocks if b.type == "io_marker"]
-    input_markers = [
-        m for m in io_markers if m.get_parameter("marker_type") == "input"
-    ]
+    input_markers = [m for m in io_markers if m.get_parameter("marker_type") == "input"]
     output_markers = [
         m for m in io_markers if m.get_parameter("marker_type") == "output"
     ]
@@ -357,9 +375,6 @@ def test_template_modified_parameters_affect_export():
     """Modifying template parameters should affect exported system."""
     diagram = lynx.Diagram.from_template("feedback_tf")
 
-    # Get original system
-    sys_original = diagram.get_tf("r", "y")
-
     # Modify controller gain
     controller = next(b for b in diagram.blocks if b.label == "controller")
     diagram.update_block_parameter(controller.id, "num", [10.0])  # K=10
@@ -375,7 +390,6 @@ def test_template_modified_parameters_affect_export():
 
     # Systems should be different (can check DC gain for closed-loop)
     # For C=10, G=2/(s+1), closed-loop should have different DC gain than original
-    dc_gain_original = ct.dcgain(sys_original)
     dc_gain_modified = ct.dcgain(sys_modified)
 
     # DC gains should be different (unless by coincidence)
@@ -417,9 +431,7 @@ def test_cascaded_template_mimo_export():
 
     # Get all IOMarkers
     io_markers = [b for b in diagram.blocks if b.type == "io_marker"]
-    input_markers = [
-        m for m in io_markers if m.get_parameter("marker_type") == "input"
-    ]
+    input_markers = [m for m in io_markers if m.get_parameter("marker_type") == "input"]
     output_markers = [
         m for m in io_markers if m.get_parameter("marker_type") == "output"
     ]
@@ -467,7 +479,7 @@ def test_template_error_message_lists_valid_options():
     """Error message should list valid template names."""
     try:
         lynx.Diagram.from_template("invalid")
-        assert False, "Should have raised ValueError"
+        raise AssertionError("Should have raised ValueError")
     except ValueError as e:
         error_msg = str(e)
         # Check that some template names appear in error message

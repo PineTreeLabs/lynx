@@ -9,9 +9,8 @@ signal-to-signal transfer functions from diagrams.
 """
 
 import warnings
-
-from typing import TYPE_CHECKING, List, Tuple, cast
 from collections import Counter
+from typing import TYPE_CHECKING, List, Tuple, cast
 
 import control as ct
 
@@ -434,7 +433,9 @@ def get_ss(diagram: "Diagram", from_signal: str, to_signal: str) -> ct.StateSpac
     # Filter UserWarnings (flags unused output ports but we don't care here)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=UserWarning)
-        sys, from_name, to_name = _prepare_for_extraction(diagram, from_signal, to_signal)
+        sys, from_name, to_name = _prepare_for_extraction(
+            diagram, from_signal, to_signal
+        )
         return sys[to_name, from_name]
 
 

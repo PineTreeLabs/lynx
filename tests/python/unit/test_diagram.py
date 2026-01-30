@@ -120,9 +120,7 @@ class TestDiagram:
     def test_add_block_transfer_function(self):
         """Test adding a transfer function block."""
         diagram = Diagram()
-        block = diagram.add_block(
-            "transfer_function", "tf1", num=[1], den=[1, 1]
-        )
+        block = diagram.add_block("transfer_function", "tf1", num=[1], den=[1, 1])
         assert block.id == "tf1"
         assert block.type == "transfer_function"
 
@@ -535,9 +533,7 @@ class TestDiagram:
         diagram.add_block("io_marker", "in1", marker_type="input", label="u")
         diagram.add_block("io_marker", "out1", marker_type="output", label="y")
         diagram.add_block("sum", "s1", signs=["+", "+", "-"])
-        diagram.add_block(
-            "transfer_function", "tf1", num=[1, 2], den=[1, 3, 2]
-        )
+        diagram.add_block("transfer_function", "tf1", num=[1, 2], den=[1, 3, 2])
         diagram.add_block(
             "state_space",
             "ss1",
@@ -564,9 +560,7 @@ class TestDiagram:
         """Test that flipped state persists through to_dict/from_dict."""
         diagram = Diagram()
         diagram.add_block("gain", "g1", K=2.5)
-        diagram.add_block(
-            "transfer_function", "tf1", num=[1, 2], den=[1, 3, 2]
-        )
+        diagram.add_block("transfer_function", "tf1", num=[1, 2], den=[1, 3, 2])
 
         # Flip one block
         diagram.flip_block("g1")
@@ -1250,9 +1244,9 @@ class TestDiagramLabelIndexing:
         """T007: Test successful retrieval with unique label."""
         diagram = Diagram()
         diagram.add_block("gain", "g1", K=2.5, label="controller")
-        diagram.add_block("transfer_function", "tf1",
-                         num=[1.0], den=[1.0, 1.0],
-                         label="plant")
+        diagram.add_block(
+            "transfer_function", "tf1", num=[1.0], den=[1.0, 1.0], label="plant"
+        )
 
         # Retrieve by label
         controller = diagram["controller"]
@@ -1495,9 +1489,9 @@ class TestLabelIndexingIntegration:
         """T036: Integration test - label indexing with parameter updates."""
         diagram = Diagram()
         diagram.add_block("gain", "g1", K=2.5, label="controller")
-        diagram.add_block("transfer_function", "tf1",
-                         num=[2.0], den=[1.0, 3.0, 2.0],
-                         label="plant")
+        diagram.add_block(
+            "transfer_function", "tf1", num=[2.0], den=[1.0, 3.0, 2.0], label="plant"
+        )
 
         # Access via label
         controller = diagram["controller"]
@@ -1517,8 +1511,8 @@ class TestLabelIndexingIntegration:
 
     def test_label_indexing_with_serialization(self):
         """T037: Integration test - label indexing with save/load."""
-        import tempfile
         import os
+        import tempfile
 
         diagram = Diagram()
         diagram.add_block("gain", "ctrl", K=5.0, label="controller")
@@ -1528,7 +1522,7 @@ class TestLabelIndexingIntegration:
         assert diagram["controller"].get_parameter("K") == 5.0
 
         # Save to file
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
             temp_path = f.name
 
         try:
@@ -1650,7 +1644,9 @@ class TestDiagramStringRepresentation:
         diagram.add_block("io_marker", "output", marker_type="output", label="y")
 
         diagram.add_connection("c1", "input", "out", "sys", "in")
-        diagram.add_connection("c2", "sys", "out", "output", "in", label="output_signal")
+        diagram.add_connection(
+            "c2", "sys", "out", "output", "in", label="output_signal"
+        )
 
         output = str(diagram)
 
@@ -1666,7 +1662,11 @@ class TestDiagramStringRepresentation:
         diagram = Diagram()
         diagram.add_block("gain", "g1", K=2.5, label="gain_block")
         diagram.add_block(
-            "transfer_function", "tf1", num=[1.0, 2.0], den=[1.0, 3.0, 2.0], label="tf_block"
+            "transfer_function",
+            "tf1",
+            num=[1.0, 2.0],
+            den=[1.0, 3.0, 2.0],
+            label="tf_block",
         )
         diagram.add_block(
             "state_space",
@@ -1679,13 +1679,17 @@ class TestDiagramStringRepresentation:
         )
         diagram.add_block("sum", "sum1", signs=["+", "+", "-"], label="sum_block")
         diagram.add_block("io_marker", "in1", marker_type="input", label="input_block")
-        diagram.add_block("io_marker", "out1", marker_type="output", label="output_block")
+        diagram.add_block(
+            "io_marker", "out1", marker_type="output", label="output_block"
+        )
 
         output = str(diagram)
 
         # Verify each block type is formatted correctly
         assert "gain_block [Gain] K=2.5" in output
-        assert "tf_block [TransferFunction] num=[1.0, 2.0], den=[1.0, 3.0, 2.0]" in output
+        assert (
+            "tf_block [TransferFunction] num=[1.0, 2.0], den=[1.0, 3.0, 2.0]" in output
+        )
         assert "ss_block [StateSpace] A: 2x2, B: 2x1, C: 1x2, D: 1x1" in output
         assert "sum_block [Sum] signs=['+', '+', '-']" in output
         assert "input_block [IoMarker] type=input, index=0" in output

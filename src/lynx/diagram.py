@@ -459,15 +459,11 @@ class Diagram:
         """
         # Type validation
         if not isinstance(label, str):
-            raise TypeError(
-                f"Label must be a string, got {type(label).__name__}"
-            )
+            raise TypeError(f"Label must be a string, got {type(label).__name__}")
 
         # Find all blocks with matching label (skip unlabeled blocks)
         matches = [
-            block
-            for block in self.blocks
-            if block.label and block.label == label
+            block for block in self.blocks if block.label and block.label == label
         ]
 
         # Check match count
@@ -480,7 +476,7 @@ class Diagram:
             block_ids = [block.id for block in matches]
             raise ValidationError(
                 f"Label {label!r} appears on {len(block_ids)} blocks: {block_ids}",
-                block_id=block_ids[0] if block_ids else None
+                block_id=block_ids[0] if block_ids else None,
             )
 
     def remove_block(self, block_id: str) -> bool:
@@ -819,7 +815,7 @@ class Diagram:
                 import warnings as warn_module
 
                 for warning in warnings:
-                    warn_module.warn(warning, UserWarning)
+                    warn_module.warn(warning, UserWarning, stacklevel=2)
 
         return diagram
 
@@ -1600,7 +1596,8 @@ class Diagram:
         if self.blocks:
             lines.append("Blocks:")
             for block in self.blocks:
-                # Format block type name (e.g., "transfer_function" -> "TransferFunction")
+                # Format block type name
+                # (e.g., "transfer_function" -> "TransferFunction")
                 type_parts = block.type.split("_")
                 type_name = "".join(part.capitalize() for part in type_parts)
 

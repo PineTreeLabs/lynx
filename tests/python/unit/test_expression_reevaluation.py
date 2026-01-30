@@ -81,9 +81,7 @@ class TestExpressionReEvaluation:
     def test_re_evaluate_with_array_expression(self):
         """Test re-evaluation with array expressions."""
         diagram = Diagram()
-        block = diagram.add_block(
-            "transfer_function", "tf1", num=[1, 2], den=[1, 3, 2]
-        )
+        block = diagram.add_block("transfer_function", "tf1", num=[1, 2], den=[1, 3, 2])
 
         # Set expression for numerator
         for param in block._parameters:

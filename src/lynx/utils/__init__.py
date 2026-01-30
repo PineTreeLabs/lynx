@@ -5,7 +5,7 @@
 
 """Utility functions for Lynx."""
 
-from lynx.utils.plot_themes import set_theme
 from lynx.utils.ipython_utils import display_sys
+from lynx.utils.plot_themes import set_theme
 
 __all__ = ["set_theme", "display_sys"]

@@ -255,9 +255,7 @@ def test_complex_diagram_validation():
 
     # Three parallel PID paths
     diagram.add_block("gain", "P", K=2.0)  # Proportional
-    diagram.add_block(
-        "transfer_function", "I", num=[0.5], den=[1, 0]
-    )  # Integral
+    diagram.add_block("transfer_function", "I", num=[0.5], den=[1, 0])  # Integral
     diagram.add_block(
         "transfer_function", "D", num=[0.1, 0], den=[0.01, 1]
     )  # Derivative
@@ -274,9 +272,7 @@ def test_complex_diagram_validation():
     diagram.add_connection("c7", "D", "out", "pid_sum", "in3")
 
     # Plant
-    diagram.add_block(
-        "transfer_function", "plant", num=[1], den=[1, 2, 1]
-    )
+    diagram.add_block("transfer_function", "plant", num=[1], den=[1, 2, 1])
     diagram.add_connection("c8", "pid_sum", "out", "plant", "in")
 
     # Output and feedback
