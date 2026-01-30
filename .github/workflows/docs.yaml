@@ -84,13 +84,8 @@ jobs:
         with:
           path: docs/_build/html
 
-  # DEPLOYMENT DISABLED: Repository is currently private
-  # To enable deployment when ready:
-  # 1. Make repository public (Settings → Danger Zone → Change visibility)
-  # 2. Enable GitHub Pages (Settings → Pages → Source: "GitHub Actions")
-  # 3. Change the condition below to: if: github.ref == 'refs/heads/main' && github.event_name == 'push'
   deploy:
-    if: false  # DISABLED - Remove this line to enable deployment
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
     environment:

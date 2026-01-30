@@ -19,19 +19,7 @@ class TestExpressionLoadReEvaluation:
     """Test automatic re-evaluation of expressions during diagram load."""
 
     def test_load_reevaluates_expressions_with_current_namespace(self, tmp_path):
-        """Test that loading a diagram re-evaluates expressions from current namespace.
-
-        EXPECTED BEHAVIOR:
-        When a diagram is loaded, expressions should be re-evaluated against
-        the current Python environment. If variables are available, the values
-        should be recomputed. If variables are missing, stored values are used
-        as fallback.
-
-        CURRENT BUG:
-        Expressions are preserved during load but NOT re-evaluated. This means
-        parameter values remain at their stored values even when corresponding
-        variables exist in the current environment.
-        """
+        """Test that loading a diagram re-evaluates expressions with namespace."""
         # Step 1: Create diagram with original variable values
         kp_original = 2.5
         ki_original = 0.5
@@ -53,29 +41,15 @@ class TestExpressionLoadReEvaluation:
         kp_current = 5.0  # CHANGED
         ki_current = 1.0  # CHANGED
 
-        # Step 3: Load diagram - expressions should re-evaluate with NEW values
-        # TODO: Need mechanism to pass namespace to load()
-        diagram2 = Diagram.load(filepath)
+        # Step 3: Load diagram with namespace - expressions re-evaluate with NEW values
+        diagram2 = Diagram.load(filepath, namespace={"kp": kp_current})
 
-        # THIS TEST WILL FAIL - showing the bug
-        # Expected: K should be re-evaluated to kp_current (5.0)
-        # Actual: K remains at stored value kp_original (2.5)
+        # K should be re-evaluated to kp_current (5.0)
         block2 = diagram2.get_block("g1")
-
-        # This assertion FAILS, demonstrating the bug
-        # Expected: 5.0 (from kp_current)
-        # Actual: 2.5 (from stored value)
-        assert block2.get_parameter("K") == kp_current, (
-            f"Expected K to be re-evaluated to {kp_current}, "
-            f"but got stored value {block2.get_parameter('K')}"
-        )
+        assert block2.get_parameter("K") == kp_current
 
     def test_from_dict_with_namespace_reevaluates_expressions(self):
-        """Test that from_dict() with namespace re-evaluates expressions.
-
-        PROPOSED API:
-        Diagram.from_dict(data, namespace=...)  # Pass namespace for re-evaluation
-        """
+        """Test that from_dict() with namespace re-evaluates expressions."""
         # Create diagram data with expression
         data = {
             "version": "1.0.0",
@@ -103,23 +77,15 @@ class TestExpressionLoadReEvaluation:
         # Current namespace has different value
         namespace = {"kp": 5.0}
 
-        # Load with namespace (API doesn't exist yet - will fail)
-        # diagram = Diagram.from_dict(data, namespace=namespace)
-
-        # For now, test manual re-evaluation
-        diagram = Diagram.from_dict(data)
-        diagram.re_evaluate_expressions(namespace)
+        # Load with namespace - should auto re-evaluate
+        diagram = Diagram.from_dict(data, namespace=namespace)
 
         # After re-evaluation, value should match namespace
         block = diagram.get_block("g1")
         assert block.get_parameter("K") == 5.0
 
     def test_load_with_comma_separated_expression(self, tmp_path):
-        """Test that comma-separated expressions evaluate to arrays, not tuples.
-
-        BUG #2: Comma-separated expressions like "kp, ki" evaluate to tuples
-        instead of arrays/lists, which causes type mismatches.
-        """
+        """Test that comma-separated expressions evaluate to arrays, not tuples."""
         # Create transfer function with comma-separated expression
         diagram1 = Diagram()
         block = diagram1.add_block(
@@ -136,29 +102,22 @@ class TestExpressionLoadReEvaluation:
         filepath = tmp_path / "test_tf.json"
         diagram1.save(filepath)
 
-        # Load and manually re-evaluate
+        # Load with namespace - should auto re-evaluate
         kp = 500.0
         ki = 50.0
-        namespace = {"kp": kp, "ki": ki}
+        diagram2 = Diagram.load(filepath, namespace={"kp": kp, "ki": ki})
 
-        diagram2 = Diagram.load(filepath)
-        diagram2.re_evaluate_expressions(namespace)
-
-        # Check result
+        # Check result - should be array, not tuple
         block2 = diagram2.get_block("tf1")
         result = block2.get_parameter("num")
 
-        # BUG: Result is a tuple (500.0, 50.0) instead of array [500.0, 50.0]
-        # This causes type mismatches in python-control export
-        assert isinstance(result, (list, np.ndarray)), (
-            f"Expected list or array, got {type(result).__name__}: {result}"
+        # Should be array (comma-separated expressions convert to arrays)
+        assert isinstance(result, np.ndarray), (
+            f"Expected ndarray, got {type(result).__name__}: {result}"
         )
 
         # Values should match
-        if isinstance(result, np.ndarray):
-            assert np.allclose(result, [kp, ki])
-        else:
-            assert result == [kp, ki]
+        assert np.allclose(result, [kp, ki])
 
     def test_load_cruise_control_with_expressions(self):
         """Test loading the actual cruise control diagram with re-evaluation.
@@ -171,18 +130,16 @@ class TestExpressionLoadReEvaluation:
         kp = 611.0
         ki = 63.0
 
-        # Load diagram
-        diagram = Diagram.load("local/release/cruise-control.json")
-
-        # Manually re-evaluate (should be automatic, but test current workaround)
+        # Load diagram with namespace - should auto re-evaluate
         namespace = {"b": b, "a": a, "kp": kp, "ki": ki}
-        warnings = diagram.re_evaluate_expressions(namespace)
+        diagram = Diagram.load("local/release/cruise-control.json", namespace=namespace)
 
         # Check that controller numerator was re-evaluated
         controller = diagram.get_block("transfer_function_1769426900123")
         result = controller.get_parameter("num")
 
-        # Should match current namespace values
+        # Should match current namespace values and be an array (not tuple)
+        assert isinstance(result, np.ndarray), f"Expected ndarray, got {type(result)}"
         assert np.allclose(result, [kp, ki]), (
             f"Expected controller num=[{kp}, {ki}], got {result}"
         )

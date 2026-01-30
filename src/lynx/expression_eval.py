@@ -52,6 +52,10 @@ def evaluate_expression(
         - Uses ast.literal_eval for simple literals (safest)
         - For complex expressions, validates AST before evaluation
         - Blocks unsafe operations (imports, attribute access to private members, etc.)
+
+    Note:
+        Comma-separated expressions like "kp, ki" are automatically converted
+        from tuples to numpy arrays for consistency with parameter storage.
     """
     if not expression or not isinstance(expression, str):
         return EvaluationResult(
@@ -97,6 +101,13 @@ def evaluate_expression(
         value = eval(
             compile(tree, "<string>", "eval"), {"__builtins__": {}}, safe_namespace
         )
+
+        # Convert tuples to numpy arrays
+        # This handles comma-separated expressions like "kp, ki" → array([kp, ki])
+        # Python's eval naturally produces tuples from comma-separated values
+        if isinstance(value, tuple):
+            value = np.array(value)
+
         return EvaluationResult(success=True, value=value)
     except NameError as e:
         # Variable not found - try fallback

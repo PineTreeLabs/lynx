@@ -9,6 +9,21 @@ The Diagram class is the central data structure that manages:
 - Connections between blocks with optional labels
 - Serialization to/from JSON using Pydantic validation
 - Python-control export for analysis and simulation
+- Expression re-evaluation for parametric diagrams
+
+Loading Parametric Diagrams:
+    When loading diagrams with parameter expressions, you can optionally
+    re-evaluate expressions against a namespace:
+
+        # Define parameters in your notebook/script
+        kp = 611.0
+        ki = 63.0
+
+        # Load and re-evaluate with current environment
+        diagram = Diagram.load("mydiagram.json", namespace=globals())
+
+        # Or use explicit values
+        diagram = Diagram.load("mydiagram.json", namespace={"kp": 500, "ki": 50})
 
 Python-Control Export API:
     The Diagram class provides methods to convert diagrams to
@@ -673,18 +688,35 @@ class Diagram:
         return model.model_dump()
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Diagram":
+    def from_dict(
+        cls, data: Dict[str, Any], namespace: Optional[Dict[str, Any]] = None
+    ) -> "Diagram":
         """Deserialize diagram from dictionary with Pydantic validation.
 
         Args:
             data: Dictionary with version, blocks, connections
+            namespace: Optional namespace for expression re-evaluation.
+                       If provided, all parameter expressions will be re-evaluated
+                       against this namespace. Use globals() to evaluate with
+                       current Python environment, or pass explicit dict like
+                       {"kp": 0.5, "ki": 0.1} for specific values.
 
         Returns:
-            Diagram object
+            Diagram object with expressions re-evaluated if namespace provided
 
         Raises:
             ValidationError: If data doesn't match schema
             ValueError: If block type is unknown
+
+        Examples:
+            >>> # No re-evaluation (backward compatible)
+            >>> diagram = Diagram.from_dict(data)
+            >>>
+            >>> # Re-evaluate with current Python environment
+            >>> diagram = Diagram.from_dict(data, namespace=globals())
+            >>>
+            >>> # Re-evaluate with explicit values
+            >>> diagram = Diagram.from_dict(data, namespace={"kp": 0.5, "ki": 0.1})
         """
         # Validate with Pydantic first
         try:
@@ -779,6 +811,16 @@ class Diagram:
             # Silently skip invalid connections during deserialization
             # (could raise exception in strict mode if needed)
 
+        # Re-evaluate expressions if namespace provided
+        if namespace is not None:
+            warnings = diagram.re_evaluate_expressions(namespace)
+            # Issue warnings if any expressions used fallback values
+            if warnings:
+                import warnings as warn_module
+
+                for warning in warnings:
+                    warn_module.warn(warning, UserWarning)
+
         return diagram
 
     def save(self, filename: Union[str, Path]) -> None:
@@ -827,29 +869,50 @@ class Diagram:
         return cls.from_dict(data)
 
     @classmethod
-    def load(cls, filename: Union[str, Path]) -> "Diagram":
-        """Load diagram from JSON file.
+    def load(
+        cls, filename: Union[str, Path], namespace: Optional[Dict[str, Any]] = None
+    ) -> "Diagram":
+        """Load diagram from JSON file with optional expression re-evaluation.
 
         Args:
             filename: Path to load file
+            namespace: Optional namespace for expression re-evaluation.
+                       If provided, parameter expressions will be re-evaluated
+                       using variables from this namespace. Pass globals() to use
+                       current Python environment, or pass explicit parameter dict.
 
         Returns:
-            Diagram object
+            Diagram object with expressions re-evaluated if namespace provided
 
         Raises:
             FileNotFoundError: If file doesn't exist
             ValueError: If JSON is malformed or invalid diagram data
+
+        Examples:
+            >>> # No re-evaluation (backward compatible)
+            >>> diagram = Diagram.load("mydiagram.json")
+            >>>
+            >>> # Re-evaluate with current notebook/script variables
+            >>> kp = 611.0
+            >>> ki = 63.0
+            >>> diagram = Diagram.load("mydiagram.json", namespace=globals())
+            >>>
+            >>> # Re-evaluate with explicit parameter values
+            >>> diagram = Diagram.load(
+            ...     "mydiagram.json",
+            ...     namespace={"kp": 500.0, "ki": 50.0}
+            ... )
         """
         filepath = Path(filename)
 
         if not filepath.exists():
             raise FileNotFoundError(f"Diagram file not found: {filepath}")
 
-        # Read and deserialize
+        # Read and deserialize with namespace
         with open(filepath, "r") as f:
             data = json.load(f)
 
-        return cls.from_dict(data)
+        return cls.from_dict(data, namespace=namespace)
 
     def _save_state(self) -> None:
         """Save current diagram state to history for undo/redo.

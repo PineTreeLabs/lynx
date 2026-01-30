@@ -586,3 +586,152 @@ class TestSchemaVersioning:
         # Should raise ValueError due to extra field in block
         with pytest.raises(ValueError, match="Invalid diagram data"):
             Diagram.from_dict(data)
+
+
+class TestNamespaceParameterReEvaluation:
+    """Test namespace parameter for automatic expression re-evaluation."""
+
+    def test_load_with_namespace_reevaluates(self, tmp_path):
+        """Test that load() with namespace re-evaluates expressions."""
+        # Create diagram with expression
+        diagram1 = Diagram()
+        block = diagram1.add_block("gain", "g1", K=2.5)
+        for param in block._parameters:
+            if param.name == "K":
+                param.expression = "kp"
+                param.value = 2.5
+
+        filepath = tmp_path / "test.json"
+        diagram1.save(filepath)
+
+        # Load with different namespace value
+        diagram2 = Diagram.load(filepath, namespace={"kp": 5.0})
+
+        # Should be re-evaluated
+        assert diagram2.get_block("g1").get_parameter("K") == 5.0
+
+    def test_load_without_namespace_preserves_stored_values(self, tmp_path):
+        """Test backward compatibility - no re-evaluation without namespace."""
+        # Create diagram with expression
+        diagram1 = Diagram()
+        block = diagram1.add_block("gain", "g1", K=2.5)
+        for param in block._parameters:
+            if param.name == "K":
+                param.expression = "kp"
+                param.value = 2.5
+
+        filepath = tmp_path / "test.json"
+        diagram1.save(filepath)
+
+        # Load WITHOUT namespace - should use stored value
+        diagram2 = Diagram.load(filepath)
+
+        # Should use stored value (no re-evaluation)
+        assert diagram2.get_block("g1").get_parameter("K") == 2.5
+
+        # Expression should still be preserved
+        param = [p for p in diagram2.get_block("g1")._parameters if p.name == "K"][0]
+        assert param.expression == "kp"
+
+    def test_from_dict_with_namespace_reevaluates(self):
+        """Test that from_dict() with namespace re-evaluates expressions."""
+        data = {
+            "version": "1.0.0",
+            "blocks": [
+                {
+                    "id": "g1",
+                    "type": "gain",
+                    "position": {"x": 100, "y": 100},
+                    "parameters": [{"name": "K", "value": 2.5, "expression": "kp"}],
+                    "ports": [
+                        {"id": "in", "type": "input"},
+                        {"id": "out", "type": "output"},
+                    ],
+                }
+            ],
+            "connections": [],
+        }
+
+        # Load with namespace
+        diagram = Diagram.from_dict(data, namespace={"kp": 5.0})
+
+        # Should be re-evaluated
+        assert diagram.get_block("g1").get_parameter("K") == 5.0
+
+    def test_from_dict_without_namespace_preserves_values(self):
+        """Test backward compatibility for from_dict() without namespace."""
+        data = {
+            "version": "1.0.0",
+            "blocks": [
+                {
+                    "id": "g1",
+                    "type": "gain",
+                    "position": {"x": 100, "y": 100},
+                    "parameters": [{"name": "K", "value": 2.5, "expression": "kp"}],
+                    "ports": [
+                        {"id": "in", "type": "input"},
+                        {"id": "out", "type": "output"},
+                    ],
+                }
+            ],
+            "connections": [],
+        }
+
+        # Load WITHOUT namespace
+        diagram = Diagram.from_dict(data)
+
+        # Should use stored value
+        assert diagram.get_block("g1").get_parameter("K") == 2.5
+
+        # Expression preserved
+        param = [p for p in diagram.get_block("g1")._parameters if p.name == "K"][0]
+        assert param.expression == "kp"
+
+    def test_namespace_with_missing_variable_uses_fallback(self, tmp_path):
+        """Test that missing variables in namespace use stored fallback values."""
+        # Create diagram with expression
+        diagram1 = Diagram()
+        block = diagram1.add_block("gain", "g1", K=2.5)
+        for param in block._parameters:
+            if param.name == "K":
+                param.expression = "kp"
+                param.value = 2.5
+
+        filepath = tmp_path / "test.json"
+        diagram1.save(filepath)
+
+        # Load with empty namespace (kp not defined)
+        with pytest.warns(UserWarning, match="kp.*not found"):
+            diagram2 = Diagram.load(filepath, namespace={})
+
+        # Should use fallback (stored value)
+        assert diagram2.get_block("g1").get_parameter("K") == 2.5
+
+    def test_reevaluated_values_persist_on_resave(self, tmp_path):
+        """Test that re-evaluated values are stored when diagram is re-saved."""
+        # Create diagram with expression
+        diagram1 = Diagram()
+        block = diagram1.add_block("gain", "g1", K=2.5)
+        for param in block._parameters:
+            if param.name == "K":
+                param.expression = "kp"
+                param.value = 2.5
+
+        filepath1 = tmp_path / "test1.json"
+        diagram1.save(filepath1)
+
+        # Load with new namespace value
+        diagram2 = Diagram.load(filepath1, namespace={"kp": 5.0})
+        assert diagram2.get_block("g1").get_parameter("K") == 5.0
+
+        # Re-save
+        filepath2 = tmp_path / "test2.json"
+        diagram2.save(filepath2)
+
+        # Load again WITHOUT namespace - should use updated stored value
+        diagram3 = Diagram.load(filepath2)
+        assert diagram3.get_block("g1").get_parameter("K") == 5.0
+
+        # Expression should still be preserved
+        param = [p for p in diagram3.get_block("g1")._parameters if p.name == "K"][0]
+        assert param.expression == "kp"
