@@ -16,9 +16,7 @@ import "reactflow/dist/style.css";
 import OrthogonalEditableEdge from "../connections/OrthogonalEditableEdge";
 
 import { getDiagramState, onDiagramStateChange } from "../utils/traitletSync";
-import type {
-  DiagramState,
-} from "../utils/traitletSync";
+import type { DiagramState } from "../utils/traitletSync";
 import { nodeTypes } from "../blocks";
 import type { CaptureRequest, CaptureResult } from "./types";
 import { captureToPng, captureToSvg } from "./captureUtils";

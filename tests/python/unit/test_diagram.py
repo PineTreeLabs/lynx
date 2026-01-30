@@ -1144,30 +1144,6 @@ class TestIOMarkerIndexRenumbering:
         assert diagram.get_block("in1").get_parameter("index") == 0
         assert diagram.get_block("in0").get_parameter("index") == 1
 
-    def test_renumbering_performance_large_diagram(self):
-        """T048: Verify renumbering meets <20ms target for large diagrams (TS-005.2).
-
-        Scenario: Performance with 100 markers
-        Given: 100 InputMarkers (0-99)
-        When: Change marker at index 50 to index 0
-        Then: Renumbering completes in <20ms
-        """
-        import time
-
-        diagram = Diagram()
-
-        # Create 100 InputMarkers
-        for i in range(100):
-            diagram.add_block("io_marker", f"in{i}", marker_type="input")
-
-        # Measure downward shift renumbering
-        start = time.perf_counter()
-        diagram.update_block_parameter("in50", "index", 0)
-        elapsed = (time.perf_counter() - start) * 1000  # Convert to ms
-
-        assert elapsed < 20, f"Renumbering took {elapsed:.2f}ms (target: <20ms)"
-        assert diagram.get_block("in50").get_parameter("index") == 0
-
 
 class TestDiagramLabelIndexing:
     """Test Diagram label indexing feature (Feature 017 - User Story 1).

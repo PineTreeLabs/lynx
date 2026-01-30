@@ -43,10 +43,7 @@ import {
 } from "./utils/reactFlowConfig";
 import { blockToNode, connectionToEdge } from "./utils/nodeConversion";
 import { getContentBounds, calculateFitViewport } from "./utils/edgeAwareFitView";
-import type {
-  DiagramState,
-  Connection as DiagramConnection,
-} from "./utils/traitletSync";
+import type { DiagramState, Connection as DiagramConnection } from "./utils/traitletSync";
 import { nodeTypes } from "./blocks";
 import BlockPalette from "./palette/BlockPalette";
 import ParameterPanel from "./components/ParameterPanel";
