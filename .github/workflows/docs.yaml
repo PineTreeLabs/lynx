@@ -65,6 +65,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --all-extras --dev
+          source .venv/bin/activate
           python -m ipykernel install --user --name lynx
 
       - name: Build HTML documentation
