@@ -146,8 +146,9 @@ export function calculateConnectionLabelPosition(
     const visibleSegments = [...segments];
 
     // Remove first segment if it's a PORT_OFFSET extension (< 25px)
-    const firstLength = Math.abs(segments[0].to.x - segments[0].from.x) +
-                       Math.abs(segments[0].to.y - segments[0].from.y);
+    const firstLength =
+      Math.abs(segments[0].to.x - segments[0].from.x) +
+      Math.abs(segments[0].to.y - segments[0].from.y);
     if (firstLength < PORT_OFFSET_THRESHOLD) {
       visibleSegments.shift();
     }
@@ -155,8 +156,8 @@ export function calculateConnectionLabelPosition(
     // Remove last segment if it's a PORT_OFFSET extension (< 25px)
     if (visibleSegments.length > 0) {
       const lastSeg = visibleSegments[visibleSegments.length - 1];
-      const lastLength = Math.abs(lastSeg.to.x - lastSeg.from.x) +
-                        Math.abs(lastSeg.to.y - lastSeg.from.y);
+      const lastLength =
+        Math.abs(lastSeg.to.x - lastSeg.from.x) + Math.abs(lastSeg.to.y - lastSeg.from.y);
       if (lastLength < PORT_OFFSET_THRESHOLD) {
         visibleSegments.pop();
       }

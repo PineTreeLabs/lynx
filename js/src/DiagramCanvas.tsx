@@ -651,7 +651,7 @@ export default function DiagramCanvas() {
   const onNodeDoubleClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       event.stopPropagation(); // Prevent zoom behavior
-      event.preventDefault();  // Prevent any default browser behavior
+      event.preventDefault(); // Prevent any default browser behavior
 
       // Update our custom selectedBlockId for ParameterPanel
       setSelectedBlockId(node.id);
@@ -887,10 +887,7 @@ export default function DiagramCanvas() {
         />
         <Controls showInteractive={false} showZoom={false} showFitView={false}>
           {/* Custom zoom-to-fit button with edge-aware bounds */}
-          <ControlButton
-            onClick={edgeAwareFitView}
-            title="Zoom to Fit (Spacebar)"
-          >
+          <ControlButton onClick={edgeAwareFitView} title="Zoom to Fit (Spacebar)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
               <path
                 fill="currentColor"

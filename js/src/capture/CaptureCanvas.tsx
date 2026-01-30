@@ -107,12 +107,11 @@ function CaptureCanvasInner({
         await new Promise((resolve) => setTimeout(resolve, 100));
 
         // Calculate viewport to fit content bounds with padding
-        const viewport = calculateFitViewport(
-          contentBounds,
-          outputWidth,
-          outputHeight,
-          { padding: CAPTURE_PADDING, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM }
-        );
+        const viewport = calculateFitViewport(contentBounds, outputWidth, outputHeight, {
+          padding: CAPTURE_PADDING,
+          minZoom: MIN_ZOOM,
+          maxZoom: MAX_ZOOM,
+        });
         reactFlowInstance.current?.setViewport(viewport);
 
         // Wait for viewport adjustment and rendering to complete
@@ -129,7 +128,8 @@ function CaptureCanvasInner({
 
         // Compute background color from theme (html-to-image can't resolve CSS variables)
         const computedStyle = getComputedStyle(containerRef.current);
-        const backgroundColor = computedStyle.getPropertyValue("--color-slate-50").trim() || "#fafbfc";
+        const backgroundColor =
+          computedStyle.getPropertyValue("--color-slate-50").trim() || "#fafbfc";
 
         let data: string;
         if (captureRequest.format === "png") {
@@ -271,7 +271,9 @@ export default function CaptureCanvas() {
     // Initial load
     const initialState = getDiagramState(model);
     setNodes(initialState.blocks.map(blockToNode));
-    setEdges(initialState.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)")));
+    setEdges(
+      initialState.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)"))
+    );
 
     // Subscribe to changes (in case state updates after mount)
     const unsubscribe = onDiagramStateChange(model, (state: DiagramState) => {
@@ -356,7 +358,9 @@ export default function CaptureCanvas() {
               parent = parent.parentElement;
             }
           } else {
-            console.error("[CaptureCanvas] Could not find .lynx-widget container for inline display");
+            console.error(
+              "[CaptureCanvas] Could not find .lynx-widget container for inline display"
+            );
           }
         }
       }
