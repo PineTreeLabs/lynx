@@ -9,21 +9,26 @@
  * Used by the capture system to generate PNG/SVG exports.
  */
 
-import React, { useCallback, useMemo, useState, useEffect, useContext, useRef } from "react";
+import React, { useCallback, useState, useEffect, useContext, useRef } from "react";
 import { AnyWidgetModelContext } from "../index";
 import ReactFlow, { Node, Edge, EdgeTypes, ReactFlowInstance, ReactFlowProvider } from "reactflow";
 import "reactflow/dist/style.css";
 import OrthogonalEditableEdge from "../connections/OrthogonalEditableEdge";
 
 import { getDiagramState, onDiagramStateChange } from "../utils/traitletSync";
-import type {
-  DiagramState,
-  Block as DiagramBlock,
-  Connection as DiagramConnection,
-} from "../utils/traitletSync";
+import type { DiagramState } from "../utils/traitletSync";
 import { nodeTypes } from "../blocks";
 import type { CaptureRequest, CaptureResult } from "./types";
-import { captureToPng, captureToSvg, calculateContentBounds } from "./captureUtils";
+import { captureToPng, captureToSvg } from "./captureUtils";
+import {
+  DEFAULT_VIEWPORT,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  FIT_VIEW_OPTIONS,
+  getDefaultEdgeOptions,
+} from "../utils/reactFlowConfig";
+import { blockToNode, connectionToEdge } from "../utils/nodeConversion";
+import { getContentBounds, calculateFitViewport } from "../utils/edgeAwareFitView";
 
 /**
  * Map edge types to custom edge components
@@ -32,69 +37,7 @@ const edgeTypes: EdgeTypes = {
   orthogonal: OrthogonalEditableEdge,
 };
 
-/**
- * Default dimensions for each block type (must match BLOCK_DEFAULTS in blockDefaults.ts)
- */
-const BLOCK_DEFAULTS: Record<string, { width: number; height: number }> = {
-  gain: { width: 120, height: 80 },
-  sum: { width: 56, height: 56 },
-  transfer_function: { width: 100, height: 50 },
-  state_space: { width: 100, height: 60 },
-  io_marker: { width: 60, height: 48 },
-};
-
-/**
- * Convert backend block to React Flow node
- * Important: width/height must be on the node itself for getNodesBounds to work
- */
-function blockToNode(block: DiagramBlock): Node {
-  const defaults = BLOCK_DEFAULTS[block.type] || { width: 100, height: 60 };
-  const width = block.width ?? defaults.width;
-  const height = block.height ?? defaults.height;
-
-  return {
-    id: block.id,
-    type: block.type,
-    position: block.position,
-    // Width/height on node for getNodesBounds calculation
-    width,
-    height,
-    data: {
-      parameters: block.parameters,
-      ports: block.ports,
-      label: block.label,
-      flipped: block.flipped || false,
-      custom_latex: block.custom_latex,
-      label_visible: block.label_visible || false,
-      width,
-      height,
-    },
-  };
-}
-
-/**
- * Convert backend connection to React Flow edge
- */
-function connectionToEdge(conn: DiagramConnection): Edge {
-  return {
-    id: conn.id,
-    source: conn.source_block_id,
-    sourceHandle: conn.source_port_id,
-    target: conn.target_block_id,
-    targetHandle: conn.target_port_id,
-    type: "orthogonal",
-    data: {
-      waypoints: conn.waypoints || [],
-      label: conn.label,
-      label_visible: conn.label_visible || false,
-    },
-    markerEnd: {
-      type: "arrowclosed",
-      width: 14,
-      height: 14,
-    },
-  };
-}
+// Block/edge conversion now imported from shared utils
 
 interface CaptureCanvasInnerProps {
   nodes: Node[];
@@ -118,44 +61,37 @@ function CaptureCanvasInner({
 
   // Perform capture when request changes and canvas is ready
   useEffect(() => {
-    console.log("[CaptureCanvasInner] Capture effect check:", {
-      hasCaptureRequest: !!captureRequest,
-      isReady,
-      hasContainer: !!containerRef.current,
-      hasInstance: !!reactFlowInstance.current,
-      nodeCount: nodes.length,
-    });
-
     if (!captureRequest || !isReady || !containerRef.current || !reactFlowInstance.current) {
       return;
     }
 
     // Wait for nodes to be available
     if (nodes.length === 0) {
-      console.log("[CaptureCanvasInner] Waiting for nodes...");
       return;
     }
 
     const performCapture = async () => {
       try {
-        console.log("[CaptureCanvasInner] Starting capture with", nodes.length, "nodes");
+        // Calculate content bounds including edge waypoints (not just nodes)
+        const contentBounds = getContentBounds(nodes, edges);
 
-        // Calculate natural content bounds (without target dimensions)
-        const contentBounds = calculateContentBounds(nodes, null, null);
-        console.log("[CaptureCanvasInner] Content bounds:", contentBounds);
+        // Use percentage-based padding for consistency with DiagramCanvas
+        const CAPTURE_PADDING = 0.15; // 15% padding on each side
 
-        // Determine output dimensions
-        const outputWidth = Math.ceil(captureRequest.width ?? contentBounds.width);
-        const outputHeight = Math.ceil(captureRequest.height ?? contentBounds.height);
+        // Determine output dimensions (use content with padding if not specified)
+        let outputWidth: number;
+        let outputHeight: number;
 
-        // Calculate zoom to fit content within output dimensions
-        let zoom = 1;
         if (captureRequest.width !== null || captureRequest.height !== null) {
-          const scaleX = outputWidth / contentBounds.width;
-          const scaleY = outputHeight / contentBounds.height;
-          zoom = Math.min(scaleX, scaleY); // Fit while preserving aspect ratio
+          // User specified dimensions
+          outputWidth = Math.ceil(captureRequest.width ?? contentBounds.width * 1.2);
+          outputHeight = Math.ceil(captureRequest.height ?? contentBounds.height * 1.2);
+        } else {
+          // Auto-size to content with padding
+          const paddingMultiplier = 1 / (1 - CAPTURE_PADDING * 2); // Inverse of available space
+          outputWidth = Math.ceil(contentBounds.width * paddingMultiplier);
+          outputHeight = Math.ceil(contentBounds.height * paddingMultiplier);
         }
-        console.log("[CaptureCanvasInner] Calculated zoom:", zoom);
 
         // Resize container to match output dimensions
         if (containerRef.current) {
@@ -166,20 +102,13 @@ function CaptureCanvasInner({
         // Wait for resize to take effect
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Calculate viewport position to center content within output
-        // Content center in canvas coordinates
-        const contentCenterX = contentBounds.x + contentBounds.width / 2;
-        const contentCenterY = contentBounds.y + contentBounds.height / 2;
-
-        // Viewport position to center scaled content
-        const viewportX = outputWidth / 2 - contentCenterX * zoom;
-        const viewportY = outputHeight / 2 - contentCenterY * zoom;
-
-        reactFlowInstance.current?.setViewport({
-          x: viewportX,
-          y: viewportY,
-          zoom,
+        // Calculate viewport to fit content bounds with padding
+        const viewport = calculateFitViewport(contentBounds, outputWidth, outputHeight, {
+          padding: CAPTURE_PADDING,
+          minZoom: MIN_ZOOM,
+          maxZoom: MAX_ZOOM,
         });
+        reactFlowInstance.current?.setViewport(viewport);
 
         // Wait for viewport adjustment and rendering to complete
         await new Promise((resolve) => setTimeout(resolve, 200));
@@ -193,14 +122,10 @@ function CaptureCanvasInner({
           throw new Error("Could not find React Flow viewport element");
         }
 
-        console.log(
-          "[CaptureCanvasInner] Capturing",
-          captureRequest.format,
-          "at",
-          outputWidth,
-          "x",
-          outputHeight
-        );
+        // Compute background color from theme (html-to-image can't resolve CSS variables)
+        const computedStyle = getComputedStyle(containerRef.current);
+        const backgroundColor =
+          computedStyle.getPropertyValue("--color-slate-50").trim() || "#fafbfc";
 
         let data: string;
         if (captureRequest.format === "png") {
@@ -208,13 +133,12 @@ function CaptureCanvasInner({
             viewportElement,
             outputWidth,
             outputHeight,
-            captureRequest.transparent
+            captureRequest.transparent,
+            backgroundColor
           );
         } else {
           data = await captureToSvg(viewportElement, outputWidth, outputHeight);
         }
-
-        console.log("[CaptureCanvasInner] Capture successful, data length:", data.length);
 
         onCaptureComplete({
           success: true,
@@ -239,16 +163,9 @@ function CaptureCanvasInner({
     };
 
     performCapture();
-  }, [captureRequest, isReady, nodes, onCaptureComplete]);
+  }, [captureRequest, isReady, nodes, edges, onCaptureComplete]);
 
-  // Calculate initial viewport to fit all nodes
-  const defaultViewport = useMemo(() => {
-    if (nodes.length === 0) {
-      return { x: 0, y: 0, zoom: 1 };
-    }
-    // Will be set by fitView
-    return { x: 0, y: 0, zoom: 1 };
-  }, [nodes]);
+  // Note: defaultViewport is set by shared config, fitView will override it anyway
 
   return (
     <div
@@ -265,21 +182,31 @@ function CaptureCanvasInner({
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onInit={(instance) => {
-          console.log("[CaptureCanvasInner] ReactFlow initialized");
           reactFlowInstance.current = instance;
-          // Fit view after init
-          instance.fitView({ padding: 0.1 });
+
+          // Use edge-aware fitView on init
+          const contentBounds = getContentBounds(nodes, edges);
+          const container = containerRef.current;
+          if (container) {
+            const viewport = calculateFitViewport(
+              contentBounds,
+              container.offsetWidth,
+              container.offsetHeight,
+              { padding: 0.1, minZoom: MIN_ZOOM, maxZoom: MAX_ZOOM }
+            );
+            instance.setViewport(viewport);
+          }
+
           // Mark as ready after a short delay to ensure render is complete
           setTimeout(() => {
-            console.log("[CaptureCanvasInner] Setting isReady=true");
             setIsReady(true);
           }, 100);
         }}
         fitView
-        fitViewOptions={{ padding: 0.1, minZoom: 0.1, maxZoom: 4 }}
-        defaultViewport={defaultViewport}
-        minZoom={0.1}
-        maxZoom={4}
+        fitViewOptions={FIT_VIEW_OPTIONS}
+        defaultViewport={DEFAULT_VIEWPORT}
+        minZoom={MIN_ZOOM}
+        maxZoom={MAX_ZOOM}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
@@ -288,13 +215,7 @@ function CaptureCanvasInner({
         zoomOnPinch={false}
         zoomOnDoubleClick={false}
         preventScrolling={false}
-        defaultEdgeOptions={{
-          style: { stroke: "var(--color-primary-600)", strokeWidth: 2 },
-          type: "orthogonal",
-          markerEnd: {
-            type: "arrowclosed",
-          },
-        }}
+        defaultEdgeOptions={getDefaultEdgeOptions("var(--color-primary-600)")}
         style={{ backgroundColor: "transparent" }}
         defaultMarkerColor="var(--color-primary-600)"
         proOptions={{ hideAttribution: true }}
@@ -315,7 +236,29 @@ export default function CaptureCanvas() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [captureRequest, setCaptureRequest] = useState<CaptureRequest | null>(null);
+  const [theme, setTheme] = useState<string>("light");
   const lastTimestamp = useRef<number>(0);
+
+  // Subscribe to theme changes from Python
+  useEffect(() => {
+    if (!model) return;
+
+    // Read initial theme
+    const initialTheme = model.get("theme") || "light";
+    setTheme(initialTheme);
+
+    // Listen for theme changes
+    const handleThemeChange = () => {
+      const newTheme = model.get("theme") || "light";
+      setTheme(newTheme);
+    };
+
+    model.on("change:theme", handleThemeChange);
+
+    return () => {
+      model.off("change:theme", handleThemeChange);
+    };
+  }, [model]);
 
   // Subscribe to diagram state from Python (like DiagramCanvas does)
   useEffect(() => {
@@ -323,15 +266,15 @@ export default function CaptureCanvas() {
 
     // Initial load
     const initialState = getDiagramState(model);
-    console.log("[CaptureCanvas] Initial state:", initialState.blocks.length, "blocks");
     setNodes(initialState.blocks.map(blockToNode));
-    setEdges(initialState.connections.map(connectionToEdge));
+    setEdges(
+      initialState.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)"))
+    );
 
     // Subscribe to changes (in case state updates after mount)
     const unsubscribe = onDiagramStateChange(model, (state: DiagramState) => {
-      console.log("[CaptureCanvas] State updated:", state.blocks.length, "blocks");
       setNodes(state.blocks.map(blockToNode));
-      setEdges(state.connections.map(connectionToEdge));
+      setEdges(state.connections.map((conn) => connectionToEdge(conn, "var(--color-primary-600)")));
     });
 
     return unsubscribe;
@@ -349,7 +292,6 @@ export default function CaptureCanvas() {
       if (request.timestamp <= lastTimestamp.current) return;
       lastTimestamp.current = request.timestamp;
 
-      console.log("[CaptureCanvas] Received capture request:", request);
       setCaptureRequest(request);
     };
 
@@ -372,21 +314,14 @@ export default function CaptureCanvas() {
     (result: CaptureResult) => {
       if (!model) return;
 
-      console.log("[CaptureCanvas] Capture complete:", result.success ? "success" : result.error);
-
       if (result.success && result.data) {
         const displayInline = captureRequest?.displayInline ?? true;
         const mimeType = result.format === "png" ? "image/png" : "image/svg+xml";
 
         if (displayInline) {
           // Display inline - inject <img> into the widget container
-          console.log("[CaptureCanvas] Displaying inline");
-          console.log("[CaptureCanvas] outerRef.current:", outerRef.current);
-
-          // Find the anywidget container (parent of our React root)
           // Navigate up from our ref to find the .lynx-widget container
           const lynxWidget = outerRef.current?.closest(".lynx-widget");
-          console.log("[CaptureCanvas] Found .lynx-widget:", lynxWidget);
 
           if (lynxWidget) {
             // Create image element
@@ -418,17 +353,10 @@ export default function CaptureCanvas() {
               }
               parent = parent.parentElement;
             }
-
-            console.log("[CaptureCanvas] Image injected successfully");
           } else {
-            console.error("[CaptureCanvas] Could not find .lynx-widget container");
-            // Fallback: try to find any parent and log the DOM structure
-            let parent = outerRef.current?.parentElement;
-            console.log("[CaptureCanvas] Parent chain:");
-            while (parent) {
-              console.log("  -", parent.tagName, parent.className);
-              parent = parent.parentElement;
-            }
+            console.error(
+              "[CaptureCanvas] Could not find .lynx-widget container for inline display"
+            );
           }
         }
       }
@@ -446,6 +374,7 @@ export default function CaptureCanvas() {
   return (
     <div
       ref={outerRef}
+      data-theme={theme}
       style={{
         // Position off-screen but still render at full size
         position: "fixed",

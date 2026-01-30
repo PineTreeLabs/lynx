@@ -117,8 +117,8 @@ def feedback_control_loop():
     diagram.add_block(
         "transfer_function",
         "plant",
-        numerator=[2.0],
-        denominator=[1.0, 3.0],
+        num=[2.0],
+        den=[1.0, 3.0],
     )
     diagram.add_block("io_marker", "output", marker_type="output", label="y")
 

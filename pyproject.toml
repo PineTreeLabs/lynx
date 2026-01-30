@@ -29,6 +29,7 @@ include = [
     "src/lynx/static/*.js",
     "src/lynx/static/*.css",
     "src/lynx/static/*.map",
+    "src/lynx/templates/*.json",
 ]
 
 [dependency-groups]

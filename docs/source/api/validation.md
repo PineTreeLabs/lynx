@@ -56,12 +56,12 @@ except ValidationError as e:
 ```python
 # Before (invalid)
 diagram.add_block('gain', 'K1', K=5.0)
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 
 # After (valid)
 diagram.add_block('io_marker', 'r', marker_type='input', label='r')
 diagram.add_block('gain', 'K1', K=5.0)
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 diagram.add_block('io_marker', 'y', marker_type='output', label='y')
 ```
 
@@ -76,12 +76,12 @@ diagram.add_block('io_marker', 'y', marker_type='output', label='y')
 ```python
 # Before (invalid) - plant has no input connection
 diagram.add_block('io_marker', 'r', marker_type='input', label='r')
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 # Missing connection!
 
 # After (valid)
 diagram.add_block('io_marker', 'r', marker_type='input', label='r')
-diagram.add_block('transfer_function', 'plant', numerator=[1.0], denominator=[1.0, 1.0])
+diagram.add_block('transfer_function', 'plant', num=[1.0], den=[1.0, 1.0])
 diagram.add_connection('c1', 'r', 'out', 'plant', 'in')  # Connect input
 ```
 
@@ -106,7 +106,7 @@ diagram.add_connection('c3', 'K2', 'out', 'error', 'in2')  # Direct feedback - a
 diagram.add_block('sum', 'error', signs=['+', '-', '|'])
 diagram.add_block('gain', 'K1', K=5.0)
 diagram.add_block('transfer_function', 'plant',  # Add dynamics here
-                  numerator=[1.0], denominator=[1.0, 1.0])
+                  num=[1.0], den=[1.0, 1.0])
 diagram.add_connection('c1', 'error', 'out', 'K1', 'in')
 diagram.add_connection('c2', 'K1', 'out', 'plant', 'in')
 diagram.add_connection('c3', 'plant', 'out', 'error', 'in2')  # Now valid
@@ -163,17 +163,6 @@ except ValidationError as e:
         print(f"  Check connections for block '{e.block_id}' port '{e.port_id}'")
 ```
 
-## Validation Checklist
-
-Before exporting, ensure:
-
-- [ ] At least one InputMarker (`marker_type='input'`)
-- [ ] At least one OutputMarker (`marker_type='output'`)
-- [ ] All non-InputMarker input ports have connections
-- [ ] All connections reference valid blocks and ports
-- [ ] No algebraic loops (feedback paths have dynamics)
-- [ ] Unique labels for all blocks and connections (optional, but recommended)
-
 ## SignalNotFoundError
 
 Separate from `ValidationError`, this exception occurs when the specified signal references don't exist:
@@ -197,4 +186,4 @@ except SignalNotFoundError as e:
 
 - {doc}`export` - Signal reference patterns and subsystem extraction
 - {doc}`diagram` - Building valid diagrams
-- {doc}`../getting-started/quickstart` - Quick examples
+- {doc}`../quickstart` - Quick examples

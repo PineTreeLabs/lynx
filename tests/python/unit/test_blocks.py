@@ -124,10 +124,11 @@ class TestInputMarker:
         assert len(input_ports) == 0
 
     def test_input_marker_has_label_parameter(self) -> None:
-        """Input marker can have optional label"""
+        """Input marker can have optional label (stored as block.label)"""
         block = InputMarker(id="input1", label="u")
 
-        assert block.get_parameter("label") == "u"
+        # Label is stored as block.label, not as a parameter
+        assert block.label == "u"
 
     def test_input_marker_serializes_to_dict(self) -> None:
         """Input marker can serialize to dictionary"""
@@ -241,18 +242,18 @@ class TestTransferFunctionBlock:
         """Transfer function can be created with numerator and denominator"""
         from lynx.blocks.transfer_function import TransferFunctionBlock
 
-        block = TransferFunctionBlock(id="tf1", numerator=[1, 2], denominator=[1, 3, 2])
+        block = TransferFunctionBlock(id="tf1", num=[1, 2], den=[1, 3, 2])
 
         assert block.id == "tf1"
         assert block.type == "transfer_function"
-        assert block.get_parameter("numerator") == [1, 2]
-        assert block.get_parameter("denominator") == [1, 3, 2]
+        assert block.get_parameter("num") == [1, 2]
+        assert block.get_parameter("den") == [1, 3, 2]
 
     def test_transfer_function_has_one_input_one_output(self) -> None:
         """Transfer function has one input and one output port"""
         from lynx.blocks.transfer_function import TransferFunctionBlock
 
-        block = TransferFunctionBlock(id="tf1", numerator=[1], denominator=[1, 1])
+        block = TransferFunctionBlock(id="tf1", num=[1], den=[1, 1])
 
         ports = block.get_ports()
         input_ports = [p for p in ports if p["type"] == "input"]
@@ -267,8 +268,8 @@ class TestTransferFunctionBlock:
 
         block = TransferFunctionBlock(
             id="tf1",
-            numerator=[1, 0],
-            denominator=[1, 2, 1],
+            num=[1, 0],
+            den=[1, 2, 1],
             position={"x": 200, "y": 150},
         )
 
@@ -277,8 +278,8 @@ class TestTransferFunctionBlock:
         assert data["id"] == "tf1"
         assert data["type"] == "transfer_function"
         assert data["position"] == {"x": 200, "y": 150}
-        assert any(p["name"] == "numerator" for p in data["parameters"])
-        assert any(p["name"] == "denominator" for p in data["parameters"])
+        assert any(p["name"] == "num" for p in data["parameters"])
+        assert any(p["name"] == "den" for p in data["parameters"])
 
 
 class TestStateSpaceBlock:

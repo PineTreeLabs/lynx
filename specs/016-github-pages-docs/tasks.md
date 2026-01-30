@@ -34,7 +34,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 - [X] T007 [P] Create .github/workflows/docs.yml with GitHub Actions workflow (build job: checkout, setup Python 3.11, install UV, install dependencies, cache Sphinx doctrees, cache Jupyter execution, build HTML with -W flag, run linkcheck; deploy job: deploy to GitHub Pages using actions/deploy-pages@v4 on main branch only)
 - [X] T008 [P] Add docs build artifacts to .gitignore (docs/_build/, docs/source/api/generated/, docs/source/.jupyter_cache/, docs/source/**/.ipynb_checkpoints/, *.doctree)
 - [X] T009 [P] Add [project.optional-dependencies.docs] section to pyproject.toml with same dependencies as requirements.txt
-- [X] T010 [P] Create placeholder logo assets in docs/source/_static/ (logo-light.png, logo-dark.png, favicon.svg) - use temporary placeholders if final logos not ready
+- [X] T010 [P] Create placeholder logo assets in docs/source/_static/ (logo-light.png, logo-dark.png, favicon.ico) - use temporary placeholders if final logos not ready
 - [X] T011 Validate local build: run `cd docs && make html` - should generate empty site without errors
 
 ---
@@ -154,7 +154,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 ### Implementation for User Story 5
 
-- [X] T045 [P] [US5] Replace placeholder logo assets in docs/source/_static/ with final Lynx logos: logo-light.png (light theme variant, 93KB), logo-dark.png (dark theme variant, 93KB), favicon.svg (site icon); logos are optimized for web (<100KB each)
+- [X] T045 [P] [US5] Replace placeholder logo assets in docs/source/_static/ with final Lynx logos: logo-light.png (light theme variant, 93KB), logo-dark.png (dark theme variant, 93KB), favicon.ico (site icon); logos are optimized for web (<100KB each)
 - [X] T045.5 [P] [US5] [OPTION B] Add comprehensive light/dark CSS variables to conf.py: Lynx brand colors (#6366f1 indigo primary, #1f2937 slate) with complete light_css_variables and dark_css_variables dictionaries covering brand, background, foreground, links, sidebar, admonitions
 - [X] T046 [P] [US5] [OPTION B] Update docs/source/_static/custom.css with enhanced dark mode styling: Google Fonts import (Roboto family), dark mode fixes for backgrounds/code blocks/tables, notebook cell styling with Lynx brand colors, theme-aware image handling (.only-light/.only-dark classes), comprehensive syntax highlighting, scrollbar styling
 - [X] T047 [US5] Verify Furo theme configuration in conf.py for responsive behavior: `html_theme_options` includes `light_logo`, `dark_logo`, `sidebar_hide_name: False`, `navigation_with_keys: True`, `source_repository`, `source_branch`, `source_directory` - ALL VERIFIED

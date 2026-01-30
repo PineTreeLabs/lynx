@@ -171,7 +171,7 @@ describe("findSegmentAtX", () => {
     expect(segment?.orientation).toBe("horizontal");
   });
 
-  it("returns undefined when x is at a corner (vertical segment)", () => {
+  it("prefers horizontal segment when x is at a corner", () => {
     const segments: Segment[] = [
       {
         from: { x: 100, y: 200 },
@@ -186,8 +186,8 @@ describe("findSegmentAtX", () => {
     ];
 
     const segment = findSegmentAtX(segments, 200);
-    // At x=200, we're at the vertical segment
-    expect(segment?.orientation).toBe("vertical");
+    // At x=200, we're at a corner - should prefer horizontal segment (labels should never be on vertical segments)
+    expect(segment?.orientation).toBe("horizontal");
   });
 });
 

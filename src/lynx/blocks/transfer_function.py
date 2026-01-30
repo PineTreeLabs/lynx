@@ -17,13 +17,13 @@ class TransferFunctionBlock(Block):
     """Transfer function block with numerator and denominator polynomials.
 
     Parameters:
-        numerator: Coefficients of numerator polynomial (highest degree first)
-        denominator: Coefficients of denominator polynomial (highest degree first)
+        num: Coefficients of numerator polynomial (highest degree first)
+        den: Coefficients of denominator polynomial (highest degree first)
 
     Example:
         H(s) = (s + 2) / (s^2 + 3s + 2)
-        numerator = [1, 2]
-        denominator = [1, 3, 2]
+        num = [1, 2]
+        den = [1, 3, 2]
 
     Ports:
         Input: in (single input)
@@ -33,8 +33,8 @@ class TransferFunctionBlock(Block):
     def __init__(
         self,
         id: str,
-        numerator: List[float],
-        denominator: List[float],
+        num: List[float],
+        den: List[float],
         position: Optional[Dict[str, float]] = None,
         label: Optional[str] = None,
     ) -> None:
@@ -42,8 +42,8 @@ class TransferFunctionBlock(Block):
 
         Args:
             id: Unique block identifier
-            numerator: Numerator polynomial coefficients
-            denominator: Denominator polynomial coefficients
+            num: Numerator polynomial coefficients
+            den: Denominator polynomial coefficients
             position: Optional {x, y} position on canvas
             label: Optional user-facing label (defaults to id)
         """
@@ -55,8 +55,8 @@ class TransferFunctionBlock(Block):
         )
 
         # Store parameters
-        self.add_parameter(name="numerator", value=numerator)
-        self.add_parameter(name="denominator", value=denominator)
+        self.add_parameter(name="num", value=num)
+        self.add_parameter(name="den", value=den)
 
         # Create ports (SISO - Single Input Single Output)
         self.add_port(port_id="in", port_type="input")

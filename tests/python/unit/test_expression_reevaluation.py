@@ -81,13 +81,11 @@ class TestExpressionReEvaluation:
     def test_re_evaluate_with_array_expression(self):
         """Test re-evaluation with array expressions."""
         diagram = Diagram()
-        block = diagram.add_block(
-            "transfer_function", "tf1", numerator=[1, 2], denominator=[1, 3, 2]
-        )
+        block = diagram.add_block("transfer_function", "tf1", num=[1, 2], den=[1, 3, 2])
 
         # Set expression for numerator
         for param in block._parameters:
-            if param.name == "numerator":
+            if param.name == "num":
                 param.value = np.array([1.0, 2.0])
                 param.expression = "num_coeffs"
 
@@ -98,7 +96,7 @@ class TestExpressionReEvaluation:
         warnings = diagram.re_evaluate_expressions(namespace)
 
         # Value should update
-        result = block.get_parameter("numerator")
+        result = block.get_parameter("num")
         assert np.allclose(result, [2.0, 4.0])
         assert len(warnings) == 0
 

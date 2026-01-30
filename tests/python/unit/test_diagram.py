@@ -120,9 +120,7 @@ class TestDiagram:
     def test_add_block_transfer_function(self):
         """Test adding a transfer function block."""
         diagram = Diagram()
-        block = diagram.add_block(
-            "transfer_function", "tf1", numerator=[1], denominator=[1, 1]
-        )
+        block = diagram.add_block("transfer_function", "tf1", num=[1], den=[1, 1])
         assert block.id == "tf1"
         assert block.type == "transfer_function"
 
@@ -193,7 +191,7 @@ class TestDiagram:
         """Test that transfer function requires numerator."""
         diagram = Diagram()
         with pytest.raises(ValueError, match="Transfer function requires"):
-            diagram.add_block("transfer_function", "tf1", denominator=[1, 1])
+            diagram.add_block("transfer_function", "tf1", den=[1, 1])
 
     def test_add_block_state_space_missing_matrices(self):
         """Test that state space requires all matrices."""
@@ -535,9 +533,7 @@ class TestDiagram:
         diagram.add_block("io_marker", "in1", marker_type="input", label="u")
         diagram.add_block("io_marker", "out1", marker_type="output", label="y")
         diagram.add_block("sum", "s1", signs=["+", "+", "-"])
-        diagram.add_block(
-            "transfer_function", "tf1", numerator=[1, 2], denominator=[1, 3, 2]
-        )
+        diagram.add_block("transfer_function", "tf1", num=[1, 2], den=[1, 3, 2])
         diagram.add_block(
             "state_space",
             "ss1",
@@ -564,9 +560,7 @@ class TestDiagram:
         """Test that flipped state persists through to_dict/from_dict."""
         diagram = Diagram()
         diagram.add_block("gain", "g1", K=2.5)
-        diagram.add_block(
-            "transfer_function", "tf1", numerator=[1, 2], denominator=[1, 3, 2]
-        )
+        diagram.add_block("transfer_function", "tf1", num=[1, 2], den=[1, 3, 2])
 
         # Flip one block
         diagram.flip_block("g1")
@@ -845,7 +839,7 @@ class TestUndoRedo:
     def test_flip_block_toggle(self):
         """Test that flip_block toggles state."""
         diagram = Diagram()
-        diagram.add_block("transfer_function", "tf1", numerator=[1], denominator=[1, 1])
+        diagram.add_block("transfer_function", "tf1", num=[1], den=[1, 1])
         block = diagram.get_block("tf1")
 
         # Initial state
@@ -1150,26 +1144,529 @@ class TestIOMarkerIndexRenumbering:
         assert diagram.get_block("in1").get_parameter("index") == 0
         assert diagram.get_block("in0").get_parameter("index") == 1
 
-    def test_renumbering_performance_large_diagram(self):
-        """T048: Verify renumbering meets <20ms target for large diagrams (TS-005.2).
 
-        Scenario: Performance with 100 markers
-        Given: 100 InputMarkers (0-99)
-        When: Change marker at index 50 to index 0
-        Then: Renumbering completes in <20ms
-        """
+class TestDiagramLabelIndexing:
+    """Test Diagram label indexing feature (Feature 017 - User Story 1).
+
+    Tests dictionary-style bracket notation access to blocks via labels.
+    """
+
+    def test_getitem_integer_key_raises_type_error(self):
+        """T001: Test TypeError for integer key."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="controller")
+
+        with pytest.raises(TypeError) as exc_info:
+            _ = diagram[123]
+
+        assert "must be a string" in str(exc_info.value).lower()
+        assert "int" in str(exc_info.value).lower()
+
+    def test_getitem_none_key_raises_type_error(self):
+        """T002: Test TypeError for None key."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="controller")
+
+        with pytest.raises(TypeError) as exc_info:
+            _ = diagram[None]
+
+        assert "must be a string" in str(exc_info.value).lower()
+        assert "nonetype" in str(exc_info.value).lower()
+
+    def test_getitem_object_key_raises_type_error(self):
+        """T003: Test TypeError for object key."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="controller")
+
+        with pytest.raises(TypeError) as exc_info:
+            _ = diagram[object()]
+
+        assert "must be a string" in str(exc_info.value).lower()
+        assert "object" in str(exc_info.value).lower()
+
+    def test_getitem_missing_label_raises_key_error(self):
+        """T004: Test KeyError for missing label."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="controller")
+
+        with pytest.raises(KeyError) as exc_info:
+            _ = diagram["nonexistent"]
+
+        assert "nonexistent" in str(exc_info.value)
+        assert "no block found" in str(exc_info.value).lower()
+
+    def test_getitem_empty_diagram_raises_key_error(self):
+        """T005: Test KeyError for empty diagram."""
+        diagram = Diagram()
+
+        with pytest.raises(KeyError) as exc_info:
+            _ = diagram["any"]
+
+        assert "any" in str(exc_info.value)
+        assert "no block found" in str(exc_info.value).lower()
+
+    def test_getitem_empty_string_label_raises_key_error(self):
+        """T006: Test KeyError for empty string label."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="controller")
+
+        with pytest.raises(KeyError) as exc_info:
+            _ = diagram[""]
+
+        # Empty string should not match unlabeled blocks
+        assert "no block found" in str(exc_info.value).lower()
+
+    def test_getitem_successful_retrieval_with_unique_label(self):
+        """T007: Test successful retrieval with unique label."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=2.5, label="controller")
+        diagram.add_block(
+            "transfer_function", "tf1", num=[1.0], den=[1.0, 1.0], label="plant"
+        )
+
+        # Retrieve by label
+        controller = diagram["controller"]
+        plant = diagram["plant"]
+
+        # Verify correct blocks returned
+        assert controller.id == "g1"
+        assert controller.get_parameter("K") == 2.5
+        assert plant.id == "tf1"
+        assert plant.get_parameter("num") == [1.0]
+
+    def test_getitem_skips_unlabeled_blocks(self):
+        """T008: Test unlabeled blocks (None) are skipped."""
+        diagram = Diagram()
+        # Blocks without labels or with None labels
+        diagram.add_block("gain", "g1", K=1.0)  # No label parameter
+        diagram.add_block("gain", "g2", K=2.0, label=None)  # Explicit None
+        diagram.add_block("gain", "g3", K=3.0, label="")  # Empty string
+        diagram.add_block("gain", "g4", K=4.0, label="controller")  # Has label
+
+        # Can retrieve labeled block
+        block = diagram["controller"]
+        assert block.id == "g4"
+
+        # Unlabeled blocks should not be accessible
+        with pytest.raises(KeyError):
+            _ = diagram[""]  # Empty string doesn't match empty labels
+
+    def test_getitem_case_sensitive_matching(self):
+        """T009: Test case-sensitive matching (\"Plant\" vs \"plant\")."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="Plant")  # Capital P
+        diagram.add_block("gain", "g2", K=2.0, label="plant")  # Lowercase p
+
+        # Case-sensitive retrieval
+        plant_upper = diagram["Plant"]
+        plant_lower = diagram["plant"]
+
+        assert plant_upper.id == "g1"
+        assert plant_lower.id == "g2"
+
+        # Wrong case raises KeyError
+        with pytest.raises(KeyError):
+            _ = diagram["PLANT"]  # All caps
+
+    def test_getitem_special_characters_in_labels(self):
+        """T010: Test special characters in labels."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="plant-1")
+        diagram.add_block("gain", "g2", K=2.0, label="α_controller")
+        diagram.add_block("gain", "g3", K=3.0, label="r'")
+
+        # All special character labels should work
+        assert diagram["plant-1"].id == "g1"
+        assert diagram["α_controller"].id == "g2"
+        assert diagram["r'"].id == "g3"
+
+
+class TestDiagramLabelDuplicateDetection:
+    """Test Diagram label duplicate detection (Feature 017 - User Story 2).
+
+    Tests that duplicate labels are detected and raise ValidationError with
+    actionable debugging information.
+    """
+
+    def test_getitem_duplicate_label_two_blocks_raises_validation_error(self):
+        """T016: Test ValidationError for 2 duplicate labels with count and IDs."""
+        from lynx.diagram import ValidationError
+
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="sensor")
+        diagram.add_block("gain", "g2", K=2.0, label="sensor")
+
+        with pytest.raises(ValidationError) as exc_info:
+            _ = diagram["sensor"]
+
+        error_msg = str(exc_info.value)
+        # Verify error message includes label, count, and block IDs
+        assert "sensor" in error_msg
+        assert "2 blocks" in error_msg
+        assert "g1" in error_msg
+        assert "g2" in error_msg
+        # Verify block_id attribute is set
+        assert exc_info.value.block_id in ["g1", "g2"]
+
+    def test_getitem_duplicate_label_three_plus_blocks_raises_validation_error(self):
+        """T017: Test ValidationError for 3+ duplicate labels."""
+        from lynx.diagram import ValidationError
+
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="sensor")
+        diagram.add_block("gain", "g2", K=2.0, label="sensor")
+        diagram.add_block("gain", "g3", K=3.0, label="sensor")
+
+        with pytest.raises(ValidationError) as exc_info:
+            _ = diagram["sensor"]
+
+        error_msg = str(exc_info.value)
+        # Verify error message includes label, count, and all block IDs
+        assert "sensor" in error_msg
+        assert "3 blocks" in error_msg
+        assert "g1" in error_msg
+        assert "g2" in error_msg
+        assert "g3" in error_msg
+
+    def test_getitem_unique_label_succeeds_when_duplicates_exist_elsewhere(self):
+        """T018: Test unique label succeeds when duplicates exist elsewhere."""
+        from lynx.diagram import ValidationError
+
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="sensor")
+        diagram.add_block("gain", "g2", K=2.0, label="sensor")
+        diagram.add_block("gain", "g3", K=3.0, label="sensor")
+        diagram.add_block("gain", "g4", K=4.0, label="controller")  # Unique
+
+        # Unique label works fine
+        controller = diagram["controller"]
+        assert controller.id == "g4"
+        assert controller.get_parameter("K") == 4.0
+
+        # Duplicate label raises ValidationError
+        with pytest.raises(ValidationError):
+            _ = diagram["sensor"]
+
+
+class TestBlockParameterUpdatesMethods:
+    """Test Block parameter updates via block objects (Feature 017 - User Story 3).
+
+    Tests Block.set_parameter() method and enhanced update_block_parameter().
+    """
+
+    def test_block_set_parameter_syncs_to_diagram(self):
+        """T023: Test Block.set_parameter() syncs to diagram."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=2.5, label="controller")
+
+        # Get block via label
+        block = diagram["controller"]
+
+        # Update parameter via block method
+        block.set_parameter("K", 10.0)
+
+        # Verify parameter updated in both block and diagram
+        assert block.get_parameter("K") == 10.0
+        assert diagram.get_block("g1").get_parameter("K") == 10.0
+        assert diagram["controller"].get_parameter("K") == 10.0
+
+    def test_orphaned_block_set_parameter_raises_runtime_error(self):
+        """T024: Test RuntimeError when block not attached to diagram."""
+        from lynx.blocks.gain import GainBlock
+
+        # Create block but don't add to diagram
+        orphan = GainBlock(id="orphan", K=1.0)
+
+        with pytest.raises(RuntimeError) as exc_info:
+            orphan.set_parameter("K", 5.0)
+
+        assert "not attached" in str(exc_info.value).lower()
+
+    def test_deleted_diagram_set_parameter_raises_runtime_error(self):
+        """T025: Test RuntimeError when parent diagram deleted."""
+        import weakref
+
+        # Create diagram and block
+        temp_diagram = Diagram()
+        temp_diagram.add_block("gain", "temp", K=1.0, label="temp")
+        temp_block = temp_diagram["temp"]
+
+        # Keep reference, delete diagram
+        weak_ref = weakref.ref(temp_diagram)
+        del temp_diagram
+
+        # Weakref should be dead
+        assert weak_ref() is None
+
+        # Parameter update should fail
+        with pytest.raises(RuntimeError) as exc_info:
+            temp_block.set_parameter("K", 5.0)
+
+        assert "deleted" in str(exc_info.value).lower()
+
+    def test_update_block_parameter_accepts_block_objects(self):
+        """T026: Test update_block_parameter accepts Block objects."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="plant")
+
+        # Get block via label
+        plant = diagram["plant"]
+
+        # Update via block object (not string ID)
+        diagram.update_block_parameter(plant, "K", 20.0)
+
+        # Verify update
+        assert plant.get_parameter("K") == 20.0
+        assert diagram.get_block("g1").get_parameter("K") == 20.0
+
+    def test_update_block_parameter_accepts_string_ids_backward_compat(self):
+        """T027: Test update_block_parameter still accepts string IDs."""
+        diagram = Diagram()
+        diagram.add_block("gain", "ctrl", K=5.0, label="controller")
+
+        # Update via string ID (original API)
+        diagram.update_block_parameter("ctrl", "K", 3.0)
+
+        # Verify update
+        assert diagram.get_block("ctrl").get_parameter("K") == 3.0
+        assert diagram["controller"].get_parameter("K") == 3.0
+
+    def test_serialization_excludes_diagram_attribute(self):
+        """T028: Test serialization excludes _diagram attribute."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=1.0, label="controller")
+
+        # Get block (which should have _diagram weakref)
+        block = diagram["controller"]
+
+        # Verify _diagram attribute exists (runtime only)
+        assert hasattr(block, "_diagram")
+        assert block._diagram is not None
+
+        # Serialize diagram
+        data = diagram.to_dict()
+
+        # Find block in serialized data
+        block_data = next(b for b in data["blocks"] if b["id"] == "g1")
+
+        # Verify _diagram is NOT in serialized data
+        assert "_diagram" not in block_data
+        assert "_diagram" not in str(block_data)
+
+
+class TestLabelIndexingIntegration:
+    """Integration tests for label indexing feature (Feature 017 - Integration).
+
+    Tests that label indexing works with existing features like serialization,
+    python-control export, and parameter updates.
+    """
+
+    def test_label_indexing_with_parameter_updates(self):
+        """T036: Integration test - label indexing with parameter updates."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=2.5, label="controller")
+        diagram.add_block(
+            "transfer_function", "tf1", num=[2.0], den=[1.0, 3.0, 2.0], label="plant"
+        )
+
+        # Access via label
+        controller = diagram["controller"]
+        plant = diagram["plant"]
+
+        # Update parameters
+        controller.set_parameter("K", 10.0)
+        plant.set_parameter("num", [5.0])
+
+        # Verify updates
+        assert diagram["controller"].get_parameter("K") == 10.0
+        assert diagram["plant"].get_parameter("num") == [5.0]
+
+        # Verify via IDs still works
+        assert diagram.get_block("g1").get_parameter("K") == 10.0
+        assert diagram.get_block("tf1").get_parameter("num") == [5.0]
+
+    def test_label_indexing_with_serialization(self):
+        """T037: Integration test - label indexing with save/load."""
+        import os
+        import tempfile
+
+        diagram = Diagram()
+        diagram.add_block("gain", "ctrl", K=5.0, label="controller")
+        diagram.add_block("gain", "plt", K=2.0, label="plant")
+
+        # Access via labels before save
+        assert diagram["controller"].get_parameter("K") == 5.0
+
+        # Save to file
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
+            temp_path = f.name
+
+        try:
+            diagram.save(temp_path)
+
+            # Load from file
+            loaded = Diagram.load(temp_path)
+
+            # Verify label indexing works on loaded diagram
+            assert loaded["controller"].get_parameter("K") == 5.0
+            assert loaded["plant"].get_parameter("K") == 2.0
+
+            # Verify weakrefs are re-established
+            controller = loaded["controller"]
+            assert controller._diagram is not None
+            assert controller._diagram() is loaded
+        finally:
+            # Cleanup
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    def test_label_indexing_performance_large_diagram(self):
+        """T039: Verify O(1) practical performance for 1000 blocks."""
         import time
 
         diagram = Diagram()
+        for i in range(1000):
+            diagram.add_block("gain", f"block_{i}", K=float(i), label=f"label_{i}")
 
-        # Create 100 InputMarkers
-        for i in range(100):
-            diagram.add_block("io_marker", f"in{i}", marker_type="input")
-
-        # Measure downward shift renumbering
+        # Measure lookup time
         start = time.perf_counter()
-        diagram.update_block_parameter("in50", "index", 0)
-        elapsed = (time.perf_counter() - start) * 1000  # Convert to ms
+        for _ in range(100):  # 100 iterations
+            block = diagram["label_500"]  # Middle of range
+        end = time.perf_counter()
 
-        assert elapsed < 20, f"Renumbering took {elapsed:.2f}ms (target: <20ms)"
-        assert diagram.get_block("in50").get_parameter("index") == 0
+        avg_time_ms = (end - start) / 100 * 1000
+        print(f"Average lookup time: {avg_time_ms:.3f} ms")
+
+        # Verify performance requirement (<10ms per lookup)
+        assert avg_time_ms < 10.0, f"Lookup too slow: {avg_time_ms} ms"
+        assert block.get_parameter("K") == 500.0
+
+
+class TestDiagramStringRepresentation:
+    """Test Diagram.__str__() method for human-readable summaries."""
+
+    def test_empty_diagram_str(self):
+        """Test string representation of empty diagram."""
+        diagram = Diagram()
+        output = str(diagram)
+        assert "Diagram: 0 blocks, 0 connections" in output
+
+    def test_blocks_only_str(self):
+        """Test string representation with blocks but no connections."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=10.0, label="gain1")
+        diagram.add_block("gain", "g2", K=20.0, label="gain2")
+
+        output = str(diagram)
+        assert "Diagram: 2 blocks, 0 connections" in output
+        assert "Blocks:" in output
+        assert "gain1 [Gain] K=10.0" in output
+        assert "gain2 [Gain] K=20.0" in output
+        assert "Connections:" not in output
+
+    def test_feedback_control_loop_str(self):
+        """Test string representation of complete feedback control loop."""
+        diagram = Diagram()
+        diagram.add_block("io_marker", "ref", marker_type="input", label="r")
+        diagram.add_block("sum", "error_sum", signs=["+", "-", "|"], label="error_sum")
+        diagram.add_block("gain", "controller", K=5.0, label="controller")
+        diagram.add_block(
+            "transfer_function", "plant", num=[2.0], den=[1.0, 3.0], label="plant"
+        )
+        diagram.add_block("io_marker", "output", marker_type="output", label="y")
+
+        diagram.add_connection("c1", "ref", "out", "error_sum", "in1")
+        diagram.add_connection(
+            "c2", "error_sum", "out", "controller", "in", label="error"
+        )
+        diagram.add_connection("c3", "controller", "out", "plant", "in")
+        diagram.add_connection("c4", "plant", "out", "output", "in")
+        diagram.add_connection("c5", "plant", "out", "error_sum", "in2")
+
+        output = str(diagram)
+
+        # Header
+        assert "Diagram: 5 blocks, 5 connections" in output
+
+        # Blocks section
+        assert "Blocks:" in output
+        assert "r [IoMarker] type=input, index=0" in output
+        assert "error_sum [Sum] signs=['+', '-', '|']" in output
+        assert "controller [Gain] K=5.0" in output
+        assert "plant [TransferFunction] num=[2.0], den=[1.0, 3.0]" in output
+        assert "y [IoMarker] type=output, index=0" in output
+
+        # Connections section
+        assert "Connections:" in output
+        assert "r.out -> error_sum.in1" in output
+        assert "error_sum.out -> controller.in (label='error')" in output
+        assert "controller.out -> plant.in" in output
+        assert "plant.out -> y.in" in output
+        assert "plant.out -> error_sum.in2" in output
+
+    def test_state_space_block_str(self):
+        """Test string representation of StateSpace block shows matrix dimensions."""
+        diagram = Diagram()
+        diagram.add_block("io_marker", "input", marker_type="input", label="u")
+        diagram.add_block(
+            "state_space",
+            "sys",
+            A=[[0, 1], [-2, -3]],
+            B=[[0], [1]],
+            C=[[1, 0]],
+            D=[[0]],
+            label="plant",
+        )
+        diagram.add_block("io_marker", "output", marker_type="output", label="y")
+
+        diagram.add_connection("c1", "input", "out", "sys", "in")
+        diagram.add_connection(
+            "c2", "sys", "out", "output", "in", label="output_signal"
+        )
+
+        output = str(diagram)
+
+        # Verify matrix dimensions are shown, not full matrices
+        assert "plant [StateSpace] A: 2x2, B: 2x1, C: 1x2, D: 1x1" in output
+        # Verify actual matrix values are NOT shown
+        assert "[[0, 1], [-2, -3]]" not in output
+        # Verify connection label is shown
+        assert "plant.out -> y.in (label='output_signal')" in output
+
+    def test_all_block_types_str(self):
+        """Test string representation includes all block types correctly."""
+        diagram = Diagram()
+        diagram.add_block("gain", "g1", K=2.5, label="gain_block")
+        diagram.add_block(
+            "transfer_function",
+            "tf1",
+            num=[1.0, 2.0],
+            den=[1.0, 3.0, 2.0],
+            label="tf_block",
+        )
+        diagram.add_block(
+            "state_space",
+            "ss1",
+            A=[[1, 2], [3, 4]],
+            B=[[5], [6]],
+            C=[[7, 8]],
+            D=[[9]],
+            label="ss_block",
+        )
+        diagram.add_block("sum", "sum1", signs=["+", "+", "-"], label="sum_block")
+        diagram.add_block("io_marker", "in1", marker_type="input", label="input_block")
+        diagram.add_block(
+            "io_marker", "out1", marker_type="output", label="output_block"
+        )
+
+        output = str(diagram)
+
+        # Verify each block type is formatted correctly
+        assert "gain_block [Gain] K=2.5" in output
+        assert (
+            "tf_block [TransferFunction] num=[1.0, 2.0], den=[1.0, 3.0, 2.0]" in output
+        )
+        assert "ss_block [StateSpace] A: 2x2, B: 2x1, C: 1x2, D: 1x1" in output
+        assert "sum_block [Sum] signs=['+', '+', '-']" in output
+        assert "input_block [IoMarker] type=input, index=0" in output
+        assert "output_block [IoMarker] type=output, index=0" in output

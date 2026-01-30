@@ -42,19 +42,17 @@ def convert_transfer_function(block: Block) -> ct.TransferFunction:
     """Convert TransferFunction block to python-control transfer function.
 
     Args:
-        block: TransferFunction block with parameters 'numerator', 'denominator'
+        block: TransferFunction block with parameters 'num', 'den'
 
     Returns:
         Transfer function system
     """
-    numerator = block.get_parameter("numerator")
-    denominator = block.get_parameter("denominator")
+    num = block.get_parameter("num")
+    den = block.get_parameter("den")
     # Query actual port IDs from block (future-proofs for custom ports)
     input_ports = [p.id for p in block._ports if p.type == "input"]
     output_ports = [p.id for p in block._ports if p.type == "output"]
-    return ct.tf(
-        numerator, denominator, name=block.id, inputs=input_ports, outputs=output_ports
-    )
+    return ct.tf(num, den, name=block.id, inputs=input_ports, outputs=output_ports)
 
 
 def convert_state_space(block: Block) -> ct.StateSpace:

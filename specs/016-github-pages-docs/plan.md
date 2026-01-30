@@ -116,7 +116,7 @@ docs/
 │   ├── _static/                     # Static assets
 │   │   ├── logo-light.png           # Light theme logo
 │   │   ├── logo-dark.png            # Dark theme logo
-│   │   ├── favicon.svg              # Site favicon
+│   │   ├── favicon.ico              # Site favicon
 │   │   └── custom.css               # Lynx branding CSS overrides
 │   ├── _templates/                  # Custom Jinja2 templates (optional)
 │   ├── api/                         # API reference documentation
@@ -725,7 +725,7 @@ sphinx-build -b html source _build/html  # Uses existing _build/.doctrees
 - Write `source/index.md` (landing page with grid cards)
 - Write `source/getting-started/installation.md` (pip install, verify)
 - Write `source/getting-started/quickstart.md` (first diagram in 5 code blocks)
-- Copy logo assets to `_static/` (logo-light.png, logo-dark.png, favicon.svg)
+- Copy logo assets to `_static/` (logo-light.png, logo-dark.png, favicon.ico)
 - Create `_static/custom.css` with Lynx brand colors
 
 **Acceptance**:
@@ -1023,7 +1023,7 @@ html_theme = 'furo'
 html_title = 'Lynx Documentation'
 html_static_path = ['_static']
 html_css_files = ['custom.css']
-html_favicon = '_static/favicon.svg'
+html_favicon = '_static/favicon.ico'
 
 # Furo theme options
 html_theme_options = {

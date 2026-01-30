@@ -16,7 +16,7 @@ Main exports:
 __version__ = "0.1.0"
 
 from lynx.blocks import Block, GainBlock, InputMarker, OutputMarker
-from lynx.diagram import Diagram
+from lynx.diagram import Diagram, ValidationError
 from lynx.render import render
 from lynx.utils.theme_config import set_default_theme
 from lynx.widget import LynxWidget
@@ -57,6 +57,7 @@ def edit(diagram: Diagram, height: int = 400) -> LynxWidget:
 __all__ = [
     "__version__",
     "Diagram",
+    "ValidationError",
     "LynxWidget",
     "edit",
     "render",

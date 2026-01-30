@@ -31,7 +31,6 @@ class InputMarker(Block):
         id: str,
         label: Optional[str] = None,
         position: Optional[Dict[str, float]] = None,
-        block_label: Optional[str] = None,
         index: Optional[int] = None,
         custom_latex: Optional[str] = None,
     ) -> None:
@@ -39,9 +38,8 @@ class InputMarker(Block):
 
         Args:
             id: Unique block identifier
-            label: Optional signal label (displayed inside block)
+            label: Signal name (block label, e.g., "u", "r", "disturbance")
             position: Optional canvas position
-            block_label: Optional block name (displayed below block, defaults to id)
             index: Optional visual display index (auto-assigned if None)
             custom_latex: Optional custom LaTeX override for block rendering
         """
@@ -49,7 +47,7 @@ class InputMarker(Block):
             id=id,
             block_type=BLOCK_TYPES["IO_MARKER"],
             position=position,
-            label=block_label,
+            label=label if label is not None else id,
             custom_latex=custom_latex,
         )
 
@@ -60,12 +58,9 @@ class InputMarker(Block):
         if index is not None:
             self.add_parameter(name="index", value=index)
 
-        # Optional label parameter
-        if label is not None:
-            self.add_parameter(name="label", value=label)
-
         # Input marker has 1 OUTPUT port (signals flow out)
-        self.add_port(port_id="out", port_type="output", label=label)
+        # Port label is same as block label for display consistency
+        self.add_port(port_id="out", port_type="output", label=self.label)
 
 
 class OutputMarker(Block):
@@ -82,7 +77,6 @@ class OutputMarker(Block):
         id: str,
         label: Optional[str] = None,
         position: Optional[Dict[str, float]] = None,
-        block_label: Optional[str] = None,
         index: Optional[int] = None,
         custom_latex: Optional[str] = None,
     ) -> None:
@@ -90,9 +84,8 @@ class OutputMarker(Block):
 
         Args:
             id: Unique block identifier
-            label: Optional signal label (displayed inside block)
+            label: Signal name (block label, e.g., "y", "e", "tracking_error")
             position: Optional canvas position
-            block_label: Optional block name (displayed below block, defaults to id)
             index: Optional visual display index (auto-assigned if None)
             custom_latex: Optional custom LaTeX override for block rendering
         """
@@ -100,7 +93,7 @@ class OutputMarker(Block):
             id=id,
             block_type=BLOCK_TYPES["IO_MARKER"],
             position=position,
-            label=block_label,
+            label=label if label is not None else id,
             custom_latex=custom_latex,
         )
 
@@ -111,9 +104,6 @@ class OutputMarker(Block):
         if index is not None:
             self.add_parameter(name="index", value=index)
 
-        # Optional label parameter
-        if label is not None:
-            self.add_parameter(name="label", value=label)
-
         # Output marker has 1 INPUT port (signals flow in)
-        self.add_port(port_id="in", port_type="input", label=label)
+        # Port label is same as block label for display consistency
+        self.add_port(port_id="in", port_type="input", label=self.label)

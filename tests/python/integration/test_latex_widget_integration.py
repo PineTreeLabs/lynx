@@ -52,8 +52,8 @@ class TestCustomLatexPythonAPI:
             "transfer_function",
             "tf1",
             position={"x": 100, "y": 100},
-            numerator=[1],
-            denominator=[1, 1],
+            num=[1],
+            den=[1, 1],
         )
         widget.update()
 

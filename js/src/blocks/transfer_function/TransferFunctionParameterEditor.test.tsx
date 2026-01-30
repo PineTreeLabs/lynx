@@ -26,8 +26,8 @@ const createTransferFunctionBlock = (
   type: "transfer_function",
   position: { x: 0, y: 0 },
   parameters: [
-    { name: "numerator", value: numerator },
-    { name: "denominator", value: denominator },
+    { name: "num", value: numerator },
+    { name: "den", value: denominator },
   ],
   ports: [
     { id: "in", type: "input" },

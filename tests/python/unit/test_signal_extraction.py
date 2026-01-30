@@ -293,8 +293,8 @@ class TestDiagramCloning:
         diagram.add_block(
             "transfer_function",
             "tf1",
-            numerator=[1.0, 2.0],
-            denominator=[1.0, 3.0, 4.0],
+            num=[1.0, 2.0],
+            den=[1.0, 3.0, 4.0],
             position={"x": 100, "y": 0},
         )
 
@@ -304,5 +304,5 @@ class TestDiagramCloning:
         tf1_clone = cloned.get_block("tf1")
 
         assert g1_clone.get_parameter("K") == 7.5
-        assert tf1_clone.get_parameter("numerator") == [1.0, 2.0]
-        assert tf1_clone.get_parameter("denominator") == [1.0, 3.0, 4.0]
+        assert tf1_clone.get_parameter("num") == [1.0, 2.0]
+        assert tf1_clone.get_parameter("den") == [1.0, 3.0, 4.0]

@@ -34,11 +34,16 @@ import { getDiagramState, onDiagramStateChange, sendAction } from "./utils/trait
 import { findCollinearSnap } from "./utils/collinearSnapping";
 import { INTERACTION } from "./config/constants";
 import lynxLogo from "./assets/lynx-logo.png";
-import type {
-  DiagramState,
-  Block as DiagramBlock,
-  Connection as DiagramConnection,
-} from "./utils/traitletSync";
+import {
+  DEFAULT_VIEWPORT,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  FIT_VIEW_OPTIONS,
+  getDefaultEdgeOptions,
+} from "./utils/reactFlowConfig";
+import { blockToNode, connectionToEdge } from "./utils/nodeConversion";
+import { getContentBounds, calculateFitViewport } from "./utils/edgeAwareFitView";
+import type { DiagramState, Connection as DiagramConnection } from "./utils/traitletSync";
 import { nodeTypes } from "./blocks";
 import BlockPalette from "./palette/BlockPalette";
 import ParameterPanel from "./components/ParameterPanel";
@@ -56,26 +61,7 @@ const edgeTypes: EdgeTypes = {
   orthogonal: OrthogonalEditableEdge,
 };
 
-/**
- * Convert backend block to React Flow node
- */
-function blockToNode(block: DiagramBlock): Node {
-  return {
-    id: block.id,
-    type: block.type,
-    position: block.position,
-    data: {
-      parameters: block.parameters,
-      ports: block.ports,
-      label: block.label,
-      flipped: block.flipped || false,
-      custom_latex: block.custom_latex,
-      label_visible: block.label_visible || false,
-      width: block.width,
-      height: block.height,
-    },
-  };
-}
+// Block-to-node conversion now imported from shared utils
 
 /**
  * Calculate squared distance between two points (avoids sqrt overhead)
@@ -126,9 +112,13 @@ export default function DiagramCanvas() {
 
   // Track ReactFlow instance for programmatic control
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+  const [isReactFlowReady, setIsReactFlowReady] = useState(false);
 
   // Track drag start positions for distance calculation (drag detection)
   const dragStartPos = useRef<Record<string, { x: number; y: number }>>({});
+
+  // Track if we've done the initial fitView (prevent re-running on every node add)
+  const hasInitialFitView = useRef(false);
 
   // Subscribe to theme changes from Python
   useEffect(() => {
@@ -196,28 +186,7 @@ export default function DiagramCanvas() {
 
   // Memoized edge converter that uses current marker color
   const connectionToEdgeWithColor = useCallback(
-    (conn: DiagramConnection): Edge => {
-      return {
-        id: conn.id,
-        source: conn.source_block_id,
-        sourceHandle: conn.source_port_id,
-        target: conn.target_block_id,
-        targetHandle: conn.target_port_id,
-        type: "orthogonal",
-        data: {
-          waypoints: conn.waypoints || [],
-          label: conn.label,
-          label_visible: conn.label_visible || false,
-        },
-        style: { stroke: markerColor, strokeWidth: 2.5 },
-        markerEnd: {
-          type: "arrowclosed",
-          width: 14,
-          height: 14,
-          color: markerColor,
-        },
-      };
-    },
+    (conn: DiagramConnection): Edge => connectionToEdge(conn, markerColor),
     [markerColor]
   );
 
@@ -227,6 +196,7 @@ export default function DiagramCanvas() {
 
     // Initial load
     const initialState = getDiagramState(model);
+    setDiagramState(initialState); // Store initial state for parameter panel
     setNodes(initialState.blocks.map(blockToNode));
     setEdges(initialState.connections.map(connectionToEdgeWithColor));
 
@@ -405,6 +375,36 @@ export default function DiagramCanvas() {
     [model, edges, nodes]
   );
 
+  // Edge-aware fitView callback (defined before keyboard shortcuts that use it)
+  const edgeAwareFitView = useCallback(() => {
+    if (!reactFlowInstance.current) return;
+
+    const containerElement = document.querySelector(".react-flow") as HTMLElement;
+    if (!containerElement) return;
+
+    const contentBounds = getContentBounds(nodes, edges);
+    const viewport = calculateFitViewport(
+      contentBounds,
+      containerElement.offsetWidth,
+      containerElement.offsetHeight,
+      FIT_VIEW_OPTIONS
+    );
+    reactFlowInstance.current.setViewport(viewport);
+  }, [nodes, edges]);
+
+  // Initial fitView when diagram first loads (ONE TIME ONLY)
+  useEffect(() => {
+    if (!isReactFlowReady || nodes.length === 0 || hasInitialFitView.current) return;
+
+    // Wait for React Flow to render nodes, then fit view
+    const timer = setTimeout(() => {
+      edgeAwareFitView();
+      hasInitialFitView.current = true; // Mark as completed
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isReactFlowReady, nodes.length, edgeAwareFitView]);
+
   // Keyboard shortcuts
   useEffect(() => {
     if (!model) return;
@@ -464,7 +464,7 @@ export default function DiagramCanvas() {
       // Spacebar: Zoom to fit
       if (event.key === " " && !isInputField) {
         event.preventDefault();
-        reactFlowInstance.current?.fitView({ padding: 0.4, minZoom: 0.3, maxZoom: 1 });
+        edgeAwareFitView();
         return;
       }
 
@@ -526,7 +526,7 @@ export default function DiagramCanvas() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [model, onNodesChange]);
+  }, [model, onNodesChange, edgeAwareFitView]);
 
   // Handle drag start - clear waypoints immediately for WYSIWYG preview
   const onNodeDragStart = useCallback((_event: React.MouseEvent, node: Node) => {
@@ -645,7 +645,10 @@ export default function DiagramCanvas() {
 
   // Handle block double-click (opens parameter panel)
   const onNodeDoubleClick = useCallback(
-    (_event: React.MouseEvent, node: Node) => {
+    (event: React.MouseEvent, node: Node) => {
+      event.stopPropagation(); // Prevent zoom behavior
+      event.preventDefault(); // Prevent any default browser behavior
+
       // Update our custom selectedBlockId for ParameterPanel
       setSelectedBlockId(node.id);
       if (model) {
@@ -855,27 +858,18 @@ export default function DiagramCanvas() {
         onPaneClick={onPaneClick}
         onInit={(instance) => {
           reactFlowInstance.current = instance;
+          setIsReactFlowReady(true);
         }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodeDragThreshold={5}
-        fitView
-        fitViewOptions={{ padding: 0.4, minZoom: 0.3, maxZoom: 1 }}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
-        minZoom={0.3}
-        maxZoom={2}
+        zoomOnDoubleClick={false}
+        defaultViewport={DEFAULT_VIEWPORT}
+        minZoom={MIN_ZOOM}
+        maxZoom={MAX_ZOOM}
         connectionMode="loose"
         isValidConnection={() => true}
-        defaultEdgeOptions={{
-          style: { stroke: markerColor, strokeWidth: 2.5 },
-          type: "orthogonal",
-          markerEnd: {
-            type: "arrowclosed",
-            width: 16,
-            height: 16,
-            color: markerColor,
-          },
-        }}
+        defaultEdgeOptions={getDefaultEdgeOptions(markerColor)}
         style={{ backgroundColor: "var(--color-slate-50)" }}
         defaultMarkerColor={markerColor}
         proOptions={{ hideAttribution: true }}
@@ -888,13 +882,8 @@ export default function DiagramCanvas() {
           style={{ opacity: 0.1 }}
         />
         <Controls showInteractive={false} showZoom={false} showFitView={false}>
-          {/* Custom zoom-to-fit button with padding: 0.4 */}
-          <ControlButton
-            onClick={() =>
-              reactFlowInstance.current?.fitView({ padding: 0.4, minZoom: 0.3, maxZoom: 1 })
-            }
-            title="Zoom to Fit (Spacebar)"
-          >
+          {/* Custom zoom-to-fit button with edge-aware bounds */}
+          <ControlButton onClick={edgeAwareFitView} title="Zoom to Fit (Spacebar)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
               <path
                 fill="currentColor"

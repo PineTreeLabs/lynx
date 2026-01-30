@@ -47,16 +47,8 @@ export function findCornerWaypoints(segments: Segment[]): Point[] {
  * Priority: vertical segments at exact x match first, then horizontal segments
  */
 export function findSegmentAtX(segments: Segment[], x: number): Segment | undefined {
-  // First, check for vertical segments at this exact x (corners)
-  for (const segment of segments) {
-    if (segment.orientation === "vertical") {
-      if (Math.abs(segment.from.x - x) < 0.5) {
-        return segment;
-      }
-    }
-  }
-
-  // Then check horizontal segments that span this x
+  // First, check horizontal segments that span this x (exclusive endpoints)
+  // This is the most common case and ensures labels stay on horizontal segments
   for (const segment of segments) {
     if (segment.orientation === "horizontal") {
       const minX = Math.min(segment.from.x, segment.to.x);
@@ -68,12 +60,22 @@ export function findSegmentAtX(segments: Segment[], x: number): Segment | undefi
     }
   }
 
-  // Finally, check horizontal segments with inclusive bounds (for straight lines)
+  // Then check horizontal segments with inclusive bounds (for straight lines)
   for (const segment of segments) {
     if (segment.orientation === "horizontal") {
       const minX = Math.min(segment.from.x, segment.to.x);
       const maxX = Math.max(segment.from.x, segment.to.x);
       if (x >= minX && x <= maxX) {
+        return segment;
+      }
+    }
+  }
+
+  // Finally, fall back to vertical segments at this exact x (corners)
+  // This should rarely happen as we shift labels to avoid corners
+  for (const segment of segments) {
+    if (segment.orientation === "vertical") {
+      if (Math.abs(segment.from.x - x) < 0.5) {
         return segment;
       }
     }
@@ -130,9 +132,46 @@ export function calculateConnectionLabelPosition(
     return { x: 0, y: 0 };
   }
 
-  // Collect all x coordinates from segment endpoints
+  // Exclude PORT_OFFSET extension segments (first and last) from bounding box calculation.
+  // These are the 20px perpendicular extensions from port positions.
+  // We want the label centered on the visual connection path, not including port stubs.
+  // Note: Sub-pixel segments are already filtered by the routing algorithm.
+
+  const PORT_OFFSET_THRESHOLD = 25; // Slightly larger than PORT_OFFSET (20px)
+
+  let segmentsForBounds = segments;
+
+  // If we have multiple segments, check if first/last are short PORT_OFFSET extensions
+  if (segments.length > 1) {
+    const visibleSegments = [...segments];
+
+    // Remove first segment if it's a PORT_OFFSET extension (< 25px)
+    const firstLength =
+      Math.abs(segments[0].to.x - segments[0].from.x) +
+      Math.abs(segments[0].to.y - segments[0].from.y);
+    if (firstLength < PORT_OFFSET_THRESHOLD) {
+      visibleSegments.shift();
+    }
+
+    // Remove last segment if it's a PORT_OFFSET extension (< 25px)
+    if (visibleSegments.length > 0) {
+      const lastSeg = visibleSegments[visibleSegments.length - 1];
+      const lastLength =
+        Math.abs(lastSeg.to.x - lastSeg.from.x) + Math.abs(lastSeg.to.y - lastSeg.from.y);
+      if (lastLength < PORT_OFFSET_THRESHOLD) {
+        visibleSegments.pop();
+      }
+    }
+
+    // Only use filtered segments if we still have at least one segment
+    if (visibleSegments.length > 0) {
+      segmentsForBounds = visibleSegments;
+    }
+  }
+
+  // Collect all x coordinates from visible segment endpoints
   const allX: number[] = [];
-  for (const segment of segments) {
+  for (const segment of segmentsForBounds) {
     allX.push(segment.from.x, segment.to.x);
   }
 
@@ -142,12 +181,24 @@ export function calculateConnectionLabelPosition(
   // Calculate horizontal center
   let centerX = (minX + maxX) / 2;
 
+  console.log("[calculateConnectionLabelPosition] Bounding box calculation:", {
+    totalSegments: segments.length,
+    segmentsUsedForBounds: segmentsForBounds.length,
+    segments,
+    segmentsForBounds,
+    allX,
+    minX,
+    maxX,
+    centerX,
+    labelText,
+  });
+
   // Calculate label dimensions
   const labelWidth = labelText.length * charWidth + labelPadding * 2;
   const halfLabelWidth = labelWidth / 2;
 
-  // Find corner waypoints
-  const corners = findCornerWaypoints(segments);
+  // Find corner waypoints (use filtered segments to avoid detecting artifact corners)
+  const corners = findCornerWaypoints(segmentsForBounds);
 
   // Check for overlap with corners and shift if needed
   if (corners.length > 0) {
@@ -194,9 +245,9 @@ export function calculateConnectionLabelPosition(
     }
   }
 
-  // Calculate Y position based on segment at centerX
-  const defaultY = segments[0].from.y;
-  let y = calculateYAtX(segments, centerX, defaultY);
+  // Calculate Y position based on segment at centerX (use filtered segments)
+  const defaultY = segmentsForBounds[0].from.y;
+  let y = calculateYAtX(segmentsForBounds, centerX, defaultY);
 
   // Offset label above the line
   const verticalOffset = 12;

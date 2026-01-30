@@ -105,10 +105,10 @@ def has_direct_feedthrough(block: Block) -> bool:
         num = None
         den = None
         for param in block._parameters:
-            if param.name == "numerator":
-                num = np.asarray(param.value)
-            elif param.name == "denominator":
-                den = np.asarray(param.value)
+            if param.name == "num":
+                num = np.atleast_1d(param.value)
+            elif param.name == "den":
+                den = np.atleast_1d(param.value)
 
         if num is not None and den is not None:
             # Direct feedthrough if same length (same order)

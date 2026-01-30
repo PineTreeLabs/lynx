@@ -9,6 +9,21 @@ The Diagram class is the central data structure that manages:
 - Connections between blocks with optional labels
 - Serialization to/from JSON using Pydantic validation
 - Python-control export for analysis and simulation
+- Expression re-evaluation for parametric diagrams
+
+Loading Parametric Diagrams:
+    When loading diagrams with parameter expressions, you can optionally
+    re-evaluate expressions against a namespace:
+
+        # Define parameters in your notebook/script
+        kp = 611.0
+        ki = 63.0
+
+        # Load and re-evaluate with current environment
+        diagram = Diagram.load("mydiagram.json", namespace=globals())
+
+        # Or use explicit values
+        diagram = Diagram.load("mydiagram.json", namespace={"kp": 500, "ki": 50})
 
 Python-Control Export API:
     The Diagram class provides methods to convert diagrams to
@@ -47,6 +62,7 @@ from pydantic import ValidationError as PydanticValidationError
 
 from lynx.blocks.base import Block
 from lynx.schema import DiagramModel
+from lynx.templates import DIAGRAM_TEMPLATES
 
 
 # Export-related exceptions
@@ -364,14 +380,8 @@ class Diagram:
         # Prepare factory kwargs
         factory_kwargs = {"position": position}
 
-        # For IOMarker, 'label' in kwargs is the signal label (inside block)
-        # For other blocks, 'label' is the block label (below block)
+        # For IOMarker and other blocks, 'label' is the block label
         if block_type == "io_marker":
-            # For IOMarkers, don't pop 'label' - it's the signal label
-            # block_label would be passed separately if provided
-            # IOMarkers typically don't have block labels
-            factory_kwargs["block_label"] = None
-
             # Auto-assign index if not provided (new blocks only)
             # During deserialization, _ensure_index handles missing indices
             if "index" not in kwargs and not hasattr(self, "_deserializing"):
@@ -379,7 +389,7 @@ class Diagram:
                 marker_type = kwargs.get("marker_type", "input")
                 kwargs["index"] = self._auto_assign_index(marker_type)
 
-            # Pass all kwargs (label for signal name + auto index)
+            # Pass all kwargs (label, marker_type, index)
             factory_kwargs.update(kwargs)
         else:
             # For other blocks, pop 'label' as the block label
@@ -390,9 +400,14 @@ class Diagram:
             factory_kwargs.update(kwargs)
 
         # Create block using factory
+        import weakref
+
         from lynx.blocks import create_block
 
         block = create_block(block_type, id, **factory_kwargs)
+
+        # Set parent diagram reference (weak reference to avoid circular refs)
+        block._diagram = weakref.ref(self)
 
         # Save state before modification (for undo)
         self._save_state()
@@ -416,6 +431,53 @@ class Diagram:
                     self._ensure_index(block)
                 return block
         return None
+
+    def __getitem__(self, label: str) -> Block:
+        """Get block by label using bracket notation.
+
+        Enables dictionary-style access to blocks via their label attribute:
+            controller = diagram["controller"]
+            plant = diagram["plant"]
+
+        Args:
+            label: Block label to search for (case-sensitive, exact match)
+
+        Returns:
+            Block with matching label
+
+        Raises:
+            TypeError: If label is not a string
+            KeyError: If no block has the specified label
+            ValidationError: If multiple blocks have the specified label
+
+        Example:
+            >>> diagram = Diagram()
+            >>> diagram.add_block('gain', 'g1', K=5.0, label='controller')
+            >>> controller = diagram["controller"]
+            >>> print(controller.K)
+            5.0
+        """
+        # Type validation
+        if not isinstance(label, str):
+            raise TypeError(f"Label must be a string, got {type(label).__name__}")
+
+        # Find all blocks with matching label (skip unlabeled blocks)
+        matches = [
+            block for block in self.blocks if block.label and block.label == label
+        ]
+
+        # Check match count
+        if len(matches) == 0:
+            raise KeyError(f"No block found with label: {label!r}")
+        elif len(matches) == 1:
+            return matches[0]
+        else:
+            # Multiple matches - raise ValidationError with block IDs
+            block_ids = [block.id for block in matches]
+            raise ValidationError(
+                f"Label {label!r} appears on {len(block_ids)} blocks: {block_ids}",
+                block_id=block_ids[0] if block_ids else None,
+            )
 
     def remove_block(self, block_id: str) -> bool:
         """Remove block from diagram and all connected edges.
@@ -622,18 +684,35 @@ class Diagram:
         return model.model_dump()
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Diagram":
+    def from_dict(
+        cls, data: Dict[str, Any], namespace: Optional[Dict[str, Any]] = None
+    ) -> "Diagram":
         """Deserialize diagram from dictionary with Pydantic validation.
 
         Args:
             data: Dictionary with version, blocks, connections
+            namespace: Optional namespace for expression re-evaluation.
+                       If provided, all parameter expressions will be re-evaluated
+                       against this namespace. Use globals() to evaluate with
+                       current Python environment, or pass explicit dict like
+                       {"kp": 0.5, "ki": 0.1} for specific values.
 
         Returns:
-            Diagram object
+            Diagram object with expressions re-evaluated if namespace provided
 
         Raises:
             ValidationError: If data doesn't match schema
             ValueError: If block type is unknown
+
+        Examples:
+            >>> # No re-evaluation (backward compatible)
+            >>> diagram = Diagram.from_dict(data)
+            >>>
+            >>> # Re-evaluate with current Python environment
+            >>> diagram = Diagram.from_dict(data, namespace=globals())
+            >>>
+            >>> # Re-evaluate with explicit values
+            >>> diagram = Diagram.from_dict(data, namespace={"kp": 0.5, "ki": 0.1})
         """
         # Validate with Pydantic first
         try:
@@ -673,6 +752,9 @@ class Diagram:
             # Restore additional attributes after creation
             if block:
                 block.flipped = block_flipped
+                # Restore block label for IOMarkers (was excluded from add_block params)
+                if block_type == "io_marker" and block_label is not None:
+                    block.label = block_label
                 # Restore optional attributes from block_dict
                 if block_dict.get("custom_latex") is not None:
                     block.custom_latex = block_dict["custom_latex"]
@@ -725,6 +807,16 @@ class Diagram:
             # Silently skip invalid connections during deserialization
             # (could raise exception in strict mode if needed)
 
+        # Re-evaluate expressions if namespace provided
+        if namespace is not None:
+            warnings = diagram.re_evaluate_expressions(namespace)
+            # Issue warnings if any expressions used fallback values
+            if warnings:
+                import warnings as warn_module
+
+                for warning in warnings:
+                    warn_module.warn(warning, UserWarning, stacklevel=2)
+
         return diagram
 
     def save(self, filename: Union[str, Path]) -> None:
@@ -747,29 +839,76 @@ class Diagram:
             json.dump(data, f, indent=2)
 
     @classmethod
-    def load(cls, filename: Union[str, Path]) -> "Diagram":
-        """Load diagram from JSON file.
+    def from_template(cls, template_name: str) -> "Diagram":
+        """Create diagram from a named template.
+
+        Args:
+            template_name: One of 'feedback_tf', 'feedback_ss', 'feedforward_tf',
+                            'feedforward_ss', 'filtered_tf'
+
+        Returns:
+            New Diagram instance from template
+
+        Raises:
+            ValueError: If template_name not found
+        """
+
+        if template_name not in DIAGRAM_TEMPLATES:
+            valid = ", ".join(DIAGRAM_TEMPLATES.keys())
+            raise ValueError(
+                f"Unknown template '{template_name}'. Valid options: {valid}"
+            )
+
+        import json
+
+        data = json.loads(DIAGRAM_TEMPLATES[template_name])
+        return cls.from_dict(data)
+
+    @classmethod
+    def load(
+        cls, filename: Union[str, Path], namespace: Optional[Dict[str, Any]] = None
+    ) -> "Diagram":
+        """Load diagram from JSON file with optional expression re-evaluation.
 
         Args:
             filename: Path to load file
+            namespace: Optional namespace for expression re-evaluation.
+                       If provided, parameter expressions will be re-evaluated
+                       using variables from this namespace. Pass globals() to use
+                       current Python environment, or pass explicit parameter dict.
 
         Returns:
-            Diagram object
+            Diagram object with expressions re-evaluated if namespace provided
 
         Raises:
             FileNotFoundError: If file doesn't exist
             ValueError: If JSON is malformed or invalid diagram data
+
+        Examples:
+            >>> # No re-evaluation (backward compatible)
+            >>> diagram = Diagram.load("mydiagram.json")
+            >>>
+            >>> # Re-evaluate with current notebook/script variables
+            >>> kp = 611.0
+            >>> ki = 63.0
+            >>> diagram = Diagram.load("mydiagram.json", namespace=globals())
+            >>>
+            >>> # Re-evaluate with explicit parameter values
+            >>> diagram = Diagram.load(
+            ...     "mydiagram.json",
+            ...     namespace={"kp": 500.0, "ki": 50.0}
+            ... )
         """
         filepath = Path(filename)
 
         if not filepath.exists():
             raise FileNotFoundError(f"Diagram file not found: {filepath}")
 
-        # Read and deserialize
+        # Read and deserialize with namespace
         with open(filepath, "r") as f:
             data = json.load(f)
 
-        return cls.from_dict(data)
+        return cls.from_dict(data, namespace=namespace)
 
     def _save_state(self) -> None:
         """Save current diagram state to history for undo/redo.
@@ -845,14 +984,18 @@ class Diagram:
         # Prepare factory kwargs
         factory_kwargs = {"position": position}
 
-        # For IOMarker, handle special label semantics
+        # For IOMarker and other blocks, label is just block label
         if block_type == "io_marker":
-            factory_kwargs["block_label"] = label
-            # Signal label comes from parameters
-            if "label" in param_kwargs:
-                factory_kwargs["label"] = param_kwargs["label"]
+            # IOMarker label is the block label (used for signal reference)
+            if label is not None:
+                factory_kwargs["label"] = label
+            # Add IOMarker-specific parameters (marker_type, index)
             if "marker_type" in param_kwargs:
                 factory_kwargs["marker_type"] = param_kwargs["marker_type"]
+            if "index" in param_kwargs:
+                factory_kwargs["index"] = param_kwargs["index"]
+            # Note: Old "label" parameter is ignored if present
+            # (backwards compatibility)
         else:
             # For other blocks, block label is just 'label'
             if label is not None:
@@ -1092,15 +1235,24 @@ class Diagram:
 
     def update_block_parameter(
         self,
-        block_id: str,
+        block_or_id: Union[Block, str],
         param_name: str,
         value: Any,
         expression: Optional[str] = None,
     ) -> bool:
         """Update block parameter (with undo support).
 
+        Accepts either a Block object or a string block ID, enabling
+        both traditional ID-based updates and natural block object updates:
+
+            # Via block object (Feature 017 - US3)
+            diagram.update_block_parameter(diagram["plant"], "K", 5.0)
+
+            # Via string ID (backward compatible)
+            diagram.update_block_parameter("plant_id", "K", 5.0)
+
         Args:
-            block_id: Block identifier
+            block_or_id: Block object OR block identifier string
             param_name: Parameter name (e.g., "K", "numerator", "A")
             value: New parameter value
             expression: Optional expression string (for hybrid storage)
@@ -1108,6 +1260,9 @@ class Diagram:
         Returns:
             True if block and parameter were found and updated, False otherwise
         """
+        # Extract block ID from Block object or use string directly
+        block_id = block_or_id.id if isinstance(block_or_id, Block) else block_or_id
+
         block = self.get_block(block_id)
         if not block:
             return False
@@ -1403,6 +1558,119 @@ class Diagram:
             Independent Diagram instance with same blocks and connections
         """
         return Diagram.from_dict(self.to_dict())
+
+    def __str__(self) -> str:
+        """Return a human-readable summary of the diagram.
+
+        Provides a concise overview of diagram structure including block types,
+        labels, key parameters, and connections. Omits visual details like
+        positions, dimensions, and custom LaTeX.
+
+        Returns:
+            String summary with blocks and connections
+
+        Example:
+            >>> diagram = Diagram()
+            >>> diagram.add_block('gain', 'g1', K=5.0, label='controller')
+            >>> diagram.add_block('io_marker', 'm1', marker_type='input', label='r')
+            >>> diagram.add_connection('c1', 'm1', 'out', 'g1', 'in')
+            >>> print(diagram)
+            Diagram: 2 blocks, 1 connections
+
+            Blocks:
+              controller [Gain] K=5.0
+              r [IOMarker] type=input, index=0
+
+            Connections:
+              r.out -> controller.in
+        """
+        lines = []
+
+        # Header
+        num_blocks = len(self.blocks)
+        num_connections = len(self.connections)
+        lines.append(f"Diagram: {num_blocks} blocks, {num_connections} connections")
+        lines.append("")
+
+        # Blocks section
+        if self.blocks:
+            lines.append("Blocks:")
+            for block in self.blocks:
+                # Format block type name
+                # (e.g., "transfer_function" -> "TransferFunction")
+                type_parts = block.type.split("_")
+                type_name = "".join(part.capitalize() for part in type_parts)
+
+                # Get block-specific parameters
+                params = []
+                if block.type == "gain":
+                    K = block.get_parameter("K")
+                    params.append(f"K={K}")
+                elif block.type == "transfer_function":
+                    num = block.get_parameter("num")
+                    den = block.get_parameter("den")
+                    params.append(f"num={num}, den={den}")
+                elif block.type == "state_space":
+                    A = block.get_parameter("A")
+                    B = block.get_parameter("B")
+                    C = block.get_parameter("C")
+                    D = block.get_parameter("D")
+                    # Calculate dimensions
+                    A_rows = len(A)
+                    A_cols = len(A[0]) if A and len(A) > 0 else 0
+                    B_rows = len(B)
+                    B_cols = len(B[0]) if B and len(B) > 0 else 0
+                    C_rows = len(C)
+                    C_cols = len(C[0]) if C and len(C) > 0 else 0
+                    D_rows = len(D)
+                    D_cols = len(D[0]) if D and len(D) > 0 else 0
+                    params.append(
+                        f"A: {A_rows}x{A_cols}, B: {B_rows}x{B_cols}, "
+                        f"C: {C_rows}x{C_cols}, D: {D_rows}x{D_cols}"
+                    )
+                elif block.type == "sum":
+                    signs = block.get_parameter("signs")
+                    params.append(f"signs={signs}")
+                elif block.type == "io_marker":
+                    marker_type = block.get_parameter("marker_type")
+                    # Ensure block has index (backward compatibility)
+                    self._ensure_index(block)
+                    index = block.get_parameter("index")
+                    params.append(f"type={marker_type}, index={index}")
+
+                # Format line: label [Type] params
+                param_str = " ".join(params) if params else ""
+                if param_str:
+                    lines.append(f"  {block.label} [{type_name}] {param_str}")
+                else:
+                    lines.append(f"  {block.label} [{type_name}]")
+
+        # Connections section
+        if self.connections:
+            lines.append("")
+            lines.append("Connections:")
+            for conn in self.connections:
+                # Get block labels
+                source_block = self.get_block(conn.source_block_id)
+                target_block = self.get_block(conn.target_block_id)
+
+                if source_block and target_block:
+                    source_label = source_block.label
+                    target_label = target_block.label
+
+                    # Format: source_label.port_id -> target_label.port_id
+                    conn_str = (
+                        f"  {source_label}.{conn.source_port_id} -> "
+                        f"{target_label}.{conn.target_port_id}"
+                    )
+
+                    # Add connection label if present
+                    if conn.label:
+                        conn_str += f" (label='{conn.label}')"
+
+                    lines.append(conn_str)
+
+        return "\n".join(lines)
 
     def get_ss(self, from_signal: str, to_signal: str) -> Any:
         """Extract state-space model from one signal to another.

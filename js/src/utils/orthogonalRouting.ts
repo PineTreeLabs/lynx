@@ -1081,11 +1081,19 @@ function isPointInsideBounds(
 }
 
 /**
- * Filter out zero-length segments (where from and to are the same point)
+ * Filter out zero-length and sub-pixel segments (routing artifacts).
+ * Removes segments < 1px which are floating-point rounding errors from
+ * waypoint calculations and block positioning.
+ *
+ * @param segments - Array of segments to filter
+ * @returns Filtered segments array with only visually meaningful segments (≥ 1px)
  */
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function filterZeroLengthSegments(segments: Segment[]): Segment[] {
-  return segments.filter((seg) => seg.from.x !== seg.to.x || seg.from.y !== seg.to.y);
+  const MIN_SEGMENT_LENGTH = 1; // Minimum 1px to be visually meaningful
+  return segments.filter((seg) => {
+    const length = Math.abs(seg.to.x - seg.from.x) + Math.abs(seg.to.y - seg.from.y);
+    return length >= MIN_SEGMENT_LENGTH;
+  });
 }
 
 /**
@@ -1274,7 +1282,16 @@ export function calculateOrthogonalPath(
     }
 
     console.log("[calculateOrthogonalPath] Final segments array:", allSegments);
-    return allSegments;
+
+    // Filter out sub-pixel segments (floating-point rounding artifacts)
+    const filteredSegments = filterZeroLengthSegments(allSegments);
+    console.log("[calculateOrthogonalPath] After filtering sub-pixel segments:", {
+      before: allSegments.length,
+      after: filteredSegments.length,
+      removed: allSegments.length - filteredSegments.length,
+    });
+
+    return filteredSegments;
   }
 
   // Fallback: Build list of all points in order and use simple routing
@@ -1290,7 +1307,10 @@ export function calculateOrthogonalPath(
     allSegments.push(...segments);
   }
 
-  return allSegments;
+  // Filter out sub-pixel segments (floating-point rounding artifacts)
+  const filteredSegments = filterZeroLengthSegments(allSegments);
+
+  return filteredSegments;
 }
 
 /**

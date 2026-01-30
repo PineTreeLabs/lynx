@@ -131,9 +131,7 @@ export default function BlockPalette() {
 
         {/* Transfer Function Block */}
         <button
-          onClick={() =>
-            addBlock(BLOCK_TYPES.TRANSFER_FUNCTION, { numerator: [1], denominator: [1, 1] })
-          }
+          onClick={() => addBlock(BLOCK_TYPES.TRANSFER_FUNCTION, { num: [1], den: [1, 1] })}
           disabled={!model}
           className="palette-button w-full px-3 py-1.5 bg-slate-600 text-slate-50 text-xs rounded hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           title="Add Transfer Function Block"

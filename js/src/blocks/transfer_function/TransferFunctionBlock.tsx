@@ -40,8 +40,8 @@ export default function TransferFunctionBlock({
   selected,
 }: NodeProps<TransferFunctionBlockData>) {
   // Get numerator and denominator parameters
-  const numerator = data.parameters?.find((p) => p.name === "numerator")?.value ?? [1];
-  const denominator = data.parameters?.find((p) => p.name === "denominator")?.value ?? [1, 1];
+  const numerator = data.parameters?.find((p) => p.name === "num")?.value ?? [1];
+  const denominator = data.parameters?.find((p) => p.name === "den")?.value ?? [1, 1];
   const customLatex = data.custom_latex;
   const isFlipped = data.flipped || false;
 

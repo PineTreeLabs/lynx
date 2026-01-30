@@ -62,7 +62,7 @@ class TestAlgebraicLoopDetection:
         #           |_____|  (feedback through Gain)
         diagram.add_block("io_marker", "in1", marker_type="input", label="r")
         diagram.add_block("sum", "sum1", signs=["+", "-", "|"])
-        diagram.add_block("transfer_function", "tf1", numerator=[1], denominator=[1, 1])
+        diagram.add_block("transfer_function", "tf1", num=[1], den=[1, 1])
         diagram.add_block("gain", "g1", K=0.5)  # Feedback gain
         diagram.add_block("io_marker", "out1", marker_type="output", label="y")
 
@@ -120,7 +120,7 @@ class TestAlgebraicLoopDetection:
         diagram.add_block("io_marker", "in1", marker_type="input", label="r")
         diagram.add_block("sum", "sum1", signs=["+", "-", "|"])
         diagram.add_block(
-            "transfer_function", "tf1", numerator=[2, 1], denominator=[1, 1]
+            "transfer_function", "tf1", num=[2, 1], den=[1, 1]
         )  # Same order!
         diagram.add_block("gain", "g1", K=0.5)
         diagram.add_block("io_marker", "out1", marker_type="output", label="y")
@@ -177,6 +177,40 @@ class TestAlgebraicLoopDetection:
         # Should detect algebraic loop (SS has direct feedthrough via D)
         assert result.is_valid is False
         assert any("algebraic loop" in err.lower() for err in result.errors)
+
+    def test_transfer_function_with_scalar_numerator_no_crash(self):
+        """Test that TF with scalar numerator (not array) doesn't crash validation.
+
+        Regression test for bug where scalar numerator caused TypeError in
+        algebraic loop detection.
+        """
+        diagram = Diagram()
+
+        # Create feedback loop with TF that has scalar numerator
+        # This mimics legacy diagrams or direct parameter assignment
+        diagram.add_block("io_marker", "in1", marker_type="input", label="r")
+        diagram.add_block("sum", "sum1", signs=["+", "-", "|"])
+        diagram.add_block(
+            "transfer_function", "tf1", num=1.32, den=[1, 0.0101]
+        )  # Scalar num!
+        diagram.add_block("gain", "g1", K=0.5)
+        diagram.add_block("io_marker", "out1", marker_type="output", label="y")
+
+        # Connect forward path
+        diagram.add_connection("c1", "in1", "out", "sum1", "in1")
+        diagram.add_connection("c2", "sum1", "out", "tf1", "in")
+        diagram.add_connection("c3", "tf1", "out", "out1", "in")
+
+        # Add feedback - should not crash even with scalar numerator
+        diagram.add_connection("c4", "tf1", "out", "g1", "in")
+        diagram.add_connection("c5", "g1", "out", "sum1", "in2")
+
+        # Validate - should not raise TypeError
+        result = validate_diagram(diagram)
+
+        # Should be valid (TF has no feedthrough: num order 0 < den order 1)
+        assert result.is_valid is True
+        assert len(result.errors) == 0
 
 
 class TestSystemCompleteness:

@@ -38,7 +38,7 @@ LYNX_COLORS = {
 }
 
 
-def set_plot_theme(theme: Literal["light", "dark"] = "light") -> None:
+def set_theme(theme: Literal["light", "dark"] = "light") -> None:
     """
     Set matplotlib rcParams to match Lynx theme.
 
@@ -50,15 +50,15 @@ def set_plot_theme(theme: Literal["light", "dark"] = "light") -> None:
     Examples
     --------
     >>> import matplotlib.pyplot as plt
-    >>> from lynx.utils.plot_themes import set_plot_theme
+    >>> import lynx
     >>>
     >>> # Use light theme
-    >>> set_plot_theme("light")
+    >>> lynx.utils.set_theme("light")
     >>> plt.plot([1, 2, 3], [1, 4, 9])
     >>> plt.savefig("plot_light.png")
     >>>
     >>> # Use dark theme
-    >>> set_plot_theme("dark")
+    >>> lynx.utils.set_theme("dark")
     >>> plt.plot([1, 2, 3], [1, 4, 9])
     >>> plt.savefig("plot_dark.png")
     """
@@ -137,7 +137,7 @@ def save_themed_plot(
     Examples
     --------
     >>> import matplotlib.pyplot as plt
-    >>> from lynx.utils.plot_themes import set_plot_theme, save_themed_plot
+    >>> from lynx.utils.plot_themes import set_theme, save_themed_plot
     >>>
     >>> # Create plot
     >>> fig, ax = plt.subplots()
@@ -166,7 +166,7 @@ def save_themed_plot(
     dark_file = f"{filename_base}_dark.png"
 
     # Save light theme
-    set_plot_theme("light")
+    set_theme("light")
     fig.canvas.draw()
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=dpi, bbox_inches=bbox_inches)
@@ -176,7 +176,7 @@ def save_themed_plot(
     buf.close()
 
     # Save dark theme
-    set_plot_theme("dark")
+    set_theme("dark")
     fig.canvas.draw()
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=dpi, bbox_inches=bbox_inches)
@@ -212,7 +212,7 @@ class themed_plot:
         # Save current rcParams
         self.old_params = rcParams.copy()
         # Apply theme
-        set_plot_theme(self.theme)
+        set_theme(self.theme)
         return self
 
     def __exit__(

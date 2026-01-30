@@ -9,25 +9,27 @@
  */
 
 import { toPng, toSvg } from "html-to-image";
-import { Node, getNodesBounds } from "reactflow";
+import { Node, Edge, getNodesBounds } from "reactflow";
 import type { ContentBounds } from "./types";
 
 /** Default padding around content (pixels) */
 export const DEFAULT_PADDING = 40;
 
 /**
- * Calculate content bounds from nodes
+ * Calculate content bounds from nodes and edges
  *
- * Uses React Flow's getNodesBounds and adds padding to account for
- * labels, port markers, and connection waypoints.
+ * Uses React Flow's getNodesBounds and edge waypoints to calculate total content bounds.
+ * Adds padding to account for labels, port markers, and ensure nothing is clipped.
  *
  * @param nodes - React Flow nodes
+ * @param edges - React Flow edges (for waypoint bounds)
  * @param targetWidth - Optional target width (for fixed dimensions)
  * @param targetHeight - Optional target height (for fixed dimensions)
  * @returns Calculated content bounds
  */
 export function calculateContentBounds(
   nodes: Node[],
+  edges: Edge[],
   targetWidth: number | null,
   targetHeight: number | null
 ): ContentBounds {
@@ -41,15 +43,42 @@ export function calculateContentBounds(
     };
   }
 
-  // Get bounds from React Flow
-  const bounds = getNodesBounds(nodes);
+  // Get bounds from React Flow nodes
+  const nodeBounds = getNodesBounds(nodes);
+
+  // Calculate edge bounds from waypoints
+  let minX = nodeBounds.x;
+  let minY = nodeBounds.y;
+  let maxX = nodeBounds.x + nodeBounds.width;
+  let maxY = nodeBounds.y + nodeBounds.height;
+
+  // Expand bounds to include edge waypoints
+  edges.forEach((edge) => {
+    const waypoints = edge.data?.waypoints;
+    if (waypoints && Array.isArray(waypoints)) {
+      waypoints.forEach((waypoint: { x: number; y: number }) => {
+        minX = Math.min(minX, waypoint.x);
+        minY = Math.min(minY, waypoint.y);
+        maxX = Math.max(maxX, waypoint.x);
+        maxY = Math.max(maxY, waypoint.y);
+      });
+    }
+  });
+
+  // Recalculate bounds including edges
+  const combinedBounds = {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
 
   // Add padding
   const paddedBounds: ContentBounds = {
-    x: bounds.x - DEFAULT_PADDING,
-    y: bounds.y - DEFAULT_PADDING,
-    width: bounds.width + DEFAULT_PADDING * 2,
-    height: bounds.height + DEFAULT_PADDING * 2,
+    x: combinedBounds.x - DEFAULT_PADDING,
+    y: combinedBounds.y - DEFAULT_PADDING,
+    width: combinedBounds.width + DEFAULT_PADDING * 2,
+    height: combinedBounds.height + DEFAULT_PADDING * 2,
   };
 
   // If both dimensions specified, use them directly
@@ -112,23 +141,25 @@ function createCaptureFilter() {
  * @param width - Output width in pixels
  * @param height - Output height in pixels
  * @param transparent - If true, background is transparent
+ * @param backgroundColor - Background color (actual hex/rgb value, not CSS variable)
  * @returns Base64-encoded PNG data (without data URL prefix)
  */
 export async function captureToPng(
   element: HTMLElement,
   width: number,
   height: number,
-  transparent: boolean
+  transparent: boolean,
+  backgroundColor: string
 ): Promise<string> {
   const dataUrl = await toPng(element, {
     width,
     height,
-    backgroundColor: transparent ? undefined : "var(--color-slate-200)",
+    backgroundColor: transparent ? undefined : backgroundColor,
     pixelRatio: 2, // 2x resolution for crisp output
     filter: createCaptureFilter(),
     // Force the captured element itself to have the background
     style: {
-      background: transparent ? "transparent" : "var(--color-slate-200)",
+      background: transparent ? "transparent" : backgroundColor,
     },
   });
 

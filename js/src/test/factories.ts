@@ -51,8 +51,8 @@ export class BlockFactory {
       type: BLOCK_TYPES.TRANSFER_FUNCTION,
       position: { x: 100, y: 100 },
       parameters: [
-        { name: "numerator", value: [1] },
-        { name: "denominator", value: [1, 1] },
+        { name: "num", value: [1] },
+        { name: "den", value: [1, 1] },
       ],
       ports: [
         { id: "in", type: "input" },

@@ -299,7 +299,7 @@ class LynxWidget(anywidget.AnyWidget):
         )
         is_vector_param = (
             block.type == "transfer_function"
-            and parameter_name in ["numerator", "denominator"]
+            and parameter_name in ["num", "den"]
             and isinstance(value, str)
         )
 
@@ -409,8 +409,8 @@ class LynxWidget(anywidget.AnyWidget):
 
             # Transfer function - numerator/denominator must be 1D arrays
             elif block_type == "transfer_function" and parameter_name in [
-                "numerator",
-                "denominator",
+                "num",
+                "den",
             ]:
                 arr = np.asarray(value)
                 if arr.ndim == 0:

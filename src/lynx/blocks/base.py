@@ -11,8 +11,12 @@ All block types inherit from this base class which provides:
 - Serialization to dictionary
 """
 
+import weakref
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    pass
 
 
 @dataclass
@@ -108,6 +112,7 @@ class Block:
         self.height = height
         self._parameters: List[Parameter] = []
         self._ports: List[Port] = []
+        self._diagram: Optional[weakref.ref] = None  # Weak reference to parent diagram
 
     def add_parameter(
         self, name: str, value: Any, expression: Optional[str] = None
@@ -139,6 +144,40 @@ class Block:
             if param.name == name:
                 return param.value
         raise KeyError(f"Parameter '{name}' not found")
+
+    def set_parameter(self, param_name: str, value: Any) -> None:
+        """Update block parameter and sync to parent diagram.
+
+        This method provides a natural OOP-style API for parameter updates
+        using block objects retrieved via label indexing:
+
+            plant = diagram["plant"]
+            plant.set_parameter("K", 5.0)  # Syncs to diagram
+
+        Args:
+            param_name: Parameter name to update
+            value: New parameter value
+
+        Raises:
+            RuntimeError: If block not attached to diagram
+            RuntimeError: If parent diagram has been deleted
+
+        Example:
+            >>> diagram = Diagram()
+            >>> diagram.add_block('gain', 'g1', K=2.5, label='controller')
+            >>> controller = diagram["controller"]
+            >>> controller.set_parameter("K", 10.0)
+            >>> assert controller.get_parameter("K") == 10.0
+        """
+        if self._diagram is None:
+            raise RuntimeError("Block not attached to diagram")
+
+        diagram = self._diagram()
+        if diagram is None:
+            raise RuntimeError("Parent diagram has been deleted")
+
+        # Delegate to diagram's update_block_parameter method
+        diagram.update_block_parameter(self.id, param_name, value)
 
     def add_port(
         self, port_id: str, port_type: str, label: Optional[str] = None
