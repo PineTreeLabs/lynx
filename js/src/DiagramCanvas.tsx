@@ -45,7 +45,6 @@ import { blockToNode, connectionToEdge } from "./utils/nodeConversion";
 import { getContentBounds, calculateFitViewport } from "./utils/edgeAwareFitView";
 import type {
   DiagramState,
-  Block as DiagramBlock,
   Connection as DiagramConnection,
 } from "./utils/traitletSync";
 import { nodeTypes } from "./blocks";

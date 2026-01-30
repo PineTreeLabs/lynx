@@ -83,7 +83,9 @@ Configuration is in `pyproject.toml` under `[tool.ruff]`.
 ### Frontend formatting
 
 ```bash
-cd js && npx prettier --write .
+cd js
+npx prettier --write .
+npm run lint
 ```
 
 ## Type Checking

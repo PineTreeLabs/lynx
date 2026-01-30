@@ -9,7 +9,7 @@
  * Used by the capture system to generate PNG/SVG exports.
  */
 
-import React, { useCallback, useMemo, useState, useEffect, useContext, useRef } from "react";
+import React, { useCallback, useState, useEffect, useContext, useRef } from "react";
 import { AnyWidgetModelContext } from "../index";
 import ReactFlow, { Node, Edge, EdgeTypes, ReactFlowInstance, ReactFlowProvider } from "reactflow";
 import "reactflow/dist/style.css";
@@ -18,8 +18,6 @@ import OrthogonalEditableEdge from "../connections/OrthogonalEditableEdge";
 import { getDiagramState, onDiagramStateChange } from "../utils/traitletSync";
 import type {
   DiagramState,
-  Block as DiagramBlock,
-  Connection as DiagramConnection,
 } from "../utils/traitletSync";
 import { nodeTypes } from "../blocks";
 import type { CaptureRequest, CaptureResult } from "./types";
@@ -167,7 +165,7 @@ function CaptureCanvasInner({
     };
 
     performCapture();
-  }, [captureRequest, isReady, nodes, onCaptureComplete]);
+  }, [captureRequest, isReady, nodes, edges, onCaptureComplete]);
 
   // Note: defaultViewport is set by shared config, fitView will override it anyway
 
