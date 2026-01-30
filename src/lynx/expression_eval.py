@@ -102,10 +102,11 @@ def evaluate_expression(
             compile(tree, "<string>", "eval"), {"__builtins__": {}}, safe_namespace
         )
 
-        # Convert tuples to numpy arrays
+        # Convert tuples and lists to numpy arrays
         # This handles comma-separated expressions like "kp, ki" → array([kp, ki])
         # Python's eval naturally produces tuples from comma-separated values
-        if isinstance(value, tuple):
+        # Also convert lists like "[kp, ki]" for consistency with literal_eval path
+        if isinstance(value, (tuple, list)):
             value = np.array(value)
 
         return EvaluationResult(success=True, value=value)

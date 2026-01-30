@@ -135,7 +135,7 @@ class TestExpressionLoadReEvaluation:
         diagram = Diagram.load("local/release/cruise-control.json", namespace=namespace)
 
         # Check that controller numerator was re-evaluated
-        controller = diagram.get_block("transfer_function_1769426900123")
+        controller = diagram["controller"]
         result = controller.get_parameter("num")
 
         # Should match current namespace values and be an array (not tuple)

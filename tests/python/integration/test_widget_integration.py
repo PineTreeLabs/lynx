@@ -292,7 +292,7 @@ class TestExpressionEvaluation:
         # Check parameter was evaluated
         block = widget.diagram.get_block("ss1")
         a_param = next(p for p in block._parameters if p.name == "A")
-        assert a_param.value == [[1, 0], [0, 1]]
+        assert np.array_equal(a_param.value, [[1, 0], [0, 1]])
         assert a_param.expression == "A_matrix"
 
     @patch("IPython.get_ipython")
