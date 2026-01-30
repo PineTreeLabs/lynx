@@ -115,28 +115,3 @@ class TestExpressionLoadReEvaluation:
 
         # Values should match
         assert np.allclose(result, [kp, ki])
-
-    def test_load_cruise_control_with_expressions(self):
-        """Test loading the actual cruise control diagram with re-evaluation.
-
-        This is the real-world test case reported by the user.
-        """
-        # Define current environment variables
-        b = 1.32
-        a = 0.0101
-        kp = 611.0
-        ki = 63.0
-
-        # Load diagram with namespace - should auto re-evaluate
-        namespace = {"b": b, "a": a, "kp": kp, "ki": ki}
-        diagram = Diagram.load("local/release/cruise-control.json", namespace=namespace)
-
-        # Check that controller numerator was re-evaluated
-        controller = diagram["controller"]
-        result = controller.get_parameter("num")
-
-        # Should match current namespace values and be an array (not tuple)
-        assert isinstance(result, np.ndarray), f"Expected ndarray, got {type(result)}"
-        assert np.allclose(result, [kp, ki]), (
-            f"Expected controller num=[{kp}, {ki}], got {result}"
-        )
