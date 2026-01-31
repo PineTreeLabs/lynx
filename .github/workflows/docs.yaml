@@ -57,7 +57,9 @@ jobs:
       - name: Cache Jupyter execution
         uses: actions/cache@v4
         with:
-          path: docs/_build/.jupyter_cache
+          path: |
+            docs/_build/.jupyter_cache
+            docs/source/examples/_plots
           key: jupyter-${{ runner.os }}-${{ hashFiles('docs/source/examples/*.md') }}
           restore-keys: |
             jupyter-${{ runner.os }}-
