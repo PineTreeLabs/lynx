@@ -104,22 +104,22 @@ Single project structure (Python package):
 
 ### Tests for US2 (Write FIRST, ensure they FAIL) ⚠️
 
-- [ ] T025 [P] [US2] Write failing integration test for Scenario 2 (quickstart.md) - inner loop with external cascade in `tests/python/integration/test_pruned_extraction.py`
-- [ ] T026 [P] [US2] Write failing integration test for acceptance scenario 2a (inner+outer loop extraction) in `tests/python/integration/test_pruned_extraction.py`
-- [ ] T027 [P] [US2] Write failing unit test verifying internal feedback blocks are in both forward AND backward reachable sets in `tests/python/unit/test_graph_pruning.py`
-- [ ] T028 [P] [US2] Write failing integration test for acceptance scenario 2b (multi-rate fast/slow loop boundary) in `tests/python/integration/test_pruned_extraction.py`
+- [X] T025 [P] [US2] Write failing integration test for Scenario 2 (quickstart.md) - inner loop with external cascade in `tests/python/integration/test_pruned_extraction.py`
+- [X] T026 [P] [US2] Write failing integration test for acceptance scenario 2a (inner+outer loop extraction) in `tests/python/integration/test_pruned_extraction.py`
+- [X] T027 [P] [US2] Write failing unit test verifying internal feedback blocks are in both forward AND backward reachable sets in `tests/python/unit/test_graph_pruning.py`
+- [X] T028 [P] [US2] Write failing integration test for acceptance scenario 2b (multi-rate fast/slow loop boundary) in `tests/python/integration/test_pruned_extraction.py`
 
 ### Implementation for US2 (After tests FAIL)
 
-- [ ] T029 [US2] Verify bidirectional reachability correctly identifies internal feedback (blocks reachable both ways stay in intersection) - no code changes needed if foundational phase correct
-- [ ] T030 [US2] Add validation that feedback connections between pruned blocks are preserved in `src/lynx/conversion/graph_pruning.py`
-- [ ] T031 [US2] Test and verify removal of feedback connections involving blocks outside path in `src/lynx/conversion/graph_pruning.py`
+- [X] T029 [US2] Verify bidirectional reachability correctly identifies internal feedback (blocks reachable both ways stay in intersection) - no code changes needed if foundational phase correct
+- [X] T030 [US2] Add validation that feedback connections between pruned blocks are preserved in `src/lynx/conversion/graph_pruning.py`
+- [X] T031 [US2] Test and verify removal of feedback connections involving blocks outside path in `src/lynx/conversion/graph_pruning.py`
 
 ### Validation for US2
 
-- [ ] T032 [US2] Run all US2 integration tests - verify inner loop TF includes internal feedback (DC gain calculation)
-- [ ] T033 [US2] Verify external feedback blocks excluded (state count validation) using quickstart.md Scenario 2
-- [ ] T034 [US2] Validate that US1 tests still pass (backward compatibility check - SC-004)
+- [X] T032 [US2] Run all US2 integration tests - verify inner loop TF includes internal feedback (DC gain calculation)
+- [X] T033 [US2] Verify external feedback blocks excluded (state count validation) using quickstart.md Scenario 2
+- [X] T034 [US2] Validate that US1 tests still pass (backward compatibility check - SC-004)
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently - can extract single blocks AND multi-block subsystems with internal feedback
 
@@ -133,22 +133,22 @@ Single project structure (Python package):
 
 ### Tests for US3 (Write FIRST, ensure they FAIL) ⚠️
 
-- [ ] T035 [P] [US3] Write failing integration test for Scenario 3 (quickstart.md) - parallel paths with side branch in `tests/python/integration/test_pruned_extraction.py`
-- [ ] T036 [P] [US3] Write failing integration test for acceptance scenario 3a (feedforward + feedback loop, exclude unrelated branch D) in `tests/python/integration/test_pruned_extraction.py`
-- [ ] T037 [P] [US3] Write failing unit test verifying parallel paths both appear in intersection (blocks on either path included) in `tests/python/unit/test_graph_pruning.py`
-- [ ] T038 [P] [US3] Write failing integration test for acceptance scenario 3b (MIMO cross-coupling) in `tests/python/integration/test_pruned_extraction.py`
+- [X] T035 [P] [US3] Write failing integration test for Scenario 3 (quickstart.md) - parallel paths with side branch in `tests/python/integration/test_pruned_extraction.py`
+- [X] T036 [P] [US3] Write failing integration test for acceptance scenario 3a (feedforward + feedback loop, exclude unrelated branch D) in `tests/python/integration/test_pruned_extraction.py`
+- [X] T037 [P] [US3] Write failing unit test verifying parallel paths both appear in intersection (blocks on either path included) in `tests/python/unit/test_graph_pruning.py`
+- [X] T038 [P] [US3] Write failing integration test for acceptance scenario 3b (MIMO cross-coupling) in `tests/python/integration/test_pruned_extraction.py`
 
 ### Implementation for US3 (After tests FAIL)
 
-- [ ] T039 [US3] Verify bidirectional reachability captures all parallel paths (union of forward paths in intersection) - no code changes needed if foundational phase correct
-- [ ] T040 [US3] Test edge case: blocks with multiple outputs where only one output is on path (FR-009) in `src/lynx/conversion/graph_pruning.py`
-- [ ] T041 [US3] Add validation for disconnected paths edge case (FR-007) in `src/lynx/conversion/graph_pruning.py`
+- [X] T039 [US3] Verify bidirectional reachability captures all parallel paths (union of forward paths in intersection) - no code changes needed if foundational phase correct
+- [X] T040 [US3] Test edge case: blocks with multiple outputs where only one output is on path (FR-009) in `src/lynx/conversion/graph_pruning.py`
+- [X] T041 [US3] Add validation for disconnected paths edge case (FR-007) in `src/lynx/conversion/graph_pruning.py`
 
 ### Validation for US3
 
-- [ ] T042 [US3] Run all US3 integration tests - verify DC gain includes all parallel paths (SC-006)
-- [ ] T043 [US3] Verify side branches excluded from extraction (state count check) using quickstart.md Scenario 3
-- [ ] T044 [US3] Validate that US1 and US2 tests still pass (backward compatibility - SC-004)
+- [X] T042 [US3] Run all US3 integration tests - verify DC gain includes all parallel paths (SC-006)
+- [X] T043 [US3] Verify side branches excluded from extraction (state count check) using quickstart.md Scenario 3
+- [X] T044 [US3] Validate that US1 and US2 tests still pass (backward compatibility - SC-004)
 
 **Checkpoint**: All user stories should now be independently functional - handles single blocks, internal feedback, AND parallel paths
 
