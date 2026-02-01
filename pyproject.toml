@@ -4,7 +4,7 @@
 
 [project]
 name = "lynx-nb"
-version = "0.1.3"
+version = "0.1.4"
 description = "Block diagram editor for control systems"
 readme = "README.md"
 authors = [
@@ -25,11 +25,17 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lynx"]
-include = [
+artifacts = [
     "src/lynx/static/*.js",
     "src/lynx/static/*.css",
     "src/lynx/static/*.map",
-    "src/lynx/templates/*.json",
+]
+
+[tool.hatch.build.targets.sdist]
+artifacts = [
+    "src/lynx/static/*.js",
+    "src/lynx/static/*.css",
+    "src/lynx/static/*.map",
 ]
 
 [dependency-groups]
