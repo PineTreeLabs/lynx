@@ -25,11 +25,17 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lynx"]
-include = [
+artifacts = [
     "src/lynx/static/*.js",
     "src/lynx/static/*.css",
     "src/lynx/static/*.map",
-    "src/lynx/templates/*.json",
+]
+
+[tool.hatch.build.targets.sdist]
+artifacts = [
+    "src/lynx/static/*.js",
+    "src/lynx/static/*.css",
+    "src/lynx/static/*.map",
 ]
 
 [dependency-groups]
