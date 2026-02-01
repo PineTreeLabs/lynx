@@ -176,6 +176,22 @@ def _get_block_output_name(block: "Block") -> str:
     return block.label if block.label else block.id
 
 
+def _is_iomarker_label(diagram: "Diagram", signal_name: str) -> bool:
+    """Check if signal_name is an IOMarker label (Input or Output).
+
+    Args:
+        diagram: Diagram to search
+        signal_name: Signal name to check
+
+    Returns:
+        True if signal_name matches any IOMarker's label attribute
+    """
+    for block in diagram.blocks:
+        if block.type == "io_marker" and block.label == signal_name:
+            return True
+    return False
+
+
 def _prepare_for_extraction(
     diagram: "Diagram", from_signal: str, to_signal: str
 ) -> Tuple[ct.LinearICSystem, str, str]:
@@ -184,7 +200,7 @@ def _prepare_for_extraction(
     Steps:
     1. Clone the diagram for safe modification
     2. Find the blocks that output from_signal and to_signal
-    3. If from_signal is not already an InputMarker:
+    3. If from_signal is not already an IOMarker label:
        a. Remove incoming connections to that signal's source
        b. Inject a new InputMarker at that point
        c. Connect the injected marker to the signal source
@@ -235,10 +251,57 @@ def _prepare_for_extraction(
     to_output_name = _get_block_output_name(to_block)
 
     # Step 3: Break and inject if needed
-    # Check if from_signal is already an external input (InputMarker)
-    is_already_input = from_block.is_input_marker()
+    # Check if from_signal is an InputMarker (already an external input)
+    from_is_input_marker = from_block.is_input_marker()
 
-    if not is_already_input:
+    # Check if from_signal is an OutputMarker label (needs special handling)
+    from_is_output_marker_label = False
+    for block in modified.blocks:
+        if block.type == "io_marker" and block.label == from_signal:
+            marker_type = block.get_parameter("marker_type")
+            if marker_type == "output":
+                from_is_output_marker_label = True
+                break
+
+    if from_is_input_marker:
+        # from_signal is already an external input, no injection needed
+        pass
+    elif from_is_output_marker_label:
+        # Case C: from_signal is an OutputMarker label
+        # The signal exists at from_block.from_port output
+        # We need to inject an InputMarker at this output to make it an external input
+
+        # Find ALL connections originating from from_block's output
+        connections_to_break = [
+            conn for conn in modified.connections
+            if conn.source_block_id == from_block.id and conn.source_port_id == from_port
+        ]
+
+        # Remove these connections
+        for conn in connections_to_break:
+            modified.remove_connection(conn.id)
+
+        # Inject InputMarker with the signal label
+        safe_signal_name = from_signal.replace(".", "_")
+        injected_id = f"_injected_{safe_signal_name}"
+        modified.add_block(
+            "io_marker",
+            injected_id,
+            marker_type="input",
+            label=from_signal,
+            position={"x": -100, "y": 0},
+        )
+
+        # Reconnect injected marker to all original targets
+        for conn in connections_to_break:
+            conn_id = f"_conn_{injected_id}_{conn.target_block_id}_{conn.target_port_id}"
+            modified.add_connection(
+                conn_id, injected_id, "out", conn.target_block_id, conn.target_port_id
+            )
+
+        # Use the signal label as the from_output_name (now an input)
+        from_output_name = safe_signal_name
+    elif not from_is_input_marker:
         # Check if from_signal is a connection label
         # If so, we inject at the connection target, not the source block input
         connection_to_break = None

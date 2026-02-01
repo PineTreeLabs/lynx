@@ -531,3 +531,115 @@ class TestSubsystemExtraction:
         assert np.isclose(poles[0].real, -13.0, atol=1e-6), (
             f"Pole should be at -13, got {poles[0].real}"
         )
+
+
+class TestOutputMarkerExtraction:
+    """Test subsystem extraction using OutputMarker labels."""
+
+    def test_output_marker_to_output_marker(self):
+        """Test extraction between two OutputMarker labels.
+
+        This is a regression test for the bug where OutputMarker labels
+        were incorrectly injecting at the upstream block's input instead
+        of at the block's output, resulting in incorrect transfer functions.
+        """
+        diagram = Diagram()
+
+        # Create a cascaded system with multiple outputs
+        diagram.add_block(
+            "io_marker",
+            "input",
+            marker_type="input",
+            label="u",
+            position={"x": 0, "y": 0},
+        )
+        diagram.add_block("gain", "controller", K=2.0, position={"x": 100, "y": 0})
+
+        # OutputMarker at controller output
+        diagram.add_block(
+            "io_marker",
+            "tau_marker",
+            marker_type="output",
+            label="tau",
+            position={"x": 150, "y": -50},
+        )
+
+        # Integrator plant: 1/s
+        diagram.add_block(
+            "transfer_function",
+            "plant",
+            num=[1.0],
+            den=[1.0, 0.0],
+            position={"x": 200, "y": 0},
+        )
+
+        # OutputMarker at plant output
+        diagram.add_block(
+            "io_marker",
+            "rate_marker",
+            marker_type="output",
+            label="rate",
+            position={"x": 250, "y": -50},
+        )
+
+        # Connections
+        diagram.add_connection("c1", "input", "out", "controller", "in")
+        diagram.add_connection("c2", "controller", "out", "tau_marker", "in")
+        diagram.add_connection("c3", "controller", "out", "plant", "in")
+        diagram.add_connection("c4", "plant", "out", "rate_marker", "in")
+
+        # Extract from tau to rate
+        # Expected: TF from controller output to plant output = 1/s
+        sys_tau_rate = diagram.get_tf("tau", "rate")
+
+        # Simplify to remove numerical artifacts
+        sys_simplified = ct.minreal(sys_tau_rate, tol=1e-6)
+
+        # Verify it's an integrator: 1/s
+        assert_tf_equals(sys_simplified, [1.0], [1.0, 0.0])
+
+    def test_output_marker_to_connection_label(self):
+        """Test extraction from OutputMarker label to connection label downstream."""
+        diagram = Diagram()
+
+        diagram.add_block(
+            "io_marker",
+            "input",
+            marker_type="input",
+            label="u",
+            position={"x": 0, "y": 0},
+        )
+        diagram.add_block("gain", "gain1", K=3.0, position={"x": 100, "y": 0})
+
+        # OutputMarker at gain1 output
+        diagram.add_block(
+            "io_marker",
+            "mid_marker",
+            marker_type="output",
+            label="tau",
+            position={"x": 150, "y": -50},
+        )
+
+        diagram.add_block("gain", "gain2", K=2.0, position={"x": 200, "y": 0})
+        diagram.add_block(
+            "io_marker",
+            "output",
+            marker_type="output",
+            label="y",
+            position={"x": 300, "y": 0},
+        )
+
+        diagram.add_connection("c1", "input", "out", "gain1", "in")
+        diagram.add_connection("c2", "gain1", "out", "mid_marker", "in")
+        diagram.add_connection("c3", "gain1", "out", "gain2", "in", label="v")
+        diagram.add_connection("c4", "gain2", "out", "output", "in", label="z")
+
+        # Extract from OutputMarker 'tau' to connection label 'z' (downstream)
+        # Expected: gain = 2.0 (just gain2)
+        sys = diagram.get_ss("tau", "z")
+
+        # Should be static gain of 2.0
+        dc_gain = ct.dcgain(sys)
+        assert np.isclose(dc_gain, 2.0, atol=1e-6), (
+            f"DC gain should be 2.0 (gain2), got {dc_gain}"
+        )
