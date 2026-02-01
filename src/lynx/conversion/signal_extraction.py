@@ -387,6 +387,12 @@ def _prepare_for_extraction(
     input_names = []
     output_names = []
 
+    # Track which blocks are injected InputMarkers (should not be exported as outputs)
+    injected_marker_ids = set()
+    for block in modified.blocks:
+        if block.is_input_marker() and block.id.startswith("_injected_"):
+            injected_marker_ids.add(block.id)
+
     # Convert blocks to subsystems using converter registry
     for block in modified.blocks:
         sys = convert_block(block)
@@ -402,19 +408,21 @@ def _prepare_for_extraction(
             input_names.append(safe_label)
 
         # Export ALL output ports for each block (supports multi-output blocks)
-        output_port_ids = [p.id for p in block._ports if p.type == "output"]
-        for port in block._ports:
-            if port.type == "output":
-                outlist.append(f"{block.id}.{port.id}")
-                output_name = _get_block_output_name(block)
-                # Sanitize output name (python-control disallows dots)
-                safe_output_name = output_name.replace(".", "_")
-                # For multi-output blocks, append port suffix
-                if len(output_port_ids) > 1:
-                    # Use underscore instead of dot
-                    output_names.append(f"{safe_output_name}_{port.id}")
-                else:
-                    output_names.append(safe_output_name)
+        # EXCEPT for injected InputMarkers (which should only be inputs, not outputs)
+        if block.id not in injected_marker_ids:
+            output_port_ids = [p.id for p in block._ports if p.type == "output"]
+            for port in block._ports:
+                if port.type == "output":
+                    outlist.append(f"{block.id}.{port.id}")
+                    output_name = _get_block_output_name(block)
+                    # Sanitize output name (python-control disallows dots)
+                    safe_output_name = output_name.replace(".", "_")
+                    # For multi-output blocks, append port suffix
+                    if len(output_port_ids) > 1:
+                        # Use underscore instead of dot
+                        output_names.append(f"{safe_output_name}_{port.id}")
+                    else:
+                        output_names.append(safe_output_name)
 
     # Convert connections to signal pairs with sign negation
     for conn in modified.connections:

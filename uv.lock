@@ -1410,7 +1410,7 @@ wheels = [
 
 [[package]]
 name = "lynx-nb"
-version = "0.1.4"
+version = "0.1.5"
 source = { editable = "." }
 dependencies = [
     { name = "anywidget" },
@@ -1447,7 +1447,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anywidget", specifier = ">=0.9.21" },
-    { name = "control", specifier = ">=0.10.1" },
+    { name = "control", specifier = ">=0.10.2" },
     { name = "numpy", specifier = ">=2.4.1" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "traitlets", specifier = ">=5.14.3" },

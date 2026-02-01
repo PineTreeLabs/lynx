@@ -226,6 +226,7 @@ When tests are included, they follow the same user story organization.
 - JSON diagram files (existing persistence via Pydantic schemas) (014-iomarker-latex-rendering)
 - TypeScript 5.9 (frontend), Python 3.11+ (backend) + React 19.2.3, React Flow 11.11.4, anywidget (Jupyter widget framework), Pydantic (schema validation) (015-block-drag-detection)
 - Python 3.11+ + Pydantic 2.12+ (existing schema validation), python-control 0.10+ (existing) (017-diagram-label-indexing)
+- Python 3.11+ (existing Lynx requirement) + python-control 0.10+ (existing), no new dependencies required (018-graph-pruning-extraction)
 
 ## Key Components
 
@@ -606,6 +607,7 @@ blocks/
 - `js/src/test/` - Test configuration and setup files
 
 ## Recent Changes
+- 018-graph-pruning-extraction: Added Python 3.11+ (existing Lynx requirement) + python-control 0.10+ (existing), no new dependencies required
 - 017-diagram-label-indexing: Added Python 3.11+ + Pydantic 2.12+ (existing schema validation), python-control 0.10+ (existing)
 - **015-block-drag-detection**: Intelligent drag detection with 5-pixel movement threshold
   - Click-to-select (< 5px movement) vs drag-to-move (≥ 5px movement) behavior
@@ -618,7 +620,6 @@ blocks/
   - Performance: < 5ms overhead per drag operation, maintains 60 FPS
   - 717 total tests passing (407 Python + 310 frontend)
   - Frontend-only feature (no Python backend changes required)
-- **014-iomarker-latex-rendering**: Complete IOMarker LaTeX rendering with automatic indexing and Simulink-style renumbering
   - Automatic index display (0, 1, 2...) via LaTeX for InputMarker and OutputMarker blocks
   - Custom LaTeX override using existing useCustomLatex hook (checkbox + textarea UI)
   - Removed "Input/Output" text and "Type" dropdown from parameter panel for cleaner UX
