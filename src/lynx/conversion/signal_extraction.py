@@ -274,8 +274,10 @@ def _prepare_for_extraction(
 
         # Find ALL connections originating from from_block's output
         connections_to_break = [
-            conn for conn in modified.connections
-            if conn.source_block_id == from_block.id and conn.source_port_id == from_port
+            conn
+            for conn in modified.connections
+            if conn.source_block_id == from_block.id
+            and conn.source_port_id == from_port
         ]
 
         # Remove these connections
@@ -295,7 +297,9 @@ def _prepare_for_extraction(
 
         # Reconnect injected marker to all original targets
         for conn in connections_to_break:
-            conn_id = f"_conn_{injected_id}_{conn.target_block_id}_{conn.target_port_id}"
+            conn_id = (
+                f"_conn_{injected_id}_{conn.target_block_id}_{conn.target_port_id}"
+            )
             modified.add_connection(
                 conn_id, injected_id, "out", conn.target_block_id, conn.target_port_id
             )

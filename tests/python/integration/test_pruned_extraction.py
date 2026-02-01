@@ -4,9 +4,9 @@
 
 """Integration tests for pruned subsystem extraction."""
 
-import pytest
-import numpy as np
 import control as ct
+import numpy as np
+
 from lynx import Diagram
 
 
@@ -14,7 +14,7 @@ class TestUS1SingleBlockExtraction:
     """User Story 1: Extract single block without downstream coupling."""
 
     def test_scenario_1_single_block_with_downstream_feedback(self):
-        """Test Scenario 1 from quickstart.md: extract plant without downstream feedback coupling."""
+        """Test Scenario 1 from quickstart.md: extract plant w/o downstream feedback"""
         diagram = Diagram()
 
         # Create diagram with DYNAMIC downstream feedback to show the bug
@@ -23,15 +23,25 @@ class TestUS1SingleBlockExtraction:
         #                               feedback_filter(1/(s+1)) → back to plant
         diagram.add_block("io_marker", "input", marker_type="input", label="u")
         diagram.add_block("gain", "controller", K=2.0)
-        diagram.add_block("transfer_function", "plant", num=[1.0], den=[1.0, 2.0])  # 1st order
+        diagram.add_block(
+            "transfer_function", "plant", num=[1.0], den=[1.0, 2.0]
+        )  # 1st order
         diagram.add_block("io_marker", "output", marker_type="output", label="y")
-        diagram.add_block("transfer_function", "feedback_filter", num=[1.0], den=[1.0, 1.0])  # Adds state
+        diagram.add_block(
+            "transfer_function", "feedback_filter", num=[1.0], den=[1.0, 1.0]
+        )  # Adds state
 
         diagram.add_connection("c1", "input", "out", "controller", "in")
-        diagram.add_connection("c2", "controller", "out", "plant", "in", label="signal_x")
+        diagram.add_connection(
+            "c2", "controller", "out", "plant", "in", label="signal_x"
+        )
         diagram.add_connection("c3", "plant", "out", "output", "in")
-        diagram.add_connection("c4", "plant", "out", "feedback_filter", "in")  # Downstream
-        diagram.add_connection("c5", "feedback_filter", "out", "plant", "in")  # Creates 2nd-order loop
+        diagram.add_connection(
+            "c4", "plant", "out", "feedback_filter", "in"
+        )  # Downstream
+        diagram.add_connection(
+            "c5", "feedback_filter", "out", "plant", "in"
+        )  # Creates 2nd-order loop
 
         # Extract just signal_x → y
         # WITHOUT pruning: would include feedback_filter → 2 states
@@ -39,7 +49,9 @@ class TestUS1SingleBlockExtraction:
         sys = diagram.get_ss("signal_x", "y")
 
         # ACCEPTANCE: Should be 1st-order (just plant), not 2nd-order
-        assert sys.nstates == 1, f"Expected 1 state (plant only), got {sys.nstates} (includes feedback)"
+        assert sys.nstates == 1, (
+            f"Expected 1 state (plant only), got {sys.nstates} (includes feedback)"
+        )
 
     def test_acceptance_1a_simple_chain_with_middle_block(self):
         """Test acceptance scenario 1a: A→B→C, extract just B."""
@@ -88,7 +100,7 @@ class TestUS2InternalFeedback:
     """User Story 2: Preserve internal feedback loops."""
 
     def test_scenario_2_inner_loop_with_external_cascade(self):
-        """Test Scenario 2 from quickstart.md: extract inner loop, exclude outer controller."""
+        """Test extract inner loop, exclude outer controller."""
         diagram = Diagram()
 
         # External cascade controller (upstream of extraction)
@@ -103,11 +115,15 @@ class TestUS2InternalFeedback:
 
         # Connections
         diagram.add_connection("c1", "ext_input", "out", "outer_controller", "in")
-        diagram.add_connection("c2", "outer_controller", "out", "inner_sum", "in1", label="inner_ref")
+        diagram.add_connection(
+            "c2", "outer_controller", "out", "inner_sum", "in1", label="inner_ref"
+        )
         diagram.add_connection("c3", "inner_sum", "out", "inner_controller", "in")
         diagram.add_connection("c4", "inner_controller", "out", "inner_plant", "in")
         diagram.add_connection("c5", "inner_plant", "out", "output", "in")
-        diagram.add_connection("c6", "inner_plant", "out", "inner_sum", "in2")  # Inner feedback
+        diagram.add_connection(
+            "c6", "inner_plant", "out", "inner_sum", "in2"
+        )  # Inner feedback
 
         # Extract just the inner loop (inner_ref → y)
         sys = diagram.get_ss("inner_ref", "y")
@@ -115,7 +131,9 @@ class TestUS2InternalFeedback:
         # Should include: inner_sum, inner_controller, inner_plant (with feedback)
         # Should exclude: outer_controller (upstream)
         # Closed-loop TF: 5/(s+2+5) = 5/(s+7)
-        assert sys.nstates == 1, f"Expected 1 state (closed inner loop), got {sys.nstates}"
+        assert sys.nstates == 1, (
+            f"Expected 1 state (closed inner loop), got {sys.nstates}"
+        )
         dc_gain = ct.dcgain(sys)
         expected_dc_gain = 5.0 / 7.0  # 5/(2+5)
         assert np.allclose(dc_gain, expected_dc_gain, rtol=1e-3)
@@ -135,14 +153,20 @@ class TestUS2InternalFeedback:
         # Outer loop
         diagram.add_connection("c1", "input", "out", "outer_sum", "in1")
         diagram.add_connection("c2", "outer_sum", "out", "outer_ctrl", "in")
-        diagram.add_connection("c3", "outer_ctrl", "out", "inner_sum", "in1", label="inner_ref")
+        diagram.add_connection(
+            "c3", "outer_ctrl", "out", "inner_sum", "in1", label="inner_ref"
+        )
 
         # Inner loop
         diagram.add_connection("c4", "inner_sum", "out", "inner_ctrl", "in")
         diagram.add_connection("c5", "inner_ctrl", "out", "plant", "in")
         diagram.add_connection("c6", "plant", "out", "output", "in", label="y_sig")
-        diagram.add_connection("c7", "plant", "out", "inner_sum", "in2")  # Inner feedback
-        diagram.add_connection("c8", "plant", "out", "outer_sum", "in2")  # Outer feedback
+        diagram.add_connection(
+            "c7", "plant", "out", "inner_sum", "in2"
+        )  # Inner feedback
+        diagram.add_connection(
+            "c8", "plant", "out", "outer_sum", "in2"
+        )  # Outer feedback
 
         # Extract inner loop only
         sys = diagram.get_ss("inner_ref", "y_sig")
@@ -181,7 +205,7 @@ class TestUS3ParallelPaths:
     """User Story 3: Handle complex path topologies."""
 
     def test_scenario_3_parallel_paths_with_side_branch(self):
-        """Test Scenario 3 from quickstart.md: feedforward + feedback paths, exclude side branch."""
+        """Test parallel feedforward + feedback paths, exclude side branch."""
         diagram = Diagram()
 
         diagram.add_block("io_marker", "input", marker_type="input", label="u")
@@ -259,7 +283,9 @@ class TestUS3ParallelPaths:
         diagram.add_block("gain", "A", K=1.0)
         diagram.add_block("gain", "B", K=2.0)
         diagram.add_block("gain", "C", K=3.0)
-        diagram.add_block("sum", "D", signs=["+", "+", "|"])  # Sum to accept multiple inputs
+        diagram.add_block(
+            "sum", "D", signs=["+", "+", "|"]
+        )  # Sum to accept multiple inputs
 
         # A → B → D (path 1)
         # A → C → D (path 2)
@@ -279,9 +305,11 @@ class TestUS3ParallelPaths:
 
 class TestEdgeCases:
     """Edge cases and error handling."""
+
     pass
 
 
 class TestPerformance:
     """Performance benchmarks."""
+
     pass

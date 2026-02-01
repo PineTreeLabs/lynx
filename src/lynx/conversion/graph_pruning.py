@@ -16,11 +16,13 @@ Typical performance: <10ms for 50-block diagrams, <50ms for 100-block diagrams
 from typing import TYPE_CHECKING, Dict, List, Set
 
 if TYPE_CHECKING:
-    from lynx.diagram import Diagram
     from lynx.blocks.base import Block
+    from lynx.diagram import Diagram
 
 
-def _build_connection_graph(diagram: "Diagram") -> tuple[Dict[str, List[str]], Dict[str, List[str]]]:
+def _build_connection_graph(
+    diagram: "Diagram",
+) -> tuple[Dict[str, List[str]], Dict[str, List[str]]]:
     """Build forward and backward adjacency lists from diagram connections.
 
     Args:
@@ -41,7 +43,9 @@ def _build_connection_graph(diagram: "Diagram") -> tuple[Dict[str, List[str]], D
     return forward, backward
 
 
-def _dfs_forward(forward_edges: Dict[str, List[str]], start_block_id: str, visited: Set[str]) -> Set[str]:
+def _dfs_forward(
+    forward_edges: Dict[str, List[str]], start_block_id: str, visited: Set[str]
+) -> Set[str]:
     """Forward DFS: find all blocks reachable from start block.
 
     Args:
@@ -64,7 +68,9 @@ def _dfs_forward(forward_edges: Dict[str, List[str]], start_block_id: str, visit
     return reachable
 
 
-def _dfs_backward(backward_edges: Dict[str, List[str]], start_block_id: str, visited: Set[str]) -> Set[str]:
+def _dfs_backward(
+    backward_edges: Dict[str, List[str]], start_block_id: str, visited: Set[str]
+) -> Set[str]:
     """Backward DFS: find all blocks that can reach start block.
 
     Args:
@@ -87,7 +93,9 @@ def _dfs_backward(backward_edges: Dict[str, List[str]], start_block_id: str, vis
     return reachable
 
 
-def _find_reachable_blocks(diagram: "Diagram", source_block: "Block", dest_block: "Block") -> Set[str]:
+def _find_reachable_blocks(
+    diagram: "Diagram", source_block: "Block", dest_block: "Block"
+) -> Set[str]:
     """Find all blocks on any path from source to destination.
 
     Uses bidirectional reachability analysis: blocks must be both
@@ -120,10 +128,11 @@ def _find_reachable_blocks(diagram: "Diagram", source_block: "Block", dest_block
     # Check if destination is reachable from source
     if dest_block.id not in forward_reachable:
         from ..diagram import SignalNotFoundError
+
         raise SignalNotFoundError(
             signal_name=f"{source_block.id} → {dest_block.id}",
             searched_locations=["forward reachability"],
-            custom_message="No path exists from source to destination"
+            custom_message="No path exists from source to destination",
         )
 
     # Intersection: blocks on any path from source to destination
@@ -156,7 +165,9 @@ def prune_diagram(diagram: "Diagram", keep_blocks: Set[str]) -> "Diagram":
     pruned = diagram._clone()
 
     # Identify blocks to remove
-    blocks_to_remove = [block.id for block in pruned.blocks if block.id not in keep_blocks]
+    blocks_to_remove = [
+        block.id for block in pruned.blocks if block.id not in keep_blocks
+    ]
 
     # Remove blocks (connections are auto-cleaned by remove_block)
     for block_id in blocks_to_remove:

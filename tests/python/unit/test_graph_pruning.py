@@ -4,12 +4,11 @@
 
 """Unit tests for graph pruning algorithms."""
 
-import pytest
 from lynx import Diagram
 from lynx.conversion.graph_pruning import (
     _build_connection_graph,
-    _dfs_forward,
     _dfs_backward,
+    _dfs_forward,
     _find_reachable_blocks,
 )
 
