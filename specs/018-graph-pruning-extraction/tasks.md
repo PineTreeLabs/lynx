@@ -31,9 +31,9 @@ Single project structure (Python package):
 
 **Purpose**: Project initialization and test infrastructure
 
-- [ ] T001 [P] Create new module `src/lynx/conversion/graph_pruning.py` with module docstring and license header
-- [ ] T002 [P] Create unit test file `tests/python/unit/test_graph_pruning.py` with test class structure
-- [ ] T003 [P] Create integration test file `tests/python/integration/test_pruned_extraction.py` with test class structure
+- [X] T001 [P] Create new module `src/lynx/conversion/graph_pruning.py` with module docstring and license header
+- [X] T002 [P] Create unit test file `tests/python/unit/test_graph_pruning.py` with test class structure
+- [X] T003 [P] Create integration test file `tests/python/integration/test_pruned_extraction.py` with test class structure
 
 ---
 
@@ -45,22 +45,22 @@ Single project structure (Python package):
 
 ### Tests (Write FIRST, ensure they FAIL)
 
-- [ ] T004 [P] Write failing test for `_build_connection_graph()` with simple 3-block diagram in `tests/python/unit/test_graph_pruning.py`
-- [ ] T005 [P] Write failing test for `_dfs_forward()` exploring downstream blocks in `tests/python/unit/test_graph_pruning.py`
-- [ ] T006 [P] Write failing test for `_dfs_backward()` exploring upstream blocks in `tests/python/unit/test_graph_pruning.py`
-- [ ] T007 [P] Write failing test for cycle handling in DFS (visited set protection) in `tests/python/unit/test_graph_pruning.py`
-- [ ] T008 [P] Write failing test for `_find_reachable_blocks()` computing intersection in `tests/python/unit/test_graph_pruning.py`
+- [X] T004 [P] Write failing test for `_build_connection_graph()` with simple 3-block diagram in `tests/python/unit/test_graph_pruning.py`
+- [X] T005 [P] Write failing test for `_dfs_forward()` exploring downstream blocks in `tests/python/unit/test_graph_pruning.py`
+- [X] T006 [P] Write failing test for `_dfs_backward()` exploring upstream blocks in `tests/python/unit/test_graph_pruning.py`
+- [X] T007 [P] Write failing test for cycle handling in DFS (visited set protection) in `tests/python/unit/test_graph_pruning.py`
+- [X] T008 [P] Write failing test for `_find_reachable_blocks()` computing intersection in `tests/python/unit/test_graph_pruning.py`
 
 ### Implementation (After tests FAIL)
 
-- [ ] T009 [P] Implement `_build_connection_graph()` to create forward/backward adjacency lists in `src/lynx/conversion/graph_pruning.py`
-- [ ] T010 [P] Implement `_dfs_forward()` with visited set tracking in `src/lynx/conversion/graph_pruning.py`
-- [ ] T011 [P] Implement `_dfs_backward()` with reverse edge traversal in `src/lynx/conversion/graph_pruning.py`
-- [ ] T012 Implement `_find_reachable_blocks()` using bidirectional DFS and intersection logic in `src/lynx/conversion/graph_pruning.py`
+- [X] T009 [P] Implement `_build_connection_graph()` to create forward/backward adjacency lists in `src/lynx/conversion/graph_pruning.py`
+- [X] T010 [P] Implement `_dfs_forward()` with visited set tracking in `src/lynx/conversion/graph_pruning.py`
+- [X] T011 [P] Implement `_dfs_backward()` with reverse edge traversal in `src/lynx/conversion/graph_pruning.py`
+- [X] T012 Implement `_find_reachable_blocks()` using bidirectional DFS and intersection logic in `src/lynx/conversion/graph_pruning.py`
 
 ### Tests (Verify GREEN after implementation)
 
-- [ ] T013 Run foundational unit tests - verify all tests PASS after implementation
+- [X] T013 Run foundational unit tests - verify all tests PASS after implementation
 
 **Checkpoint**: Foundation ready - graph analysis algorithms tested and working. User story implementation can now begin in parallel.
 
@@ -74,22 +74,22 @@ Single project structure (Python package):
 
 ### Tests for US1 (Write FIRST, ensure they FAIL) ⚠️
 
-- [ ] T014 [P] [US1] Write failing integration test for Scenario 1 (quickstart.md) - single block extraction with downstream feedback in `tests/python/integration/test_pruned_extraction.py`
-- [ ] T015 [P] [US1] Write failing unit test for `prune_diagram()` removing unrelated blocks in `tests/python/unit/test_graph_pruning.py`
-- [ ] T016 [P] [US1] Write failing integration test for acceptance scenario 1a (A→B→C with B extraction) in `tests/python/integration/test_pruned_extraction.py`
-- [ ] T017 [P] [US1] Write failing integration test for acceptance scenario 1c (sum→controller extraction excluding downstream plant) in `tests/python/integration/test_pruned_extraction.py`
+- [X] T014 [P] [US1] Write failing integration test for Scenario 1 (quickstart.md) - single block extraction with downstream feedback in `tests/python/integration/test_pruned_extraction.py`
+- [X] T015 [P] [US1] Write failing unit test for `prune_diagram()` removing unrelated blocks in `tests/python/unit/test_graph_pruning.py`
+- [X] T016 [P] [US1] Write failing integration test for acceptance scenario 1a (A→B→C with B extraction) in `tests/python/integration/test_pruned_extraction.py`
+- [X] T017 [P] [US1] Write failing integration test for acceptance scenario 1c (sum→controller extraction excluding downstream plant) in `tests/python/integration/test_pruned_extraction.py`
 
 ### Implementation for US1 (After tests FAIL)
 
-- [ ] T018 [US1] Implement `prune_diagram()` to clone and remove non-path blocks in `src/lynx/conversion/graph_pruning.py`
-- [ ] T019 [US1] Integrate pruning into `_prepare_for_extraction()` after signal resolution in `src/lynx/conversion/signal_extraction.py`
-- [ ] T020 [US1] Add validation for no-path-exists case (FR-007) with clear error message in `src/lynx/conversion/graph_pruning.py`
-- [ ] T021 [US1] Handle same-block extraction edge case (FR-008) in `src/lynx/conversion/graph_pruning.py`
+- [X] T018 [US1] Implement `prune_diagram()` to clone and remove non-path blocks in `src/lynx/conversion/graph_pruning.py`
+- [X] T019 [US1] Integrate pruning into `_prepare_for_extraction()` after signal resolution in `src/lynx/conversion/signal_extraction.py`
+- [X] T020 [US1] Add validation for no-path-exists case (FR-007) with clear error message in `src/lynx/conversion/graph_pruning.py`
+- [X] T021 [US1] Handle same-block extraction edge case (FR-008) in `src/lynx/conversion/graph_pruning.py`
 
 ### Validation for US1
 
-- [ ] T022 [US1] Run all US1 integration tests - verify extracted TF order matches isolated block (SC-001)
-- [ ] T023 [US1] Verify state count equals sum of path blocks only (SC-003) using quickstart.md Scenario 1
+- [X] T022 [US1] Run all US1 integration tests - verify extracted TF order matches isolated block (SC-001)
+- [X] T023 [US1] Verify state count equals sum of path blocks only (SC-003) using quickstart.md Scenario 1
 - [ ] T024 [US1] Test extraction completes in <500ms for 50-block diagram (SC-002) - create performance test in `tests/python/integration/test_pruned_extraction.py`
 
 **Checkpoint**: User Story 1 should be fully functional - single block extraction works correctly without downstream coupling

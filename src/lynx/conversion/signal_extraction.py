@@ -251,6 +251,7 @@ def _prepare_for_extraction(
     to_output_name = _get_block_output_name(to_block)
 
     # Step 3: Break and inject if needed
+    # NOTE: Pruning happens AFTER injection to get correct topology
     # Check if from_signal is an InputMarker (already an external input)
     from_is_input_marker = from_block.is_input_marker()
 
@@ -378,6 +379,17 @@ def _prepare_for_extraction(
         # After injection, from_signal becomes an external input, not the original block
         # Sanitize the signal name (python-control doesn't allow dots in signal names)
         from_output_name = from_signal.replace(".", "_")
+
+    # Step 3.5: Prune diagram to only relevant blocks (AFTER injection)
+    # This ensures OutputMarker labels correctly exclude upstream blocks
+    from .graph_pruning import _find_reachable_blocks, prune_diagram
+
+    # Re-find signal sources after injection (may have new injected markers)
+    pruning_from_block, _ = _find_signal_source(modified, from_signal)
+    pruning_to_block, _ = _find_signal_source(modified, to_signal)
+
+    path_blocks = _find_reachable_blocks(modified, pruning_from_block, pruning_to_block)
+    modified = prune_diagram(modified, path_blocks)
 
     # Step 4: Build interconnect with ALL signals exported
     systems = []
