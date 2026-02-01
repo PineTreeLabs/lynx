@@ -176,6 +176,22 @@ def _get_block_output_name(block: "Block") -> str:
     return block.label if block.label else block.id
 
 
+def _is_iomarker_label(diagram: "Diagram", signal_name: str) -> bool:
+    """Check if signal_name is an IOMarker label (Input or Output).
+
+    Args:
+        diagram: Diagram to search
+        signal_name: Signal name to check
+
+    Returns:
+        True if signal_name matches any IOMarker's label attribute
+    """
+    for block in diagram.blocks:
+        if block.type == "io_marker" and block.label == signal_name:
+            return True
+    return False
+
+
 def _prepare_for_extraction(
     diagram: "Diagram", from_signal: str, to_signal: str
 ) -> Tuple[ct.LinearICSystem, str, str]:
@@ -184,7 +200,7 @@ def _prepare_for_extraction(
     Steps:
     1. Clone the diagram for safe modification
     2. Find the blocks that output from_signal and to_signal
-    3. If from_signal is not already an InputMarker:
+    3. If from_signal is not already an IOMarker label:
        a. Remove incoming connections to that signal's source
        b. Inject a new InputMarker at that point
        c. Connect the injected marker to the signal source
@@ -235,10 +251,62 @@ def _prepare_for_extraction(
     to_output_name = _get_block_output_name(to_block)
 
     # Step 3: Break and inject if needed
-    # Check if from_signal is already an external input (InputMarker)
-    is_already_input = from_block.is_input_marker()
+    # NOTE: Pruning happens AFTER injection to get correct topology
+    # Check if from_signal is an InputMarker (already an external input)
+    from_is_input_marker = from_block.is_input_marker()
 
-    if not is_already_input:
+    # Check if from_signal is an OutputMarker label (needs special handling)
+    from_is_output_marker_label = False
+    for block in modified.blocks:
+        if block.type == "io_marker" and block.label == from_signal:
+            marker_type = block.get_parameter("marker_type")
+            if marker_type == "output":
+                from_is_output_marker_label = True
+                break
+
+    if from_is_input_marker:
+        # from_signal is already an external input, no injection needed
+        pass
+    elif from_is_output_marker_label:
+        # Case C: from_signal is an OutputMarker label
+        # The signal exists at from_block.from_port output
+        # We need to inject an InputMarker at this output to make it an external input
+
+        # Find ALL connections originating from from_block's output
+        connections_to_break = [
+            conn
+            for conn in modified.connections
+            if conn.source_block_id == from_block.id
+            and conn.source_port_id == from_port
+        ]
+
+        # Remove these connections
+        for conn in connections_to_break:
+            modified.remove_connection(conn.id)
+
+        # Inject InputMarker with the signal label
+        safe_signal_name = from_signal.replace(".", "_")
+        injected_id = f"_injected_{safe_signal_name}"
+        modified.add_block(
+            "io_marker",
+            injected_id,
+            marker_type="input",
+            label=from_signal,
+            position={"x": -100, "y": 0},
+        )
+
+        # Reconnect injected marker to all original targets
+        for conn in connections_to_break:
+            conn_id = (
+                f"_conn_{injected_id}_{conn.target_block_id}_{conn.target_port_id}"
+            )
+            modified.add_connection(
+                conn_id, injected_id, "out", conn.target_block_id, conn.target_port_id
+            )
+
+        # Use the signal label as the from_output_name (now an input)
+        from_output_name = safe_signal_name
+    elif not from_is_input_marker:
         # Check if from_signal is a connection label
         # If so, we inject at the connection target, not the source block input
         connection_to_break = None
@@ -316,6 +384,17 @@ def _prepare_for_extraction(
         # Sanitize the signal name (python-control doesn't allow dots in signal names)
         from_output_name = from_signal.replace(".", "_")
 
+    # Step 3.5: Prune diagram to only relevant blocks (AFTER injection)
+    # This ensures OutputMarker labels correctly exclude upstream blocks
+    from .graph_pruning import _find_reachable_blocks, prune_diagram
+
+    # Re-find signal sources after injection (may have new injected markers)
+    pruning_from_block, _ = _find_signal_source(modified, from_signal)
+    pruning_to_block, _ = _find_signal_source(modified, to_signal)
+
+    path_blocks = _find_reachable_blocks(modified, pruning_from_block, pruning_to_block)
+    modified = prune_diagram(modified, path_blocks)
+
     # Step 4: Build interconnect with ALL signals exported
     systems = []
     connections = []
@@ -323,6 +402,12 @@ def _prepare_for_extraction(
     outlist = []
     input_names = []
     output_names = []
+
+    # Track which blocks are injected InputMarkers (should not be exported as outputs)
+    injected_marker_ids = set()
+    for block in modified.blocks:
+        if block.is_input_marker() and block.id.startswith("_injected_"):
+            injected_marker_ids.add(block.id)
 
     # Convert blocks to subsystems using converter registry
     for block in modified.blocks:
@@ -339,19 +424,21 @@ def _prepare_for_extraction(
             input_names.append(safe_label)
 
         # Export ALL output ports for each block (supports multi-output blocks)
-        output_port_ids = [p.id for p in block._ports if p.type == "output"]
-        for port in block._ports:
-            if port.type == "output":
-                outlist.append(f"{block.id}.{port.id}")
-                output_name = _get_block_output_name(block)
-                # Sanitize output name (python-control disallows dots)
-                safe_output_name = output_name.replace(".", "_")
-                # For multi-output blocks, append port suffix
-                if len(output_port_ids) > 1:
-                    # Use underscore instead of dot
-                    output_names.append(f"{safe_output_name}_{port.id}")
-                else:
-                    output_names.append(safe_output_name)
+        # EXCEPT for injected InputMarkers (which should only be inputs, not outputs)
+        if block.id not in injected_marker_ids:
+            output_port_ids = [p.id for p in block._ports if p.type == "output"]
+            for port in block._ports:
+                if port.type == "output":
+                    outlist.append(f"{block.id}.{port.id}")
+                    output_name = _get_block_output_name(block)
+                    # Sanitize output name (python-control disallows dots)
+                    safe_output_name = output_name.replace(".", "_")
+                    # For multi-output blocks, append port suffix
+                    if len(output_port_ids) > 1:
+                        # Use underscore instead of dot
+                        output_names.append(f"{safe_output_name}_{port.id}")
+                    else:
+                        output_names.append(safe_output_name)
 
     # Convert connections to signal pairs with sign negation
     for conn in modified.connections:
